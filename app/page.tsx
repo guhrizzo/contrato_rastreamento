@@ -831,7 +831,7 @@ export default function Home() {
                   Protect<span className="text-brand-yellow"> Rastreamento</span>
                 </h1>
                 <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
-                  Segurança &amp; Rastreamento Veicular
+                  Segurança &amp; Rastreamento 
                 </div>
               </div>
             </div>
@@ -845,7 +845,7 @@ export default function Home() {
 
             {/* TÍTULO DO CONTRATO */}
             <h2 className="text-center font-extrabold text-sm uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
-              CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE MONITORAMENTO E RASTREAMENTO VEICULAR EM REGIME DE COMODATO
+              CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE MONITORAMENTO E RASTREAMENTO EM REGIME DE COMODATO
             </h2>
 
             {/* CORPO DO TEXTO */}
@@ -878,7 +878,7 @@ export default function Home() {
                   CLÁUSULA PRIMEIRA – DO OBJETO
                 </h4>
                 <p>
-                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento veicular pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador modelo <strong>{data.trackerModel || "GPS/GPRS"}</strong> de propriedade da CONTRATADA, a ser instalado no veículo de propriedade do CONTRATANTE adiante descrito:
+                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador modelo <strong>{data.trackerModel || "GPS/GPRS"}</strong> de propriedade da CONTRATADA, a ser instalado no veículo de propriedade do CONTRATANTE adiante descrito:
                 </p>
 
               </div>
@@ -900,7 +900,7 @@ export default function Home() {
                 <p>
                   3.1. A tecnologia utilizada pela CONTRATADA consiste na transmissão de dados via rede celular GSM/GPRS e localização via satélite GPS. 
                   3.2. O CONTRATANTE declara-se ciente de que o serviço poderá sofrer interrupções ou falhas decorrentes de fatores fora do controle da CONTRATADA, tais como ausência de sinal de telefonia celular no local, áreas de sombra, condições atmosféricas adversas ou ações intencionais de terceiros utilizando bloqueadores de sinal ("jammers"). 
-                  3.3. O rastreamento veicular é uma ferramenta auxiliar de segurança, <strong>NÃO constituindo seguro contra roubo ou furto</strong>, não cabendo qualquer obrigação de indenização à CONTRATADA em caso de sinistro veicular.
+                  3.3. O rastreamento é uma ferramenta auxiliar de segurança, <strong>NÃO constituindo seguro contra roubo ou furto</strong>, não cabendo qualquer obrigação de indenização à CONTRATADA em caso de sinistro.
                 </p>
               </div>
 
