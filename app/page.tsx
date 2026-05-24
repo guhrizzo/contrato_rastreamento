@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -195,16 +195,12 @@ export default function Home() {
              <div className="flex items-center gap-2">
                {isFormComplete() ? (
                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900 text-green-100 rounded-full text-xs font-semibold">
-                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                   </svg>
+                   <CheckCircle className="w-4 h-4" />
                    Pronto para Assinar
                  </div>
                ) : (
                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900 text-amber-100 rounded-full text-xs font-semibold">
-                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                   </svg>
+                   <AlertCircle className="w-4 h-4" />
                    Incomplete
                  </div>
                )}
@@ -293,156 +289,192 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">Insira os dados cadastrais do cliente</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Nome Completo / Razão Social</label>
-                  <input
-                    type="text"
-                    name="clientName"
-                    value={data.clientName}
-                    onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                    placeholder="Ex: Gustavo Sauro"
-                  />
-                </div>
+               <div className="grid grid-cols-1 gap-4">
+                 <div className="flex flex-col">
+                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                     <User className="w-3.5 h-3.5" />
+                     Nome Completo / Razão Social
+                   </label>
+                   <input
+                     type="text"
+                     name="clientName"
+                     value={data.clientName}
+                     onChange={handleChange}
+                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                     placeholder="Ex: Gustavo Sauro"
+                   />
+                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">CPF ou CNPJ</label>
-                    <input
-                      type="text"
-                      name="clientDoc"
-                      value={data.clientDoc}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 000.000.000-00"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">RG ou IE</label>
-                    <input
-                      type="text"
-                      name="clientRg"
-                      value={data.clientRg}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 00.000.000-0"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <IdCard className="w-3.5 h-3.5" />
+                       CPF ou CNPJ
+                     </label>
+                     <input
+                       type="text"
+                       name="clientDoc"
+                       value={data.clientDoc}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: 000.000.000-00"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <IdCard className="w-3.5 h-3.5" />
+                       RG ou IE
+                     </label>
+                     <input
+                       type="text"
+                       name="clientRg"
+                       value={data.clientRg}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: 00.000.000-0"
+                     />
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Telefone / WhatsApp</label>
-                    <input
-                      type="text"
-                      name="clientPhone"
-                      value={data.clientPhone}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: (11) 99999-9999"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">E-mail</label>
-                    <input
-                      type="email"
-                      name="clientEmail"
-                      value={data.clientEmail}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: cliente@provedor.com"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Phone className="w-3.5 h-3.5" />
+                       Telefone / WhatsApp
+                     </label>
+                     <input
+                       type="text"
+                       name="clientPhone"
+                       value={data.clientPhone}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: (11) 99999-9999"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Mail className="w-3.5 h-3.5" />
+                       E-mail
+                     </label>
+                     <input
+                       type="email"
+                       name="clientEmail"
+                       value={data.clientEmail}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: cliente@provedor.com"
+                     />
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2 flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Endereço (Rua, Av.)</label>
-                    <input
-                      type="text"
-                      name="clientAddress"
-                      value={data.clientAddress}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: Av. Paulista"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Número</label>
-                    <input
-                      type="text"
-                      name="clientNumber"
-                      value={data.clientNumber}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 1000"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-3 gap-4">
+                   <div className="col-span-2 flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Building2 className="w-3.5 h-3.5" />
+                       Endereço (Rua, Av.)
+                     </label>
+                     <input
+                       type="text"
+                       name="clientAddress"
+                       value={data.clientAddress}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: Av. Paulista"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Hash className="w-3.5 h-3.5" />
+                       Número
+                     </label>
+                     <input
+                       type="text"
+                       name="clientNumber"
+                       value={data.clientNumber}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: 1000"
+                     />
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Complemento</label>
-                    <input
-                      type="text"
-                      name="clientComp"
-                      value={data.clientComp}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: Apto 12"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Bairro</label>
-                    <input
-                      type="text"
-                      name="clientBairro"
-                      value={data.clientBairro}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: Centro"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <MapPin className="w-3.5 h-3.5" />
+                       Complemento
+                     </label>
+                     <input
+                       type="text"
+                       name="clientComp"
+                       value={data.clientComp}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: Apto 12"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <MapPin className="w-3.5 h-3.5" />
+                       Bairro
+                     </label>
+                     <input
+                       type="text"
+                       name="clientBairro"
+                       value={data.clientBairro}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: Centro"
+                     />
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2 flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Cidade</label>
-                    <input
-                      type="text"
-                      name="clientCity"
-                      value={data.clientCity}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: São Paulo"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Estado</label>
-                    <input
-                      type="text"
-                      name="clientState"
-                      value={data.clientState}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: SP"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-3 gap-4">
+                   <div className="col-span-2 flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <MapPin className="w-3.5 h-3.5" />
+                       Cidade
+                     </label>
+                     <input
+                       type="text"
+                       name="clientCity"
+                       value={data.clientCity}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: São Paulo"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <MapPin className="w-3.5 h-3.5" />
+                       Estado
+                     </label>
+                     <input
+                       type="text"
+                       name="clientState"
+                       value={data.clientState}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: SP"
+                     />
+                   </div>
+                 </div>
 
-                <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">CEP</label>
-                  <input
-                    type="text"
-                    name="clientCep"
-                    value={data.clientCep}
-                    onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                    placeholder="Ex: 01000-000"
-                  />
-                </div>
-              </div>
+                 <div className="flex flex-col">
+                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                     <MapPin className="w-3.5 h-3.5" />
+                     CEP
+                   </label>
+                   <input
+                     type="text"
+                     name="clientCep"
+                     value={data.clientCep}
+                     onChange={handleChange}
+                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                     placeholder="Ex: 01000-000"
+                   />
+                 </div>
+               </div>
             </div>
           )}
 
@@ -456,73 +488,88 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">Valores, modelo do rastreador e vencimentos</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Modelo do Rastreador</label>
-                  <input
-                    type="text"
-                    name="trackerModel"
-                    value={data.trackerModel}
-                    onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                    placeholder="Ex: OBD-II Smart Tracker 4G"
-                  />
-                </div>
+               <div className="grid grid-cols-1 gap-4">
+                 <div className="flex flex-col">
+                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                     <Zap className="w-3.5 h-3.5" />
+                     Modelo do Rastreador
+                   </label>
+                   <input
+                     type="text"
+                     name="trackerModel"
+                     value={data.trackerModel}
+                     onChange={handleChange}
+                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                     placeholder="Ex: OBD-II Smart Tracker 4G"
+                   />
+                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Taxa de Adesão/Instalação (R$)</label>
-                    <input
-                      type="text"
-                      name="installationFee"
-                      value={data.installationFee}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 150,00"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Mensalidade (R$)</label>
-                    <input
-                      type="text"
-                      name="monthlyFee"
-                      value={data.monthlyFee}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 89,90"
-                    />
-                  </div>
-                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <DollarSign className="w-3.5 h-3.5" />
+                       Taxa de Adesão/Instalação (R$)
+                     </label>
+                     <input
+                       type="text"
+                       name="installationFee"
+                       value={data.installationFee}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: 150,00"
+                     />
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <DollarSign className="w-3.5 h-3.5" />
+                       Mensalidade (R$)
+                     </label>
+                     <input
+                       type="text"
+                       name="monthlyFee"
+                       value={data.monthlyFee}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: 89,90"
+                     />
+                   </div>
+                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Dia de Vencimento</label>
-                    <select
-                      name="dueDate"
-                      value={data.dueDate}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
-                    >
-                      <option value="05">Todo dia 05</option>
-                      <option value="10">Todo dia 10</option>
-                      <option value="15">Todo dia 15</option>
-                      <option value="20">Todo dia 20</option>
-                      <option value="25">Todo dia 25</option>
-                    </select>
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1">Data do Contrato</label>
-                    <input
-                      type="date"
-                      name="contractDate"
-                      value={data.contractDate}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: DD/MM/AAAA"
-                    />
-                  </div>
-                </div>
-              </div>
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Calendar className="w-3.5 h-3.5" />
+                       Dia de Vencimento
+                     </label>
+                     <select
+                       name="dueDate"
+                       value={data.dueDate}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
+                     >
+                       <option value="05">Todo dia 05</option>
+                       <option value="10">Todo dia 10</option>
+                       <option value="15">Todo dia 15</option>
+                       <option value="20">Todo dia 20</option>
+                       <option value="25">Todo dia 25</option>
+                     </select>
+                   </div>
+                   <div className="flex flex-col">
+                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                       <Calendar className="w-3.5 h-3.5" />
+                       Data do Contrato
+                     </label>
+                     <input
+                       type="date"
+                       name="contractDate"
+                       value={data.contractDate}
+                       onChange={handleChange}
+                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                       placeholder="Ex: DD/MM/AAAA"
+                     />
+                   </div>
+                 </div>
+               </div>
             </div>
           )}
 
@@ -530,20 +577,24 @@ export default function Home() {
            {activeTab === "signature" && (
              <div className="space-y-4 animate-fadeIn">
                <div className="border-l-4 border-brand-yellow pl-3 mb-2">
-                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
+                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
+                   <PenTool className="w-4 h-4" />
                    Assinatura Digital
                  </h3>
                  <p className="text-xs text-zinc-500">Desenhe a assinatura do cliente abaixo para incluí-la no contrato</p>
                </div>
 
                {!isFormComplete() && (
-                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5">
-                   <p className="text-xs font-semibold text-amber-900">
-                     ⚠️ Complete todos os campos antes de assinar
-                   </p>
-                   <p className="text-xs text-amber-800 mt-1">
-                     Preencha os dados do cliente e do plano nas abas anteriores para habilitar a assinatura.
-                   </p>
+                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 flex gap-2">
+                   <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                   <div>
+                     <p className="text-xs font-semibold text-amber-900">
+                       Complete todos os campos antes de assinar
+                     </p>
+                     <p className="text-xs text-amber-800 mt-1">
+                       Preencha os dados do cliente e do plano nas abas anteriores para habilitar a assinatura.
+                     </p>
+                   </div>
                  </div>
                )}
 
@@ -556,7 +607,10 @@ export default function Home() {
 
                {signatureImage && (
                  <div className="bg-zinc-50 border border-dashed border-zinc-200 p-4 rounded-xl text-center">
-                   <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest block mb-2">Assinatura Capturada com Sucesso!</span>
+                   <div className="flex items-center justify-center gap-2 mb-2">
+                     <CheckCircle className="w-4 h-4 text-green-600" />
+                     <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Assinatura Capturada com Sucesso!</span>
+                   </div>
                    <div className="inline-block bg-white p-2 rounded border border-zinc-100">
                      <img
                        src={signatureImage}
