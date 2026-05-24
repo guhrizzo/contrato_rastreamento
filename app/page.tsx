@@ -8,7 +8,7 @@ interface ContractData {
   // Contratante
   clientName: string;
   clientDoc: string; // CPF ou CNPJ
-  clientRg: string; // RG ou IE
+  clientRg: string; // RG ou CNH
   clientPhone: string;
   clientEmail: string;
   clientAddress: string;
@@ -323,7 +323,7 @@ export default function Home() {
                    <div className="flex flex-col">
                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
                        <IdCard className="w-3.5 h-3.5" />
-                       RG ou IE
+                       RG ou CNH
                      </label>
                      <input
                        type="text"
@@ -681,7 +681,7 @@ export default function Home() {
               <p>
                 <strong>CONTRATANTE:</strong> <strong>{data.clientName || "___________________________________________"}</strong>, 
                 inscrito(a) no CPF/CNPJ sob o nº <strong>{data.clientDoc || "_____________________"}</strong>, 
-                portador(a) do RG/IE nº <strong>{data.clientRg || "_____________________"}</strong>, 
+                portador(a) do RG/CNH nº <strong>{data.clientRg || "_____________________"}</strong>, 
                 residente e domiciliado(a) na <strong>{data.clientAddress || "_________________________________"}</strong>, 
                 nº <strong>{data.clientNumber || "_______"}</strong>, {data.clientComp && <span>compl. <strong>{data.clientComp}</strong>,</span>} 
                 Bairro <strong>{data.clientBairro || "_________________"}</strong>, na cidade de <strong>{data.clientCity || "_________________"}</strong> - <strong>{data.clientState || "___"}</strong>, 
@@ -769,7 +769,7 @@ export default function Home() {
                 
                 {/* REPRESENTANTE CONTRATADA */}
                 <div className="flex flex-col items-center">
-                 
+                 <div className="h-16"></div>
                   <div className="w-4/5 border-t border-zinc-400 my-1"></div>
                   <p className="font-bold text-zinc-900">PROTECT RASTREAMENTO</p>
                   <p className="text-[7.5pt] text-zinc-500 uppercase tracking-wider font-semibold">Representante Legal</p>
@@ -782,7 +782,7 @@ export default function Home() {
                       <img
                         src={signatureImage}
                         alt="Assinatura do Contratante"
-                        className="max-h-22 object-contain"
+                        className="max-h-16 object-contain"
                       />
                     ) : (
                       <div className="text-[7.5pt] text-zinc-400 italic">Aguardando assinatura digital...</div>
