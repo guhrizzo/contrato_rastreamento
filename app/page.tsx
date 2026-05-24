@@ -97,8 +97,42 @@ export default function Home() {
       }
     };
 
+    // Previne o menu de contexto (clique direito)
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      setShowPrintBlockDialog(true);
+      setTimeout(() => setShowPrintBlockDialog(false), 5000);
+    };
+
+    // Previne atalhos de impressão (F12, Ctrl+Shift+I, etc)
+    const handleKeyDownDev = (e: KeyboardEvent) => {
+      // F12 - Developer Tools
+      if (e.key === 'F12') {
+        e.preventDefault();
+      }
+      // Ctrl+Shift+I - Developer Tools (Chrome, Firefox)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'i') {
+        e.preventDefault();
+      }
+      // Ctrl+Shift+C - Element Inspector
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'c') {
+        e.preventDefault();
+      }
+      // Ctrl+Shift+J - Console
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'j') {
+        e.preventDefault();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('keydown', handleKeyDownDev);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDownDev);
+    };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -197,7 +231,7 @@ export default function Home() {
             <div className="bg-gradient-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-6 h-6 text-brand-yellow shrink-0" />
-                <h2 className="text-lg font-bold text-white">Impressão Bloqueada</h2>
+                <h2 className="text-lg font-bold text-white">Proteção Ativa</h2>
               </div>
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
@@ -209,14 +243,22 @@ export default function Home() {
             
             <div className="px-6 py-5 space-y-3">
               <p className="text-sm text-zinc-700">
-                A impressão direta via <strong>Ctrl+P</strong> não é permitida nesta aplicação.
+                A impressão direta não é permitida nesta aplicação por razões de segurança.
               </p>
               <p className="text-sm text-zinc-600">
+                Isso inclui:
+              </p>
+              <ul className="text-sm text-zinc-600 space-y-1 ml-3">
+                <li>✗ <strong>Ctrl+P</strong> ou <strong>Cmd+P</strong></li>
+                <li>✗ Clique direito → Imprimir</li>
+                <li>✗ Menu do navegador → Imprimir</li>
+              </ul>
+              <p className="text-sm text-zinc-700 mt-4">
                 Para imprimir o contrato com segurança, utilize o botão <strong className="text-brand-yellow">Imprimir</strong> no painel de controle após preencher todos os campos e realizar a assinatura.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
                 <p className="text-xs text-blue-900 font-semibold">
-                  ℹ️ Todos os dados devem estar preenchidos antes de imprimir ou salvar o PDF.
+                  ℹ️ Todos os dados devem estar preenchidos e assinados antes de imprimir ou salvar o PDF.
                 </p>
               </div>
             </div>
