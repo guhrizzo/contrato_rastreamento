@@ -246,7 +246,7 @@ export default function Home() {
 
       // Renderiza o elemento HTML para um canvas de alta resolução
       const canvas = await html2canvas(element, {
-        scale: 2.5,          // resolução premium super nítida
+        scale: 1.7,          // resolução premium super nítida
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
@@ -259,7 +259,7 @@ export default function Home() {
 
       // Dimensões A4 em mm
       const pdfWidth = 210;
-      const pdfHeight = 297;
+      const pdfHeight = 278;
 
       // Calcula a altura proporcional da imagem em mm
       const canvasWidthMm = pdfWidth;
@@ -380,7 +380,7 @@ export default function Home() {
             <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="px-4 py-2 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-sm rounded-md transition-colors"
+                className="px-4 py-2 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
               >
                 Entendi
               </button>
@@ -976,38 +976,38 @@ export default function Home() {
 
             </div>
 
-            {/* SEÇÃO DE ASSINATURA (Evitar quebra de página se possível) */}
-            <div className="mt-8 pt-8 border-t border-zinc-200 avoid-break flex flex-col justify-end grow">
+            {/* SEÇÃO DE ASSINATURA - FORÇA NOVA PÁGINA SE NECESSÁRIO */}
+            <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: 'auto', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
 
-              <div className="grid grid-cols-2 gap-12 text-center text-[9pt] mt-6">
+              <div className="grid grid-cols-2 gap-8 text-center text-[9pt] mt-6">
                 
                 {/* REPRESENTANTE CONTRATADA */}
                 <div className="flex flex-col items-center">
-                 <div className="h-16"></div>
-                  <div className="w-4/5 border-t border-zinc-400 my-1"></div>
-                  <p className="font-bold text-zinc-900">PROTECT RASTREAMENTO</p>
-                  <p className="text-[7.5pt] text-zinc-500 uppercase tracking-wider font-semibold">Representante Legal</p>
+                  <div className="h-12"></div>
+                  <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                  <p className="font-bold text-zinc-900 text-[8.5pt]">PROTECT RASTREAMENTO</p>
+                  <p className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">Representante Legal</p>
                 </div>
 
                 {/* CLIENTE CONTRATANTE */}
                 <div className="flex flex-col items-center">
-                  <div className="h-16 flex items-center justify-center">
+                  <div className="h-12 flex items-center justify-center">
                     {signatureImage ? (
                       <img
                         src={signatureImage}
                         alt="Assinatura do Contratante"
-                        className="max-h-16 object-contain"
+                        className="max-h-12 object-contain"
                       />
                     ) : (
-                      <div className="text-[7.5pt] text-zinc-400 italic">Aguardando assinatura digital...</div>
+                      <div className="text-[7pt] text-zinc-400 italic">Aguardando assinatura...</div>
                     )}
                   </div>
-                  <div className="w-4/5 border-t border-zinc-400 my-1"></div>
-                  <p className="font-bold text-zinc-900 truncate max-w-full">
+                  <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                  <p className="font-bold text-zinc-900 text-[8.5pt] truncate max-w-full">
                     {data.clientName || "CONTRATANTE"}
                   </p>
-                  <p className="text-[7.5pt] text-zinc-500 uppercase tracking-wider font-semibold">Contratante</p>
-                  {data.clientDoc && <p className="text-[7.5pt] text-zinc-500 font-mono">CPF/CNPJ: {data.clientDoc}</p>}
+                  <p className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">Contratante</p>
+                  {data.clientDoc && <p className="text-[7pt] text-zinc-500 font-mono">CPF/CNPJ: {data.clientDoc}</p>}
                 </div>
 
               </div>
