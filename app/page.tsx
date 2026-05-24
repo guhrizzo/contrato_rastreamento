@@ -347,7 +347,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="p-1 hover:bg-zinc-700 rounded transition-colors"
+                className="p-1 hover:bg-zinc-700 rounded transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-zinc-300" />
               </button>
