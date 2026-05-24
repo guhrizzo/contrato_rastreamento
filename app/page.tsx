@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -51,6 +51,7 @@ export default function Home() {
 
   const [activeTab, setActiveTab] = useState<"client" | "vehicle" | "plan" | "signature">("client");
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
 
   // Função de validação
   const isFormComplete = (): boolean => {
@@ -84,6 +85,20 @@ export default function Home() {
       ...prev,
       contractDate: prev.contractDate || `${day}/${month}/${year}`,
     }));
+  }, []);
+
+  // Previne a impressão via Ctrl+P
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        setShowPrintBlockDialog(true);
+        setTimeout(() => setShowPrintBlockDialog(false), 5000);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -175,6 +190,49 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container">
+      {/* MODAL DE BLOQUEIO DE IMPRESSÃO */}
+      {showPrintBlockDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-gradient-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-brand-yellow shrink-0" />
+                <h2 className="text-lg font-bold text-white">Impressão Bloqueada</h2>
+              </div>
+              <button
+                onClick={() => setShowPrintBlockDialog(false)}
+                className="p-1 hover:bg-zinc-700 rounded transition-colors"
+              >
+                <X className="w-5 h-5 text-zinc-300" />
+              </button>
+            </div>
+            
+            <div className="px-6 py-5 space-y-3">
+              <p className="text-sm text-zinc-700">
+                A impressão direta via <strong>Ctrl+P</strong> não é permitida nesta aplicação.
+              </p>
+              <p className="text-sm text-zinc-600">
+                Para imprimir o contrato com segurança, utilize o botão <strong className="text-brand-yellow">Imprimir</strong> no painel de controle após preencher todos os campos e realizar a assinatura.
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
+                <p className="text-xs text-blue-900 font-semibold">
+                  ℹ️ Todos os dados devem estar preenchidos antes de imprimir ou salvar o PDF.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
+              <button
+                onClick={() => setShowPrintBlockDialog(false)}
+                className="px-4 py-2 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-sm rounded-md transition-colors"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================= PAINEL DE CONTROLE (Oculto na impressão) ================= */}
       <aside className="w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm">
         
