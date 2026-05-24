@@ -87,51 +87,122 @@ export default function Home() {
     }));
   }, []);
 
-  // Previne a impressão via Ctrl+P
+  // ============================================================
+  // PROTEÇÃO ROBUSTA CONTRA IMPRESSÃO E CLIQUE DIREITO
+  // ============================================================
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-        e.preventDefault();
-        setShowPrintBlockDialog(true);
-        setTimeout(() => setShowPrintBlockDialog(false), 5000);
-      }
-    };
-
-    // Previne o menu de contexto (clique direito)
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
+    const showBlockDialog = () => {
       setShowPrintBlockDialog(true);
       setTimeout(() => setShowPrintBlockDialog(false), 5000);
     };
 
-    // Previne atalhos de impressão (F12, Ctrl+Shift+I, etc)
-    const handleKeyDownDev = (e: KeyboardEvent) => {
-      // F12 - Developer Tools
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Bloqueio de Ctrl+P / Cmd+P
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
+      }
+
+      // Bloqueio de F12 - Developer Tools
       if (e.key === 'F12') {
         e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
       }
-      // Ctrl+Shift+I - Developer Tools (Chrome, Firefox)
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'i') {
+
+      // Bloqueio de Ctrl+Shift+I - Developer Tools (Chrome, Firefox)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i') {
         e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
       }
-      // Ctrl+Shift+C - Element Inspector
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'c') {
+
+      // Bloqueio de Ctrl+Shift+C - Element Inspector
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
       }
-      // Ctrl+Shift+J - Console
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'j') {
+
+      // Bloqueio de Ctrl+Shift+J - Console (Chrome)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'j') {
         e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
+      }
+
+      // Bloqueio de Ctrl+Shift+K - Console (Firefox)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        e.stopPropagation();
+        showBlockDialog();
+        return;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('keydown', handleKeyDownDev);
+    // Previne o menu de contexto (clique direito) - GLOBAL
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      showBlockDialog();
+      return false;
+    };
+
+    // Bloqueia seleção de texto para proteger o contrato
+    const handleSelectStart = (e: Event) => {
+      // Permite seleção apenas no painel de controle (formulário)
+      const target = e.target as HTMLElement;
+      if (!target.closest('aside')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // Bloqueia cópia de dados do contrato
+    const handleCopy = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('#contract-pdf')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // Bloqueia corte de dados
+    const handleCut = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('#contract-pdf')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // Usa capture phase para garantir que captura o evento antes de qualquer outro listener
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('contextmenu', handleContextMenu, true);
+    window.addEventListener('selectstart', handleSelectStart, true);
+    window.addEventListener('copy', handleCopy, true);
+    window.addEventListener('cut', handleCut, true);
+
+    // Também adiciona no document para maior cobertura
+    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
+    document.addEventListener('selectstart', handleSelectStart, true);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('keydown', handleKeyDownDev);
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('contextmenu', handleContextMenu, true);
+      window.removeEventListener('selectstart', handleSelectStart, true);
+      window.removeEventListener('copy', handleCopy, true);
+      window.removeEventListener('cut', handleCut, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
+      document.removeEventListener('selectstart', handleSelectStart, true);
     };
   }, []);
 
@@ -154,12 +225,18 @@ export default function Home() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handlePrint = () => {
+    // Só permite impressão se o formulário estiver completo
+    if (!isFormComplete()) {
+      setShowPrintBlockDialog(true);
+      setTimeout(() => setShowPrintBlockDialog(false), 5000);
+      return;
+    }
     window.print();
   };
 
   const handleSavePDF = async () => {
     const element = document.getElementById("contract-pdf");
-    if (!element || isGeneratingPDF) return;
+    if (!element || isGeneratingPDF || !isFormComplete()) return;
 
     setIsGeneratingPDF(true);
     try {
@@ -223,12 +300,12 @@ export default function Home() {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container">
+    <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
       {/* MODAL DE BLOQUEIO DE IMPRESSÃO */}
       {showPrintBlockDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-gradient-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
+            <div className="bg-linear-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-6 h-6 text-brand-yellow shrink-0" />
                 <h2 className="text-lg font-bold text-white">Proteção Ativa</h2>
@@ -250,8 +327,10 @@ export default function Home() {
               </p>
               <ul className="text-sm text-zinc-600 space-y-1 ml-3">
                 <li>✗ <strong>Ctrl+P</strong> ou <strong>Cmd+P</strong></li>
-                <li>✗ Clique direito → Imprimir</li>
+                <li>✗ <strong>Clique direito</strong> do mouse</li>
                 <li>✗ Menu do navegador → Imprimir</li>
+                <li>✗ <strong>F12</strong> - Developer Tools</li>
+                <li>✗ <strong>Ctrl+Shift+I/C/J/K</strong> - Ferramentas de dev</li>
               </ul>
               <p className="text-sm text-zinc-700 mt-4">
                 Para imprimir o contrato com segurança, utilize o botão <strong className="text-brand-yellow">Imprimir</strong> no painel de controle após preencher todos os campos e realizar a assinatura.
@@ -736,11 +815,11 @@ export default function Home() {
       </aside>
 
       {/* ================= CONTÊINER DA VISUALIZAÇÃO DO CONTRATO (LADO DIREITO) ================= */}
-      <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen">
+      <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none" style={{ userSelect: 'none' }}>
         <div className="print-container w-full max-w-[210mm] transform scale-100 origin-top transition-transform duration-200">
           
           {/* A FOLHA A4 */}
-          <article id="contract-pdf" className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans">
+          <article id="contract-pdf" className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none" style={{ userSelect: 'none' }}>
             
             {/* CABEÇALHO DO CONTRATO */}
             <div className="flex items-center justify-between border-b-2 border-brand-black pb-4 mb-6">
