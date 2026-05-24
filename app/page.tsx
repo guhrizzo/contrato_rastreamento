@@ -271,18 +271,53 @@ export default function Home() {
         format: "a4",
       });
 
+      // Adiciona margem superior e inferior (em mm)
+      const marginTop = 0;
+      const marginBottom = 0;
+
       // Se o conteúdo for maior que uma página, pagina automaticamente
       if (canvasHeightMm <= pdfHeight) {
-        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidthMm, canvasHeightMm);
+        // Cabe em uma página
+        pdf.addImage(imgData, "JPEG", 0, marginTop, canvasWidthMm, canvasHeightMm);
       } else {
-        let yOffset = 0;
-        let remainingHeight = canvasHeightMm;
+        // Múltiplas páginas - divide o conteúdo corretamente
+        const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
+        let currentPage = 1;
+        let currentYPosition = 0;
 
-        while (remainingHeight > 0) {
-          pdf.addImage(imgData, "JPEG", 0, -yOffset, canvasWidthMm, canvasHeightMm);
-          remainingHeight -= pdfHeight;
-          yOffset += pdfHeight;
-          if (remainingHeight > 0) pdf.addPage();
+        while (currentYPosition < canvas.height) {
+          // Calcula a altura do recorte para esta página
+          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
+
+          // Cria um canvas temporário para o recorte
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = heightToCrop;
+          
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            // Desenha apenas a porção necessária
+            tempCtx.drawImage(
+              canvas,
+              0, currentYPosition,           // origem no canvas original
+              canvas.width, heightToCrop,    // tamanho do recorte
+              0, 0,                          // posição no canvas temporário
+              canvas.width, heightToCrop     // tamanho no canvas temporário
+            );
+          }
+
+          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
+
+          if (currentPage > 1) {
+            pdf.addPage();
+          }
+
+          // Calcula a altura em mm para esta página
+          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
+          pdf.addImage(croppedImgData, "JPEG", 0, marginTop, canvasWidthMm, heightInMm);
+
+          currentYPosition += heightToCrop;
+          currentPage++;
         }
       }
 
