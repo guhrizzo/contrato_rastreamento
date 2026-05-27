@@ -1,4 +1,4 @@
-"use client";
+﻿"use client"
 
 import React, { useState, useEffect } from "react";
 import SignatureCanvas from "./components/SignatureCanvas";
@@ -28,7 +28,6 @@ interface ContractData {
 }
 
 export default function Home() {
-  // Inicializamos com dados de exemplo realistas para dar o WOW-factor imediato
   const [data, setData] = useState<ContractData>({
     clientName: "",
     clientDoc: "",
@@ -52,6 +51,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"client" | "vehicle" | "plan" | "signature">("client");
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  // States para envio de email
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   // Função de validação
   const isFormComplete = (): boolean => {
@@ -156,7 +162,6 @@ export default function Home() {
 
     // Bloqueia seleção de texto para proteger o contrato
     const handleSelectStart = (e: Event) => {
-      // Permite seleção apenas no painel de controle (formulário)
       const target = e.target as HTMLElement;
       if (!target.closest('aside')) {
         e.preventDefault();
@@ -182,14 +187,12 @@ export default function Home() {
       }
     };
 
-    // Usa capture phase para garantir que captura o evento antes de qualquer outro listener
     window.addEventListener('keydown', handleKeyDown, true);
     window.addEventListener('contextmenu', handleContextMenu, true);
     window.addEventListener('selectstart', handleSelectStart, true);
     window.addEventListener('copy', handleCopy, true);
     window.addEventListener('cut', handleCut, true);
 
-    // Também adiciona no document para maior cobertura
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('selectstart', handleSelectStart, true);
@@ -222,10 +225,138 @@ export default function Home() {
     setSignatureImage(null);
   };
 
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  // ============================================================
+  // ENVIO DE EMAIL SEGURO VIA BACKEND
+  // ============================================================
+  const sendContractEmail = async () => {
+    if (!isFormComplete()) {
+      setEmailError("Preencha todos os campos antes de enviar o contrato.");
+      return;
+    }
+
+    if (!termsAccepted) {
+      setEmailError("Você deve aceitar os termos para enviar o contrato.");
+      return;
+    }
+
+    setEmailSending(true);
+    setEmailError(null);
+    setEmailSent(false);
+
+    try {
+      // Obtém o HTML do contrato
+      const element = document.getElementById("contract-pdf");
+      if (!element) {
+        throw new Error("Contrato não encontrado");
+      }
+
+      const htmlContent = element.innerHTML;
+      
+      const response = await fetch("/api/send-contract", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientEmail: data.clientEmail,
+          clientName: data.clientName,
+          contractHtml: htmlContent,
+        }),
+      });
+
+      const contentType = response.headers.get("content-type");
+      let responseData: any = {};
+      
+      if (contentType && contentType.includes("application/json")) {
+        responseData = await response.json();
+      } else {
+        const textError = await response.text();
+        throw new Error(textError || `Erro no servidor (${response.status})`);
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData.error || responseData.message || `Erro ${response.status} ao enviar email`);
+      }
+
+      setEmailSent(true);
+      setTermsAccepted(false);
+
+      // Mostra mensagem de sucesso
+      alert(`Contrato enviado para ${data.clientEmail} com sucesso!`);
+    } catch (err) {
+      console.error("Erro ao enviar email:", err);
+      const message = err instanceof Error ? err.message : "Erro desconhecido ao enviar email";
+      setEmailError(message);
+      alert(`Erro: ${message}`);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  // Seção de aceitação dos termos e envio
+  const renderTermsSection = () => (
+    <div className="mt-4 p-4 bg-zinc-50 border border-zinc-200 rounded-md">
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">
+        <p className="font-semibold mb-1">📧 Envio seguro do contrato</p>
+        <p>O contrato será enviado como visualização HTML para o email informado.</p>
+      </div>
+
+      {emailError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-xs text-red-900">
+          <p className="font-semibold">❌ {emailError}</p>
+        </div>
+      )}
+
+      {emailSent && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-xs text-green-900">
+          <p className="font-semibold">✅ Email enviado com sucesso!</p>
+        </div>
+      )}
+
+      <label className="flex items-start space-x-3 mb-3">
+        <input
+          type="checkbox"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          className="w-4 h-4 mt-0.5 accent-brand-yellow rounded cursor-pointer"
+        />
+        <span className="text-xs text-zinc-700 leading-relaxed">
+          Li e declaro que os dados estão corretos e autorizo o envio do contrato por email para{" "}
+          <strong>{data.clientEmail || "seu email"}</strong>. Acordo em receber comunicações relacionadas ao serviço.
+        </span>
+      </label>
+
+      <button
+        onClick={sendContractEmail}
+        disabled={!termsAccepted || emailSending || !isFormComplete()}
+        title={
+          !isFormComplete()
+            ? "Complete todos os campos para enviar"
+            : !termsAccepted
+            ? "Aceite os termos para enviar"
+            : ""
+        }
+        className="w-full flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase"
+      >
+        {emailSending ? (
+          <>
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Enviando...
+          </>
+        ) : (
+          <>
+            <Mail className="w-4 h-4" />
+            Enviar por Email
+          </>
+        )}
+      </button>
+    </div>
+  );
 
   const handlePrint = () => {
-    // Só permite impressão se o formulário estiver completo
     if (!isFormComplete()) {
       setShowPrintBlockDialog(true);
       setTimeout(() => setShowPrintBlockDialog(false), 5000);
@@ -240,28 +371,23 @@ export default function Home() {
 
     setIsGeneratingPDF(true);
     try {
-      // html2canvas-pro é um fork que suporta oklch(), oklab() e lab() do Tailwind CSS v4
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
 
-      // Renderiza o elemento HTML para um canvas de alta resolução
       const canvas = await html2canvas(element, {
-        scale: 1.7,          // resolução premium super nítida
+        scale: 1.7,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        // Informa a largura/altura real do A4 para o engine
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
-      // Dimensões A4 em mm
       const pdfWidth = 210;
-      const pdfHeight = 278;
+      const pdfHeight = 280;
 
-      // Calcula a altura proporcional da imagem em mm
       const canvasWidthMm = pdfWidth;
       const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
 
@@ -271,38 +397,31 @@ export default function Home() {
         format: "a4",
       });
 
-      // Adiciona margem superior e inferior (em mm)
       const marginTop = 0;
       const marginBottom = 0;
 
-      // Se o conteúdo for maior que uma página, pagina automaticamente
       if (canvasHeightMm <= pdfHeight) {
-        // Cabe em uma página
         pdf.addImage(imgData, "JPEG", 0, marginTop, canvasWidthMm, canvasHeightMm);
       } else {
-        // Múltiplas páginas - divide o conteúdo corretamente
         const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
         let currentPage = 1;
         let currentYPosition = 0;
 
         while (currentYPosition < canvas.height) {
-          // Calcula a altura do recorte para esta página
           const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
 
-          // Cria um canvas temporário para o recorte
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = canvas.width;
           tempCanvas.height = heightToCrop;
-          
+
           const tempCtx = tempCanvas.getContext('2d');
           if (tempCtx) {
-            // Desenha apenas a porção necessária
             tempCtx.drawImage(
               canvas,
-              0, currentYPosition,           // origem no canvas original
-              canvas.width, heightToCrop,    // tamanho do recorte
-              0, 0,                          // posição no canvas temporário
-              canvas.width, heightToCrop     // tamanho no canvas temporário
+              0, currentYPosition,
+              canvas.width, heightToCrop,
+              0, 0,
+              canvas.width, heightToCrop
             );
           }
 
@@ -312,7 +431,6 @@ export default function Home() {
             pdf.addPage();
           }
 
-          // Calcula a altura em mm para esta página
           const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
           pdf.addImage(croppedImgData, "JPEG", 0, marginTop, canvasWidthMm, heightInMm);
 
@@ -333,10 +451,9 @@ export default function Home() {
     }
   };
 
-
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
-      {/* MODAL DE BLOQUEIO DE IMPRESSÃO */}
+      {/* MODAL DE BLOQUEIO */}
       {showPrintBlockDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200">
@@ -352,14 +469,12 @@ export default function Home() {
                 <X className="w-5 h-5 text-zinc-300" />
               </button>
             </div>
-            
+
             <div className="px-6 py-5 space-y-3">
               <p className="text-sm text-zinc-700">
                 A impressão direta não é permitida nesta aplicação por razões de segurança.
               </p>
-              <p className="text-sm text-zinc-600">
-                Isso inclui:
-              </p>
+              <p className="text-sm text-zinc-600">Isso inclui:</p>
               <ul className="text-sm text-zinc-600 space-y-1 ml-3">
                 <li>✗ <strong>Ctrl+P</strong> ou <strong>Cmd+P</strong></li>
                 <li>✗ <strong>Clique direito</strong> do mouse</li>
@@ -368,11 +483,11 @@ export default function Home() {
                 <li>✗ <strong>Ctrl+Shift+I/C/J/K</strong> - Ferramentas de dev</li>
               </ul>
               <p className="text-sm text-zinc-700 mt-4">
-                Para imprimir o contrato com segurança, utilize o botão <strong className="text-brand-yellow">Imprimir</strong> no painel de controle após preencher todos os campos e realizar a assinatura.
+                Para imprimir com segurança, use o botão <strong className="text-brand-yellow">Imprimir</strong> após preencher todos os campos.
               </p>
               <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
                 <p className="text-xs text-blue-900 font-semibold">
-                  ℹ️ Todos os dados devem estar preenchidos e assinados antes de imprimir ou salvar o PDF.
+                  ℹ️ Complete todos os dados e assine antes de imprimir ou salvar em PDF.
                 </p>
               </div>
             </div>
@@ -389,54 +504,54 @@ export default function Home() {
         </div>
       )}
 
-      {/* ================= PAINEL DE CONTROLE (Oculto na impressão) ================= */}
+      {/* PAINEL DE CONTROLE */}
       <aside className="w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm">
-        
-        {/* CABEÇALHO DO PAINEL */}
-         <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
-           <div className="flex items-center justify-between w-full">
-             <div className="flex items-center gap-3">
-               <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
-               <div>
-                 <h1 className="font-extrabold text-lg uppercase tracking-wider flex items-center gap-1.5">
-                   Protect<span className="text-brand-yellow"> Rastreamento</span>
-                 </h1>
-                 <p className="text-[10px] text-zinc-400 font-semibold tracking-widest uppercase">
-                   Painel Corporativo de Contratos
-                 </p>
-               </div>
-             </div>
-             <div className="flex items-center gap-2">
-               {isFormComplete() ? (
-                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900 text-green-100 rounded-full text-xs font-semibold">
-                   <CheckCircle className="w-4 h-4" />
-                   Pronto para Assinar
-                 </div>
-               ) : (
-                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900 text-amber-100 rounded-full text-xs font-semibold">
-                   <AlertCircle className="w-4 h-4" />
-                   Incomplete
-                 </div>
-               )}
-             </div>
-           </div>
+
+        {/* CABEÇALHO */}
+        <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
+              <div>
+                <h1 className="font-extrabold text-lg uppercase tracking-wider flex items-center gap-1.5">
+                  Protect<span className="text-brand-yellow"> Rastreamento</span>
+                </h1>
+                <p className="text-[10px] text-zinc-400 font-semibold tracking-widest uppercase">
+                  Painel Corporativo de Contratos
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isFormComplete() ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900 text-green-100 rounded-full text-xs font-semibold">
+                  <CheckCircle className="w-4 h-4" />
+                  Pronto
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900 text-amber-100 rounded-full text-xs font-semibold">
+                  <AlertCircle className="w-4 h-4" />
+                  Incompleto
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-3 w-full">
-             <button
-               onClick={handlePrint}
-               disabled={isGeneratingPDF || !isFormComplete()}
-               title={!isFormComplete() ? "Preencha todos os campos e adicione a assinatura para imprimir" : ""}
-               className="flex items-center justify-center gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase cursor-pointer text-center disabled:opacity-50 disabled:cursor-not-allowed"
-             >
-               <Printer className="w-4 h-4 shrink-0" />
-               Imprimir
-             </button>
-             <button
-               onClick={handleSavePDF}
-               disabled={isGeneratingPDF || !isFormComplete()}
-               title={!isFormComplete() ? "Preencha todos os campos e adicione a assinatura para salvar em PDF" : ""}
-               className="flex items-center justify-center gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase cursor-pointer text-center disabled:opacity-60 disabled:cursor-not-allowed"
-             >
+            <button
+              onClick={handlePrint}
+              disabled={!isFormComplete() || isGeneratingPDF}
+              title={!isFormComplete() ? "Preencha todos os campos e assine para imprimir" : ""}
+              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Printer className="w-4 h-4 shrink-0" />
+              Imprimir
+            </button>
+            <button
+              onClick={handleSavePDF}
+              disabled={!isFormComplete() || isGeneratingPDF}
+              title={!isFormComplete() ? "Preencha todos os campos e assine para salvar em PDF" : ""}
+              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               {isGeneratingPDF ? (
                 <>
                   <svg className="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -467,7 +582,7 @@ export default function Home() {
           >
             <User className="w-4 h-4" /> Cliente
           </button>
-      
+
           <button
             onClick={() => setActiveTab("plan")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
@@ -478,6 +593,7 @@ export default function Home() {
           >
             <Settings className="w-4 h-4" /> Plano
           </button>
+
           <button
             onClick={() => setActiveTab("signature")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
@@ -490,12 +606,12 @@ export default function Home() {
           </button>
         </nav>
 
-        {/* FORMULÁRIO (Rolagem interna) */}
+        {/* FORMULÁRIO */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
-          {/* TAB: CONTRATANTE */}
+
+          {/* TAB: CLIENTE */}
           {activeTab === "client" && (
-            <div className="space-y-4 animate-fadeIn">
+            <div className="space-y-4">
               <div className="border-l-4 border-brand-yellow pl-3 mb-2">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Contratante
@@ -503,198 +619,198 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">Insira os dados cadastrais do cliente</p>
               </div>
 
-               <div className="grid grid-cols-1 gap-4">
-                 <div className="flex flex-col">
-                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                     <User className="w-3.5 h-3.5" />
-                     Nome Completo / Razão Social
-                   </label>
-                   <input
-                     type="text"
-                     name="clientName"
-                     value={data.clientName}
-                     onChange={handleChange}
-                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                     placeholder="Ex: Gustavo Sauro"
-                   />
-                 </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <User className="w-3.5 h-3.5" />
+                    Nome Completo / Razão Social
+                  </label>
+                  <input
+                    type="text"
+                    name="clientName"
+                    value={data.clientName}
+                    onChange={handleChange}
+                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    placeholder="Ex: Gustavo Sauro"
+                  />
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <IdCard className="w-3.5 h-3.5" />
-                       CPF ou CNPJ
-                     </label>
-                     <input
-                       type="text"
-                       name="clientDoc"
-                       value={data.clientDoc}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: 000.000.000-00"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <IdCard className="w-3.5 h-3.5" />
-                       RG ou CNH
-                     </label>
-                     <input
-                       type="text"
-                       name="clientRg"
-                       value={data.clientRg}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: 00.000.000-0"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <IdCard className="w-3.5 h-3.5" />
+                      CPF ou CNPJ
+                    </label>
+                    <input
+                      type="text"
+                      name="clientDoc"
+                      value={data.clientDoc}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: 000.000.000-00"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <IdCard className="w-3.5 h-3.5" />
+                      RG ou CNH
+                    </label>
+                    <input
+                      type="text"
+                      name="clientRg"
+                      value={data.clientRg}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: 00.000.000-0"
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Phone className="w-3.5 h-3.5" />
-                       Telefone / WhatsApp
-                     </label>
-                     <input
-                       type="text"
-                       name="clientPhone"
-                       value={data.clientPhone}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: (11) 99999-9999"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Mail className="w-3.5 h-3.5" />
-                       E-mail
-                     </label>
-                     <input
-                       type="email"
-                       name="clientEmail"
-                       value={data.clientEmail}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: cliente@provedor.com"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Phone className="w-3.5 h-3.5" />
+                      Telefone / WhatsApp
+                    </label>
+                    <input
+                      type="text"
+                      name="clientPhone"
+                      value={data.clientPhone}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: (11) 99999-9999"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" />
+                      E-mail
+                    </label>
+                    <input
+                      type="email"
+                      name="clientEmail"
+                      value={data.clientEmail}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: cliente@provedor.com"
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-3 gap-4">
-                   <div className="col-span-2 flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Building2 className="w-3.5 h-3.5" />
-                       Endereço (Rua, Av.)
-                     </label>
-                     <input
-                       type="text"
-                       name="clientAddress"
-                       value={data.clientAddress}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: Av. Paulista"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Hash className="w-3.5 h-3.5" />
-                       Número
-                     </label>
-                     <input
-                       type="text"
-                       name="clientNumber"
-                       value={data.clientNumber}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: 1000"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5" />
+                      Endereço (Rua, Av.)
+                    </label>
+                    <input
+                      type="text"
+                      name="clientAddress"
+                      value={data.clientAddress}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: Av. Paulista"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Hash className="w-3.5 h-3.5" />
+                      Número
+                    </label>
+                    <input
+                      type="text"
+                      name="clientNumber"
+                      value={data.clientNumber}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: 1000"
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <MapPin className="w-3.5 h-3.5" />
-                       Complemento
-                     </label>
-                     <input
-                       type="text"
-                       name="clientComp"
-                       value={data.clientComp}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: Apto 12"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <MapPin className="w-3.5 h-3.5" />
-                       Bairro
-                     </label>
-                     <input
-                       type="text"
-                       name="clientBairro"
-                       value={data.clientBairro}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: Centro"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      Complemento
+                    </label>
+                    <input
+                      type="text"
+                      name="clientComp"
+                      value={data.clientComp}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: Apto 12"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      Bairro
+                    </label>
+                    <input
+                      type="text"
+                      name="clientBairro"
+                      value={data.clientBairro}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: Centro"
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-3 gap-4">
-                   <div className="col-span-2 flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <MapPin className="w-3.5 h-3.5" />
-                       Cidade
-                     </label>
-                     <input
-                       type="text"
-                       name="clientCity"
-                       value={data.clientCity}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: São Paulo"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <MapPin className="w-3.5 h-3.5" />
-                       Estado
-                     </label>
-                     <input
-                       type="text"
-                       name="clientState"
-                       value={data.clientState}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: SP"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      Cidade
+                    </label>
+                    <input
+                      type="text"
+                      name="clientCity"
+                      value={data.clientCity}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: São Paulo"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      Estado
+                    </label>
+                    <input
+                      type="text"
+                      name="clientState"
+                      value={data.clientState}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: SP"
+                    />
+                  </div>
+                </div>
 
-                 <div className="flex flex-col">
-                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                     <MapPin className="w-3.5 h-3.5" />
-                     CEP
-                   </label>
-                   <input
-                     type="text"
-                     name="clientCep"
-                     value={data.clientCep}
-                     onChange={handleChange}
-                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                     placeholder="Ex: 01000-000"
-                   />
-                 </div>
-               </div>
+                <div className="flex flex-col">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    CEP
+                  </label>
+                  <input
+                    type="text"
+                    name="clientCep"
+                    value={data.clientCep}
+                    onChange={handleChange}
+                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    placeholder="Ex: 01000-000"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
-          {/* TAB: DETALHES DO PLANO */}
+          {/* TAB: PLANO */}
           {activeTab === "plan" && (
-            <div className="space-y-4 animate-fadeIn">
+            <div className="space-y-4">
               <div className="border-l-4 border-brand-yellow pl-3 mb-2">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Plano e Rastreamento
@@ -702,144 +818,146 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">Valores, modelo do rastreador e vencimentos</p>
               </div>
 
-               <div className="grid grid-cols-1 gap-4">
-                 <div className="flex flex-col">
-                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                     <Zap className="w-3.5 h-3.5" />
-                     Modelo do Rastreador
-                   </label>
-                   <input
-                     type="text"
-                     name="trackerModel"
-                     value={data.trackerModel}
-                     onChange={handleChange}
-                     className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                     placeholder="Ex: OBD-II Smart Tracker 4G"
-                   />
-                 </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <Zap className="w-3.5 h-3.5" />
+                    Modelo do Rastreador
+                  </label>
+                  <input
+                    type="text"
+                    name="trackerModel"
+                    value={data.trackerModel}
+                    onChange={handleChange}
+                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    placeholder="Ex: OBD-II Smart Tracker 4G"
+                  />
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <DollarSign className="w-3.5 h-3.5" />
-                       Taxa de Adesão/Instalação (R$)
-                     </label>
-                     <input
-                       type="text"
-                       name="installationFee"
-                       value={data.installationFee}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: 150,00"
-                     />
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <DollarSign className="w-3.5 h-3.5" />
-                       Mensalidade (R$)
-                     </label>
-                     <input
-                       type="text"
-                       name="monthlyFee"
-                       value={data.monthlyFee}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: 89,90"
-                     />
-                   </div>
-                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      Taxa de Adesão/Instalação (R$)
+                    </label>
+                    <input
+                      type="text"
+                      name="installationFee"
+                      value={data.installationFee}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: 150,00"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      Mensalidade (R$)
+                    </label>
+                    <input
+                      type="text"
+                      name="monthlyFee"
+                      value={data.monthlyFee}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: 89,90"
+                    />
+                  </div>
+                </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Calendar className="w-3.5 h-3.5" />
-                       Dia de Vencimento
-                     </label>
-                     <select
-                       name="dueDate"
-                       value={data.dueDate}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
-                     >
-                       <option value="05">Todo dia 05</option>
-                       <option value="10">Todo dia 10</option>
-                       <option value="15">Todo dia 15</option>
-                       <option value="20">Todo dia 20</option>
-                       <option value="25">Todo dia 25</option>
-                     </select>
-                   </div>
-                   <div className="flex flex-col">
-                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                       <Calendar className="w-3.5 h-3.5" />
-                       Data do Contrato
-                     </label>
-                     <input
-                       type="date"
-                       name="contractDate"
-                       value={data.contractDate}
-                       onChange={handleChange}
-                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                       placeholder="Ex: DD/MM/AAAA"
-                     />
-                   </div>
-                 </div>
-               </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      Dia de Vencimento
+                    </label>
+                    <select
+                      name="dueDate"
+                      value={data.dueDate}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
+                    >
+                      <option value="05">Todo dia 05</option>
+                      <option value="10">Todo dia 10</option>
+                      <option value="15">Todo dia 15</option>
+                      <option value="20">Todo dia 20</option>
+                      <option value="25">Todo dia 25</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      Data do Contrato
+                    </label>
+                    <input
+                      type="date"
+                      name="contractDate"
+                      value={data.contractDate}
+                      onChange={handleChange}
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-           {/* TAB: ASSINATURA */}
-           {activeTab === "signature" && (
-             <div className="space-y-4 animate-fadeIn">
-               <div className="border-l-4 border-brand-yellow pl-3 mb-2">
-                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
-                   <PenTool className="w-4 h-4" />
-                   Assinatura Digital
-                 </h3>
-                 <p className="text-xs text-zinc-500">Desenhe a assinatura do cliente abaixo para incluí-la no contrato</p>
-               </div>
+          {/* TAB: ASSINATURA */}
+          {activeTab === "signature" && (
+            <div className="space-y-4">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+                <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
+                  <PenTool className="w-4 h-4" />
+                  Assinatura Digital
+                </h3>
+                <p className="text-xs text-zinc-500">Desenhe a assinatura do cliente abaixo para incluí-la no contrato</p>
+              </div>
 
-               {!isFormComplete() && (
-                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 flex gap-2">
-                   <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                   <div>
-                     <p className="text-xs font-semibold text-amber-900">
-                       Complete todos os campos antes de assinar
-                     </p>
-                     <p className="text-xs text-amber-800 mt-1">
-                       Preencha os dados do cliente e do plano nas abas anteriores para habilitar a assinatura.
-                     </p>
-                   </div>
-                 </div>
-               )}
+              {!isFormComplete() && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 flex gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-amber-900">
+                      Complete todos os campos antes de assinar
+                    </p>
+                    <p className="text-xs text-amber-800 mt-1">
+                      Preencha os dados do cliente e do plano nas abas anteriores para habilitar a assinatura.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-               <div className="bg-white border border-zinc-100 p-4 rounded-xl shadow-sm">
-                 <SignatureCanvas
-                   onSave={handleSignatureSave}
-                   onClear={handleSignatureClear}
-                 />
-               </div>
+              <div className="bg-white border border-zinc-100 p-4 rounded-xl shadow-sm">
+                <SignatureCanvas
+                  onSave={handleSignatureSave}
+                  onClear={handleSignatureClear}
+                />
+              </div>
 
-               {signatureImage && (
-                 <div className="bg-zinc-50 border border-dashed border-zinc-200 p-4 rounded-xl text-center">
-                   <div className="flex items-center justify-center gap-2 mb-2">
-                     <CheckCircle className="w-4 h-4 text-green-600" />
-                     <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Assinatura Capturada com Sucesso!</span>
-                   </div>
-                   <div className="inline-block bg-white p-2 rounded border border-zinc-100">
-                     <img
-                       src={signatureImage}
-                       alt="Assinatura pré-visualização"
-                       className="max-h-20 max-w-full object-contain mx-auto"
-                     />
-                   </div>
-                 </div>
-               )}
-             </div>
-           )}
+              {signatureImage && (
+                <div className="bg-zinc-50 border border-dashed border-zinc-200 p-4 rounded-xl text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Assinatura Capturada!</span>
+                  </div>
+                  <div className="inline-block bg-white p-2 rounded border border-zinc-100">
+                    <img
+                      src={signatureImage}
+                      alt="Assinatura pré-visualização"
+                      className="max-h-20 max-w-full object-contain mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* SEÇÃO DE TERMOS E ENVIO POR EMAIL */}
+              {renderTermsSection()}
+            </div>
+          )}
 
         </div>
 
-        {/* FOOTER DO PAINEL */}
+        {/* FOOTER */}
         <footer className="p-4 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500">
           <a href="https://www.instagram.com/xfassessoria/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-black">
             Desenvolvido com <Heart className="w-3.5 h-3.5 fill-amber-500 text-amber-500 inline" /> por X Family
@@ -849,27 +967,25 @@ export default function Home() {
 
       </aside>
 
-      {/* ================= CONTÊINER DA VISUALIZAÇÃO DO CONTRATO (LADO DIREITO) ================= */}
+      {/* CONTÊINER DO CONTRATO */}
       <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none" style={{ userSelect: 'none' }}>
         <div className="print-container w-full max-w-[210mm] transform scale-100 origin-top transition-transform duration-200">
-          
-          {/* A FOLHA A4 */}
+
+          {/* A4 */}
           <article id="contract-pdf" className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none" style={{ userSelect: 'none' }}>
-            
-            {/* CABEÇALHO DO CONTRATO */}
+
+            {/* CABEÇALHO */}
             <div className="flex items-center justify-between border-b-2 border-brand-black pb-4 mb-6">
-              <div className="flex items-center gap-2">
-            <div className="flex items-center gap-3">
-              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
-              <div>
-                <h1 className="font-extrabold text-base uppercase tracking-wider">
-                  Protect<span className="text-brand-yellow"> Rastreamento</span>
-                </h1>
-                <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
-                  Segurança &amp; Rastreamento 
+              <div className="flex items-center gap-3">
+                <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
+                <div>
+                  <h1 className="font-extrabold text-base uppercase tracking-wider">
+                    Protect<span className="text-brand-yellow"> Rastreamento</span>
+                  </h1>
+                  <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
+                    Segurança &amp; Rastreamento
+                  </div>
                 </div>
-              </div>
-            </div>
               </div>
 
               <div className="text-right">
@@ -878,28 +994,26 @@ export default function Home() {
               </div>
             </div>
 
-            {/* TÍTULO DO CONTRATO */}
+            {/* TÍTULO */}
             <h2 className="text-center font-extrabold text-sm uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
               CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE MONITORAMENTO E RASTREAMENTO EM REGIME DE COMODATO
             </h2>
 
-            {/* CORPO DO TEXTO */}
+            {/* CORPO */}
             <div className="space-y-4 text-justify text-[9pt] leading-normal text-zinc-800">
-              
-              {/* QUALIFICAÇÃO DA CONTRATADA */}
+
               <p>
-                <strong>CONTRATADA:</strong> <strong>PROTECT RASTREAMENTO LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº <strong>12.345.678/0001-90</strong>, com sede na Avenida Paulista, nº 1000, CEP 01310-100, Bela Vista,  doravante denominada simplesmente <strong>CONTRATADA</strong>.
+                <strong>CONTRATADA:</strong> <strong>PROTECT RASTREAMENTO LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº <strong>12.345.678/0001-90</strong>, com sede na Avenida Paulista, nº 1000, CEP 01310-100, Bela Vista, doravante denominada simplesmente <strong>CONTRATADA</strong>.
               </p>
 
-              {/* QUALIFICAÇÃO DO CONTRATANTE */}
               <p>
-                <strong>CONTRATANTE:</strong> <strong>{data.clientName || "___________________________________________"}</strong>, 
-                inscrito(a) no CPF/CNPJ sob o nº <strong>{data.clientDoc || "_____________________"}</strong>, 
-                portador(a) do RG/CNH nº <strong>{data.clientRg || "_____________________"}</strong>, 
-                residente e domiciliado(a) na <strong>{data.clientAddress || "_________________________________"}</strong>, 
-                nº <strong>{data.clientNumber || "_______"}</strong>, {data.clientComp && <span>compl. <strong>{data.clientComp}</strong>,</span>} 
-                Bairro <strong>{data.clientBairro || "_________________"}</strong>, na cidade de <strong>{data.clientCity || "_________________"}</strong> - <strong>{data.clientState || "___"}</strong>, 
-                CEP <strong>{data.clientCep || "________"}</strong>, celular/WhatsApp <strong>{data.clientPhone || "_________________"}</strong>, 
+                <strong>CONTRATANTE:</strong> <strong>{data.clientName || "___________________________________________"}</strong>,
+                inscrito(a) no CPF/CNPJ sob o nº <strong>{data.clientDoc || "_____________________"}</strong>,
+                portador(a) do RG/CNH nº <strong>{data.clientRg || "_____________________"}</strong>,
+                residente e domiciliado(a) na <strong>{data.clientAddress || "_________________________________"}</strong>,
+                nº <strong>{data.clientNumber || "_______"}</strong>, {data.clientComp && <span>compl. <strong>{data.clientComp}</strong>,</span>}
+                Bairro <strong>{data.clientBairro || "_________________"}</strong>, na cidade de <strong>{data.clientCity || "_________________"}</strong> - <strong>{data.clientState || "___"}</strong>,
+                CEP <strong>{data.clientCep || "________"}</strong>, celular/WhatsApp <strong>{data.clientPhone || "_________________"}</strong>,
                 e-mail <strong>{data.clientEmail || "_________________________________"}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.
               </p>
 
@@ -907,15 +1021,13 @@ export default function Home() {
                 As partes acima identificadas têm, entre si, justo e acertado o presente Contrato, que se regerá pelas cláusulas e condições seguintes:
               </p>
 
-              {/* CLÁUSULAS */}
               <div>
                 <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                   CLÁUSULA PRIMEIRA – DO OBJETO
                 </h4>
                 <p>
-                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador modelo <strong>{data.trackerModel || "GPS/GPRS"}</strong> de propriedade da CONTRATADA, a ser instalado no veículo de propriedade do CONTRATANTE adiante descrito:
+                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador modelo <strong>{data.trackerModel || "GPS/GPRS"}</strong> de propriedade da CONTRATADA, a ser instalado no veículo de propriedade do CONTRATANTE.
                 </p>
-
               </div>
 
               <div>
@@ -923,7 +1035,7 @@ export default function Home() {
                   CLÁUSULA SEGUNDA – DO COMODATO DO EQUIPAMENTO
                 </h4>
                 <p>
-                  2.1. O equipamento rastreador descrito na cláusula anterior é de propriedade exclusiva da <strong>CONTRATADA</strong> e é entregue ao <strong>CONTRATANTE</strong> a título de COMODATO exclusivamente para a vigência deste contrato. 
+                  2.1. O equipamento rastreador descrito na cláusula anterior é de propriedade exclusiva da <strong>CONTRATADA</strong> e é entregue ao <strong>CONTRATANTE</strong> a título de COMODATO exclusivamente para a vigência deste contrato.
                   2.2. O CONTRATANTE obriga-se a conservar o equipamento em perfeito estado de funcionamento e conservação. Em caso de rescisão do contrato, por qualquer motivo, o CONTRATANTE compromete-se a devolver o equipamento nas mesmas condições em que o recebeu em até 10 (dez) dias úteis, sob pena de incorrer em multa equivalente ao valor de custo do equipamento, estipulado em R$ 450,00 (quatrocentos e cinquenta reais).
                 </p>
               </div>
@@ -933,8 +1045,8 @@ export default function Home() {
                   CLÁUSULA TERCEIRA – DO FUNCIONAMENTO E LIMITAÇÕES DO SERVIÇO
                 </h4>
                 <p>
-                  3.1. A tecnologia utilizada pela CONTRATADA consiste na transmissão de dados via rede celular GSM/GPRS e localização via satélite GPS. 
-                  3.2. O CONTRATANTE declara-se ciente de que o serviço poderá sofrer interrupções ou falhas decorrentes de fatores fora do controle da CONTRATADA, tais como ausência de sinal de telefonia celular no local, áreas de sombra, condições atmosféricas adversas ou ações intencionais de terceiros utilizando bloqueadores de sinal ("jammers"). 
+                  3.1. A tecnologia utilizada pela CONTRATADA consiste na transmissão de dados via rede celular GSM/GPRS e localização via satélite GPS.
+                  3.2. O CONTRATANTE declara-se ciente de que o serviço poderá sofrer interrupções ou falhas decorrentes de fatores fora do controle da CONTRATADA, tais como ausência de sinal de telefonia celular no local, áreas de sombra, condições atmosféricas adversas ou ações intencionais de terceiros utilizando bloqueadores de sinal ("jammers").
                   3.3. O rastreamento é uma ferramenta auxiliar de segurança, <strong>NÃO constituindo seguro contra roubo ou furto</strong>, não cabendo qualquer obrigação de indenização à CONTRATADA em caso de sinistro.
                 </p>
               </div>
@@ -976,12 +1088,11 @@ export default function Home() {
 
             </div>
 
-            {/* SEÇÃO DE ASSINATURA - FORÇA NOVA PÁGINA SE NECESSÁRIO */}
+            {/* ASSINATURA */}
             <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: 'auto', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
 
               <div className="grid grid-cols-2 gap-8 text-center text-[9pt] mt-6">
-                
-                {/* REPRESENTANTE CONTRATADA */}
+
                 <div className="flex flex-col items-center">
                   <div className="h-12"></div>
                   <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
@@ -989,7 +1100,6 @@ export default function Home() {
                   <p className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">Representante Legal</p>
                 </div>
 
-                {/* CLIENTE CONTRATANTE */}
                 <div className="flex flex-col items-center">
                   <div className="h-12 flex items-center justify-center">
                     {signatureImage ? (
