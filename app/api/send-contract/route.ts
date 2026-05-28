@@ -82,7 +82,7 @@ export async function POST(request: Request) {
             </p>
             
             <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-              Um novo contrato de prestação de serviços de rastreamento veicular e comodato foi preenchido e assinado digitalmente por <strong>${clientName}</strong> (Email: ${clientEmail}).
+              Um novo contrato de prestação de serviços de rastreamento foi preenchido e assinado digitalmente por <strong>${clientName}</strong> (Email: ${clientEmail}).
             </p>
 
             <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #ffd700; border-radius: 4px; margin: 20px 0;">

@@ -1,8 +1,8 @@
-﻿"use client"
+"use client"
 
 import React, { useState, useEffect } from "react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -20,12 +20,21 @@ interface ContractData {
   clientCep: string;
 
   // Rastreamento/Serviço
-  trackerModel: string;
-  installationFee: string;
-  monthlyFee: string;
+  selectedPlan: string;
   dueDate: string;
   contractDate: string;
 }
+
+const PLANS = [
+  { id: "basico_4g_moto", name: "Rastreamento Básico 4G (Moto) - Mensal", priceText: "R$ 59,90", detailText: "R$ 59,90 mensais", tracker: "Básico 4G (Moto)", billing: "Mensal" },
+  { id: "basico_4g_carro", name: "Rastreamento Básico 4G (Carro) - Mensal", priceText: "R$ 69,90", detailText: "R$ 69,90 mensais", tracker: "Básico 4G (Carro)", billing: "Mensal" },
+  { id: "basico_4g_bloqueio", name: "Rastreamento Básico 4G (Com Bloqueio) - Mensal", priceText: "R$ 79,90", detailText: "R$ 79,90 mensais", tracker: "Básico 4G com Bloqueio", billing: "Mensal" },
+  { id: "basico_tag_anual", name: "Rastreamento Básico TAG - Anual", priceText: "R$ 399,90", detailText: "R$ 399,90 anuais", tracker: "Básico TAG", billing: "Anual" },
+  { id: "obd2_4g_mensal", name: "Rastreamento OBD2 4G - Mensal", priceText: "R$ 69,90", detailText: "R$ 69,90 mensais", tracker: "OBD2 4G", billing: "Mensal" },
+  { id: "frota_telemetria", name: "Rastreamento Frota + Telemetria", priceText: "A partir de R$ 89,90 (Preço sob consulta)", detailText: "A partir de R$ 89,90 (preço sob consulta)", tracker: "Frota + Telemetria", billing: "Mensal (sob consulta)" },
+  { id: "satelital", name: "Rastreamento Satelital", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Satelital", billing: "Sob consulta" },
+  { id: "video_monitoramento", name: "Video Monitoramento", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Vídeo Monitoramento", billing: "Sob consulta" },
+];
 
 export default function Home() {
   const [data, setData] = useState<ContractData>({
@@ -41,9 +50,7 @@ export default function Home() {
     clientCity: "",
     clientState: "",
     clientCep: "",
-    trackerModel: "",
-    installationFee: "",
-    monthlyFee: "",
+    selectedPlan: "basico_4g_moto",
     dueDate: "05",
     contractDate: "",
   });
@@ -52,6 +59,7 @@ export default function Home() {
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
 
   // States para envio de email
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -73,9 +81,7 @@ export default function Home() {
       data.clientCity.trim() !== "" &&
       data.clientState.trim() !== "" &&
       data.clientCep.trim() !== "" &&
-      data.trackerModel.trim() !== "" &&
-      data.installationFee.trim() !== "" &&
-      data.monthlyFee.trim() !== "" &&
+      data.selectedPlan.trim() !== "" &&
       data.contractDate.trim() !== "" &&
       signatureImage !== null
     );
@@ -250,7 +256,10 @@ export default function Home() {
         throw new Error("Contrato não encontrado");
       }
 
-      const htmlContent = element.innerHTML;
+      let htmlContent = element.innerHTML;
+      
+      // Remove todas as tags <img> do HTML para o e-mail
+      htmlContent = htmlContent.replace(/<img[^>]*>/g, "");
       
       const response = await fetch("/api/send-contract", {
         method: "POST",
@@ -296,20 +305,33 @@ export default function Home() {
   // Seção de aceitação dos termos e envio
   const renderTermsSection = () => (
     <div className="mt-4 p-4 bg-zinc-50 border border-zinc-200 rounded-md">
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900">
-        <p className="font-semibold mb-1">📧 Envio seguro do contrato</p>
-        <p>O contrato será enviado como visualização HTML para o email informado.</p>
+      <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 leading-normal flex gap-2.5 items-start">
+        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-semibold mb-0.5">Liberação da Impressão e PDF</p>
+          <p>A impressão e o download em formato PDF <strong>somente serão liberados</strong> após o envio do contrato por e-mail ser realizado com sucesso.</p>
+        </div>
+      </div>
+
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900 flex gap-2.5 items-start">
+        <Mail className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-semibold mb-0.5">Envio seguro do contrato</p>
+          <p>O contrato será enviado como visualização HTML para o email informado.</p>
+        </div>
       </div>
 
       {emailError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-xs text-red-900">
-          <p className="font-semibold">❌ {emailError}</p>
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-xs text-red-900 flex gap-2 items-center">
+          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+          <p className="font-semibold">{emailError}</p>
         </div>
       )}
 
       {emailSent && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-xs text-green-900">
-          <p className="font-semibold">✅ Email enviado com sucesso!</p>
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-xs text-green-900 flex gap-2 items-center">
+          <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+          <p className="font-semibold">Email enviado com sucesso!</p>
         </div>
       )}
 
@@ -357,9 +379,8 @@ export default function Home() {
   );
 
   const handlePrint = () => {
-    if (!isFormComplete()) {
-      setShowPrintBlockDialog(true);
-      setTimeout(() => setShowPrintBlockDialog(false), 5000);
+    if (!isFormComplete() || !emailSent) {
+      alert("Você precisa preencher todos os campos, assinar e enviar o contrato por e-mail antes de imprimir.");
       return;
     }
     window.print();
@@ -367,7 +388,7 @@ export default function Home() {
 
   const handleSavePDF = async () => {
     const element = document.getElementById("contract-pdf");
-    if (!element || isGeneratingPDF || !isFormComplete()) return;
+    if (!element || isGeneratingPDF || !isFormComplete() || !emailSent) return;
 
     setIsGeneratingPDF(true);
     try {
@@ -451,6 +472,8 @@ export default function Home() {
     }
   };
 
+  const activePlan = PLANS.find(p => p.id === data.selectedPlan) || PLANS[0];
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
       {/* MODAL DE BLOQUEIO */}
@@ -485,9 +508,10 @@ export default function Home() {
               <p className="text-sm text-zinc-700 mt-4">
                 Para imprimir com segurança, use o botão <strong className="text-brand-yellow">Imprimir</strong> após preencher todos os campos.
               </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4 flex gap-2 items-start">
+                <Info className="w-4 h-4 text-blue-800 shrink-0 mt-0.5" />
                 <p className="text-xs text-blue-900 font-semibold">
-                  ℹ️ Complete todos os dados e assine antes de imprimir ou salvar em PDF.
+                  Complete todos os dados e assine antes de imprimir ou salvar em PDF.
                 </p>
               </div>
             </div>
@@ -539,8 +563,14 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-3 w-full">
             <button
               onClick={handlePrint}
-              disabled={!isFormComplete() || isGeneratingPDF}
-              title={!isFormComplete() ? "Preencha todos os campos e assine para imprimir" : ""}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete() 
+                  ? "Preencha todos os campos e assine para habilitar" 
+                  : !emailSent 
+                  ? "Envie o contrato por e-mail primeiro para liberar a impressão" 
+                  : "Imprimir contrato"
+              }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer className="w-4 h-4 shrink-0" />
@@ -548,8 +578,14 @@ export default function Home() {
             </button>
             <button
               onClick={handleSavePDF}
-              disabled={!isFormComplete() || isGeneratingPDF}
-              title={!isFormComplete() ? "Preencha todos os campos e assine para salvar em PDF" : ""}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete() 
+                  ? "Preencha todos os campos e assine para habilitar" 
+                  : !emailSent 
+                  ? "Envie o contrato por e-mail primeiro para liberar o PDF" 
+                  : "Salvar contrato em PDF"
+              }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isGeneratingPDF ? (
@@ -568,6 +604,14 @@ export default function Home() {
               )}
             </button>
           </div>
+          {!emailSent && (
+            <div className="mt-3.5 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[10px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
+              <AlertTriangle className="w-3.5 h-3.5 text-brand-yellow shrink-0 mt-0.5" />
+              <span>
+                A impressão e download do PDF só serão liberados após você preencher todos os dados, assinar e clicar em <strong className="text-brand-yellow font-bold">Enviar por Email</strong> na aba "Assinar".
+              </span>
+            </div>
+          )}
         </header>
 
         {/* NAVEGAÇÃO DE ABAS */}
@@ -815,54 +859,80 @@ export default function Home() {
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Plano e Rastreamento
                 </h3>
-                <p className="text-xs text-zinc-500">Valores, modelo do rastreador e vencimentos</p>
+                <p className="text-xs text-zinc-500">Selecione o plano de rastreamento e vencimentos</p>
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                <div className="flex flex-col">
+                <div className="flex flex-col relative">
                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5" />
-                    Modelo do Rastreador
+                    Plano de Rastreamento
                   </label>
-                  <input
-                    type="text"
-                    name="trackerModel"
-                    value={data.trackerModel}
-                    onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                    placeholder="Ex: OBD-II Smart Tracker 4G"
-                  />
-                </div>
+                  
+                  {/* Botão de Controle do Dropdown */}
+                  <button
+                    type="button"
+                    onClick={() => setIsPlanDropdownOpen(!isPlanDropdownOpen)}
+                    className="w-full flex items-center justify-between text-left p-3.5 border border-zinc-200 rounded-lg bg-zinc-50 hover:bg-zinc-100/50 hover:border-zinc-300 active:bg-zinc-100 focus:outline-none focus:border-brand-black transition-all duration-150 cursor-pointer shadow-xs"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Plano Selecionado</span>
+                      <span className="text-sm font-bold text-zinc-900 leading-tight">{activePlan.name}</span>
+                      <span className="text-xs text-zinc-500 font-semibold">{activePlan.tracker} ({activePlan.billing})</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2.5 py-1 bg-brand-yellow/15 text-brand-black border border-brand-yellow/30 font-bold text-xs rounded-full shadow-2xs whitespace-nowrap">
+                        {activePlan.priceText}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-200 shrink-0 ${isPlanDropdownOpen ? 'transform rotate-180 text-brand-black' : ''}`} />
+                    </div>
+                  </button>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      Taxa de Adesão/Instalação (R$)
-                    </label>
-                    <input
-                      type="text"
-                      name="installationFee"
-                      value={data.installationFee}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 150,00"
+                  {/* Backdrop para fechar ao clicar fora */}
+                  {isPlanDropdownOpen && (
+                    <div 
+                      className="fixed inset-0 z-40 cursor-default" 
+                      onClick={() => setIsPlanDropdownOpen(false)}
                     />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      Mensalidade (R$)
-                    </label>
-                    <input
-                      type="text"
-                      name="monthlyFee"
-                      value={data.monthlyFee}
-                      onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 89,90"
-                    />
-                  </div>
+                  )}
+
+                  {/* Lista de Opções Premium */}
+                  {isPlanDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1.5 bg-white border border-zinc-200/90 rounded-lg shadow-xl max-h-[320px] overflow-y-auto divide-y divide-zinc-100/80 animate-in fade-in slide-in-from-top-2 duration-150">
+                      {PLANS.map((plan) => {
+                        const isSelected = plan.id === data.selectedPlan;
+                        return (
+                          <button
+                            key={plan.id}
+                            type="button"
+                            onClick={() => {
+                              setData((prev) => ({ ...prev, selectedPlan: plan.id }));
+                              setIsPlanDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between text-left p-3.5 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${
+                              isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
+                            }`}
+                          >
+                            <div className="flex flex-col gap-0.5 pr-2">
+                              <span className={`text-sm font-bold leading-tight ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
+                                {plan.name}
+                              </span>
+                              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider">
+                                {plan.tracker} • {plan.billing}
+                              </span>
+                            </div>
+                            <span className={`px-2.5 py-1 text-xs font-bold rounded-full border shrink-0 ${
+                              isSelected 
+                                ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs' 
+                                : 'bg-zinc-50 text-zinc-600 border-zinc-200'
+                            }`}>
+                              {plan.priceText}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -894,7 +964,7 @@ export default function Home() {
                       name="contractDate"
                       value={data.contractDate}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-2.5 border cursor-pointer border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     />
                   </div>
                 </div>
@@ -1026,7 +1096,7 @@ export default function Home() {
                   CLÁUSULA PRIMEIRA – DO OBJETO
                 </h4>
                 <p>
-                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador modelo <strong>{data.trackerModel || "GPS/GPRS"}</strong> de propriedade da CONTRATADA, a ser instalado no veículo de propriedade do CONTRATANTE.
+                  1.1. O presente instrumento tem por objeto a prestação de serviços de rastreamento pela <strong>CONTRATADA</strong>, bem como a cessão em regime de <strong>COMODATO</strong> (empréstimo gratuito) de 01 (um) equipamento rastreador de propriedade da CONTRATADA compatível com o plano selecionado (<strong>{activePlan.tracker}</strong>), a ser instalado no veículo de propriedade do CONTRATANTE.
                 </p>
               </div>
 
@@ -1056,14 +1126,10 @@ export default function Home() {
                   CLÁUSULA QUARTA – DOS VALORES E FORMA DE PAGAMENTO
                 </h4>
                 <p>
-                  4.1. Como contraprestação pelos serviços de monitoramento e cessão do equipamento, o <strong>CONTRATANTE</strong> pagará à <strong>CONTRATADA</strong>:
+                  4.1. Como contraprestação pelos serviços de monitoramento e cessão do equipamento em comodato, o <strong>CONTRATANTE</strong> pagará à <strong>CONTRATADA</strong> o valor referente ao plano contratado: <strong>{activePlan.name} ({activePlan.detailText})</strong>, com vencimento no <strong>dia {data.dueDate || "__"}</strong> de cada período correspondente.
                 </p>
-                <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5">
-                  <li>Taxa de instalação/ativação no valor de <strong>R$ {data.installationFee || "___,__"}</strong> paga em parcela única na assinatura deste contrato.</li>
-                  <li>Mensalidade recorrente no valor de <strong>R$ {data.monthlyFee || "___,__"}</strong>, vencendo no <strong>dia {data.dueDate || "__"}</strong> de cada mês subsequente ao início dos serviços.</li>
-                </ul>
                 <p className="mt-1">
-                  4.2. O atraso no pagamento acarretará multa de 2% (dois por cento) sobre o valor da mensalidade acrescido de juros de mora de 1% ao mês. O inadimplemento superior a 15 (quinze) dias ensejará a suspensão dos serviços e acima de 30 (trinta) dias a rescisão contratual imediata e encaminhamento aos órgãos de proteção ao crédito.
+                  4.2. O atraso no pagamento acarretará multa de 2% (dois por cento) sobre o valor devido acrescido de juros de mora de 1% ao mês. O inadimplemento superior a 15 (quinze) dias ensejará a suspensão dos serviços e acima de 30 (trinta) dias a rescisão contratual imediata e encaminhamento aos órgãos de proteção ao crédito.
                 </p>
               </div>
 
