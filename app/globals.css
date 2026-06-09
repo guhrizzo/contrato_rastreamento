@@ -65,6 +65,14 @@ img {
   flex-direction: column;
 }
 
+.a4-wrapper {
+  width: 100%;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
 /* Regras de Impressão e Geração de PDF */
 @media print {
   @page {

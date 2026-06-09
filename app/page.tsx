@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SignatureCanvas from "./components/SignatureCanvas";
 import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info } from "lucide-react";
 
@@ -60,6 +60,35 @@ export default function Home() {
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
+
+  // States para responsividade no celular
+  const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1024);
+  const [contractHeight, setContractHeight] = useState<number>(1123);
+  const contractRef = useRef<HTMLDivElement | null>(null);
+
+  // Listener para redimensionamento de janela
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Observe o tamanho real da página do contrato para gerenciar o wrap height
+  useEffect(() => {
+    if (!contractRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContractHeight(entry.target.clientHeight);
+      }
+    });
+    resizeObserver.observe(contractRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const scale = windowWidth < 794 ? (windowWidth - 32) / 794 : 1;
 
   // States para envio de email
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -476,6 +505,30 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
+      {/* SELETOR MOBILE */}
+      <div className="flex lg:hidden sticky top-0 bg-brand-black border-b border-zinc-800 z-30 no-print shadow-md">
+        <button
+          onClick={() => setMobileTab("form")}
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+            mobileTab === "form"
+              ? "border-brand-yellow text-brand-yellow bg-zinc-900/10"
+              : "border-transparent text-zinc-400 hover:text-white"
+          }`}
+        >
+          Editar Contrato
+        </button>
+        <button
+          onClick={() => setMobileTab("preview")}
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+            mobileTab === "preview"
+              ? "border-brand-yellow text-brand-yellow bg-zinc-900/10"
+              : "border-transparent text-zinc-400 hover:text-white"
+          }`}
+        >
+          Visualizar Documento
+        </button>
+      </div>
+
       {/* MODAL DE BLOQUEIO */}
       {showPrintBlockDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -529,7 +582,7 @@ export default function Home() {
       )}
 
       {/* PAINEL DE CONTROLE */}
-      <aside className="w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm">
+      <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
 
         {/* CABEÇALHO */}
         <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
@@ -1037,225 +1090,245 @@ export default function Home() {
       </aside>
 
       {/* CONTÊINER DO CONTRATO */}
-      <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none" style={{ userSelect: 'none' }}>
-        <div className="print-container w-full max-w-[210mm] transform scale-100 origin-top transition-transform duration-200">
+      <main 
+        className={`flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${
+          mobileTab === "preview" ? "flex" : "hidden lg:flex"
+        }`} 
+        style={{ userSelect: "none" }}
+      >
+        <div 
+          className="a4-wrapper" 
+          style={{ height: windowWidth < 794 ? `${contractHeight * scale}px` : "auto" }}
+        >
+          <div 
+            className="print-container w-full max-w-[210mm] transition-transform duration-200"
+            style={{
+              transform: windowWidth < 794 ? `scale(${scale})` : "none",
+              transformOrigin: "top center",
+            }}
+          >
+            <article 
+              ref={contractRef}
+              id="contract-pdf" 
+              className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none" 
+              style={{ userSelect: "none" }}
+            >
 
-          <article id="contract-pdf" className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none" style={{ userSelect: 'none' }}>
+              {/* CABEÇALHO */}
+              <div className="flex items-center justify-between border-b-2 border-brand-black pb-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
+                  <div>
+                    <h1 className="font-extrabold text-base uppercase tracking-wider">
+                      Protect<span className="text-brand-yellow"> Rastreamento</span>
+                    </h1>
+                    <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
+                      Segurança &amp; Rastreamento
+                    </div>
+                  </div>
+                </div>
 
-            {/* CABEÇALHO */}
-            <div className="flex items-center justify-between border-b-2 border-brand-black pb-4 mb-6">
-              <div className="flex items-center gap-3">
-                <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
+                <div className="text-right">
+                  <div className="text-[8pt] font-bold text-zinc-700">INSTRUMENTO PARTICULAR</div>
+                  <div className="text-[7pt] font-semibold text-zinc-500 uppercase tracking-wider">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</div>
+                </div>
+              </div>
+
+              {/* TÍTULO */}
+              <h2 className="text-center font-extrabold text-xs uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
+                CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR
+              </h2>
+
+              {/* CORPO */}
+              <div className="space-y-4 text-justify text-[9pt] leading-normal text-zinc-800">
+
+                <p>
+                  <strong>CONTRATADA:</strong> <strong>GRUPO PROTECT LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob nº <strong>42.818.864/0001-65</strong>, nome fantasia <strong>ProtectRastreamento.com</strong>, com sede na Rua General Andrade Neves, 622 – Bairro Grajaú – Belo Horizonte – MG – CEP 30431-128, telefone +55 (31) 3371-8600, e-mail info@protectrastreamento.com, doravante denominada simplesmente <strong>CONTRATADA</strong>.
+                </p>
+
+                <p>
+                  <strong>CONTRATANTE:</strong><br/>
+                  Nome: <strong>{data.clientName || "___________________________________________"}</strong><br/>
+                  CPF/CNPJ: <strong>{data.clientDoc || "_____________________"}</strong><br/>
+                  Endereço: <strong>{data.clientAddress || "_________________________________"}, nº {data.clientNumber || "___"} - {data.clientBairro || "_________"} - {data.clientCity || "_______"}/{data.clientState || "__"} - CEP {data.clientCep || "________"}</strong><br/>
+                  Telefone: <strong>{data.clientPhone || "_________________"}</strong><br/>
+                  E-mail: <strong>{data.clientEmail || "_________________________________"}</strong>
+                </p>
+
+                <p>
+                  As partes resolvem firmar o presente Contrato de Prestação de Serviços de Rastreamento Veicular, mediante as seguintes cláusulas:
+                </p>
+
                 <div>
-                  <h1 className="font-extrabold text-base uppercase tracking-wider">
-                    Protect<span className="text-brand-yellow"> Rastreamento</span>
-                  </h1>
-                  <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
-                    Segurança &amp; Rastreamento
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <div className="text-[8pt] font-bold text-zinc-700">INSTRUMENTO PARTICULAR</div>
-                <div className="text-[7pt] font-semibold text-zinc-500 uppercase tracking-wider">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</div>
-              </div>
-            </div>
-
-            {/* TÍTULO */}
-            <h2 className="text-center font-extrabold text-xs uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
-              CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR
-            </h2>
-
-            {/* CORPO */}
-            <div className="space-y-4 text-justify text-[9pt] leading-normal text-zinc-800">
-
-              <p>
-                <strong>CONTRATADA:</strong> <strong>GRUPO PROTECT LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob nº <strong>42.818.864/0001-65</strong>, nome fantasia <strong>ProtectRastreamento.com</strong>, com sede na Rua General Andrade Neves, 622 – Bairro Grajaú – Belo Horizonte – MG – CEP 30431-128, telefone +55 (31) 3371-8600, e-mail info@protectrastreamento.com, doravante denominada simplesmente <strong>CONTRATADA</strong>.
-              </p>
-
-              <p>
-                <strong>CONTRATANTE:</strong><br/>
-                Nome: <strong>{data.clientName || "___________________________________________"}</strong><br/>
-                CPF/CNPJ: <strong>{data.clientDoc || "_____________________"}</strong><br/>
-                Endereço: <strong>{data.clientAddress || "_________________________________"}, nº {data.clientNumber || "___"} - {data.clientBairro || "_________"} - {data.clientCity || "_______"}/{data.clientState || "__"} - CEP {data.clientCep || "________"}</strong><br/>
-                Telefone: <strong>{data.clientPhone || "_________________"}</strong><br/>
-                E-mail: <strong>{data.clientEmail || "_________________________________"}</strong>
-              </p>
-
-              <p>
-                As partes resolvem firmar o presente Contrato de Prestação de Serviços de Rastreamento Veicular, mediante as seguintes cláusulas:
-              </p>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 1 – OBJETO
-                </h4>
-                <p>
-                  O presente contrato tem como objeto a prestação de serviços de rastreamento, monitoramento e localização veicular, por meio de tecnologia GPS/GSM ou similar, disponibilizada pela CONTRATADA.
-                </p>
-                <p className="mt-1 font-semibold text-[8.5pt]">O serviço inclui:</p>
-                <ul className="list-disc list-inside ml-2 space-y-0.5 text-[8.5pt]">
-                  <li>Monitoramento da localização do veículo</li>
-                  <li>Acesso à plataforma de rastreamento</li>
-                  <li>Suporte técnico</li>
-                  <li>Localização do veículo quando solicitado.</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 2 – NATUREZA DO SERVIÇO
-                </h4>
-                <p>
-                  A CONTRATADA não é seguradora. O serviço prestado consiste exclusivamente em rastreamento e monitoramento do veículo, não havendo garantia de:
-                </p>
-                <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5 text-[8.5pt]">
-                  <li>Recuperação do veículo em caso de furto ou roubo</li>
-                  <li>Prevenção de crimes</li>
-                  <li>Funcionamento contínuo em locais sem cobertura de sinal.</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 3 – LIMITAÇÃO DE RESPONSABILIDADE
-                </h4>
-                <p>
-                  A CONTRATADA não será responsável por perdas ou danos, incluindo: roubo ou furto do veículo, danos materiais, lucros cessantes, interrupções de sinal, falhas de rede GSM/GPS, e bloqueio de sinal por terceiros. A CONTRATADA compromete-se apenas a empregar os recursos tecnológicos disponíveis para auxiliar na localização do veículo.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 4 – EQUIPAMENTO EM COMODATO
-                </h4>
-                <p>
-                  O equipamento rastreador instalado no veículo permanece como propriedade exclusiva da CONTRATADA, sendo cedido ao CONTRATANTE em regime de comodato. O CONTRATANTE compromete-se a não violar ou remover o equipamento, não permitir que terceiros manipulem o dispositivo, e comunicar imediatamente qualquer problema. Em caso de dano, perda ou retirada indevida, o CONTRATANTE deverá pagar o valor do equipamento.
-                </p>
-                <p className="mt-1 text-[8.5pt]">
-                  <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 5 – PAGAMENTO
-                </h4>
-                <p>
-                  O CONTRATANTE pagará à CONTRATADA o valor mensal fixado de acordo com o plano de serviço selecionado:
-                </p>
-                <p className="mt-1 font-bold text-[9.5pt]">
-                  Mensalidade: {activePlan.priceText} ({activePlan.detailText})
-                </p>
-                <p>
-                  Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
-                </p>
-                <p className="mt-1">
-                  O não pagamento poderá resultar em: suspensão do serviço, cancelamento do contrato, e cobrança judicial ou extrajudicial.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 6 – INADIMPLÊNCIA
-                </h4>
-                <p>
-                  O atraso no pagamento implicará em multa de 2%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 7 – PRAZO DE CONTRATO
-                </h4>
-                <p>
-                  O presente contrato possui prazo mínimo de 12 meses. Após esse período, passa a vigorar por prazo indeterminado.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 8 – CANCELAMENTO
-                </h4>
-                <p>
-                  Em caso de cancelamento antes do prazo mínimo, será cobrada multa correspondente a 30% do valor restante do contrato. Também deverá ocorrer a devolução do equipamento rastreador.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 9 – RETIRADA DO EQUIPAMENTO
-                </h4>
-                <p>
-                  Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor padrão de <strong>R$ 1.000,00</strong>.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 10 – PRIVACIDADE E LGPD
-                </h4>
-                <p>
-                  Os dados coletados pelo sistema de rastreamento serão utilizados exclusivamente para prestação do serviço, segurança do cliente, e atendimento e suporte. A CONTRATADA compromete-se a cumprir a Lei Geral de Proteção de Dados – LGPD (Lei 13.709/2018).
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
-                  CLÁUSULA 11 – FORO
-                </h4>
-                <p>
-                  Fica eleito o foro da comarca de <strong>Belo Horizonte – MG</strong> para dirimir quaisquer dúvidas decorrentes deste contrato.
-                </p>
-              </div>
-
-            </div>
-
-            {/* ASSINATURA */}
-            <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: 'auto', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-
-              <div className="text-xs text-zinc-600 mb-6 font-semibold flex items-center justify-between">
-                <span>Declaração de Aceite: [X] Li e concordo com os termos deste contrato.</span>
-                <span>Local e data: Belo Horizonte, {data.contractDate || "___/___/_____"}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 text-center text-[9pt]">
-
-                <div className="flex flex-col items-center">
-                  <div className="h-16 flex items-center justify-center">
-                    <span className="text-[7.5pt] text-zinc-500 font-bold uppercase tracking-wider">CONTRATADA</span>
-                  </div>
-                  <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
-                  <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
-                  <p className="text-[7pt] text-zinc-500 font-mono">CNPJ: 42.818.864/0001-65</p>
-                </div>
-
-                <div className="flex flex-col items-center">
-                  <div className="h-16 flex items-center justify-center">
-                    {signatureImage ? (
-                      <img
-                        src={signatureImage}
-                        alt="Assinatura do Contratante"
-                        className="max-h-12 object-contain"
-                      />
-                    ) : (
-                      <div className="text-[7pt] text-zinc-400 italic font-medium">Aguardando assinatura digital...</div>
-                    )}
-                  </div>
-                  <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
-                  <p className="font-bold text-zinc-900 text-[8.5pt] truncate max-w-full">
-                    {data.clientName || "CONTRATANTE"}
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 1 – OBJETO
+                  </h4>
+                  <p>
+                    O presente contrato tem como objeto a prestação de serviços de rastreamento, monitoramento e localização veicular, por meio de tecnologia GPS/GSM ou similar, disponibilizada pela CONTRATADA.
                   </p>
-                  <p className="text-[7pt] text-zinc-500 font-mono">
-                    {data.clientDoc ? `CPF/CNPJ: ${data.clientDoc}` : "CPF/CNPJ do Contratante"}
+                  <p className="mt-1 font-semibold text-[8.5pt]">O serviço inclui:</p>
+                  <ul className="list-disc list-inside ml-2 space-y-0.5 text-[8.5pt]">
+                    <li>Monitoramento da localização do veículo</li>
+                    <li>Acesso à plataforma de rastreamento</li>
+                    <li>Suporte técnico</li>
+                    <li>Localização do veículo quando solicitado.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 2 – NATUREZA DO SERVIÇO
+                  </h4>
+                  <p>
+                    A CONTRATADA não é seguradora. O serviço prestado consiste exclusivamente em rastreamento e monitoramento do veículo, não havendo garantia de:
+                  </p>
+                  <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5 text-[8.5pt]">
+                    <li>Recuperação do veículo em caso de furto ou roubo</li>
+                    <li>Prevenção de crimes</li>
+                    <li>Funcionamento contínuo em locais sem cobertura de sinal.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 3 – LIMITAÇÃO DE RESPONSABILIDADE
+                  </h4>
+                  <p>
+                    A CONTRATADA não será responsável por perdas ou danos, incluindo: roubo ou furto do veículo, danos materiais, lucros cessantes, interrupções de sinal, falhas de rede GSM/GPS, e bloqueio de sinal por terceiros. A CONTRATADA compromete-se apenas a empregar os recursos tecnológicos disponíveis para auxiliar na localização do veículo.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 4 – EQUIPAMENTO EM COMODATO
+                  </h4>
+                  <p>
+                    O equipamento rastreador instalado no veículo permanece como propriedade exclusiva da CONTRATADA, sendo cedido ao CONTRATANTE em regime de comodato. O CONTRATANTE compromete-se a não violar ou remover o equipamento, não permitir que terceiros manipulem o dispositivo, e comunicar imediatamente qualquer problema. Em caso de dano, perda ou retirada indevida, o CONTRATANTE deverá pagar o valor do equipamento.
+                  </p>
+                  <p className="mt-1 text-[8.5pt]">
+                    <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 5 – PAGAMENTO
+                  </h4>
+                  <p>
+                    O CONTRATANTE pagará à CONTRATADA o valor mensal fixado de acordo com o plano de serviço selecionado:
+                  </p>
+                  <p className="mt-1 font-bold text-[9.5pt]">
+                    Mensalidade: {activePlan.priceText} ({activePlan.detailText})
+                  </p>
+                  <p>
+                    Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
+                  </p>
+                  <p className="mt-1">
+                    O não pagamento poderá resultar em: suspensão do serviço, cancelamento do contrato, e cobrança judicial ou extrajudicial.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 6 – INADIMPLÊNCIA
+                  </h4>
+                  <p>
+                    O atraso no pagamento implicará em multa de 2%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 7 – PRAZO DE CONTRATO
+                  </h4>
+                  <p>
+                    O presente contrato possui prazo mínimo de 12 meses. Após esse período, passa a vigorar por prazo indeterminado.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 8 – CANCELAMENTO
+                  </h4>
+                  <p>
+                    Em caso de cancelamento antes do prazo mínimo, será cobrada multa correspondente a 30% do valor restante do contrato. Também deverá ocorrer a devolução do equipamento rastreador.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 9 – RETIRADA DO EQUIPAMENTO
+                  </h4>
+                  <p>
+                    Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor padrão de <strong>R$ 1.000,00</strong>.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 10 – PRIVACIDADE E LGPD
+                  </h4>
+                  <p>
+                    Os dados coletados pelo sistema de rastreamento serão utilizados exclusivamente para prestação do serviço, segurança do cliente, e atendimento e suporte. A CONTRATADA compromete-se a cumprir a Lei Geral de Proteção de Dados – LGPD (Lei 13.709/2018).
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                    CLÁUSULA 11 – FORO
+                  </h4>
+                  <p>
+                    Fica eleito o foro da comarca de <strong>Belo Horizonte – MG</strong> para dirimir quaisquer dúvidas decorrentes deste contrato.
                   </p>
                 </div>
 
               </div>
-            </div>
 
-          </article>
+              {/* ASSINATURA */}
+              <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: "auto", pageBreakInside: "avoid", breakInside: "avoid" }}>
+
+                <div className="text-xs text-zinc-600 mb-6 font-semibold flex items-center justify-between">
+                  <span>Declaração de Aceite: [X] Li e concordo com os termos deste contrato.</span>
+                  <span>Local e data: Belo Horizonte, {data.contractDate || "___/___/_____"}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 text-center text-[9pt]">
+
+                  <div className="flex flex-col items-center">
+                    <div className="h-16 flex items-center justify-center">
+                      <span className="text-[7.5pt] text-zinc-500 font-bold uppercase tracking-wider">CONTRATADA</span>
+                    </div>
+                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                    <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono">CNPJ: 42.818.864/0001-65</p>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="h-16 flex items-center justify-center">
+                      {signatureImage ? (
+                        <img
+                          src={signatureImage}
+                          alt="Assinatura do Contratante"
+                          className="max-h-12 object-contain"
+                        />
+                      ) : (
+                        <div className="text-[7pt] text-zinc-400 italic font-medium">Aguardando assinatura digital...</div>
+                      )}
+                    </div>
+                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                    <p className="font-bold text-zinc-900 text-[8.5pt] truncate max-w-full">
+                      {data.clientName || "CONTRATANTE"}
+                    </p>
+                    <p className="text-[7pt] text-zinc-500 font-mono">
+                      {data.clientDoc ? `CPF/CNPJ: ${data.clientDoc}` : "CPF/CNPJ do Contratante"}
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+            </article>
+          </div>
         </div>
       </main>
     </div>

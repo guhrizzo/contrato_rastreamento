@@ -25,16 +25,51 @@ export default function SignatureCanvas({ onSave, onClear }: SignatureCanvasProp
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    // Tratar redimensionamento/densidade de pixels se necessário,
-    // mas para um canvas de tamanho fixo, basta garantir o tamanho do elemento.
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // ResizeObserver para detectar redimensionamento e visibilidade (quando passa a ter tamanho maior que 0)
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = Math.floor(entry.contentRect.width || canvas.offsetWidth);
+        const height = Math.floor(entry.contentRect.height || canvas.offsetHeight);
 
-    // Reconfigura o contexto após mudar width/height (pois limpará as propriedades)
-    ctx.strokeStyle = "#09090b";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+        if (width > 0 && height > 0) {
+          if (canvas.width !== width || canvas.height !== height) {
+            // Salvar desenho anterior se existir
+            let tempCanvas: HTMLCanvasElement | null = null;
+            if (canvas.width > 0 && canvas.height > 0) {
+              tempCanvas = document.createElement("canvas");
+              tempCanvas.width = canvas.width;
+              tempCanvas.height = canvas.height;
+              const tempCtx = tempCanvas.getContext("2d");
+              if (tempCtx) {
+                tempCtx.drawImage(canvas, 0, 0);
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Restaura propriedades do contexto pós redimensionamento
+            const newCtx = canvas.getContext("2d");
+            if (newCtx) {
+              newCtx.strokeStyle = "#09090b";
+              newCtx.lineWidth = 2.5;
+              newCtx.lineCap = "round";
+              newCtx.lineJoin = "round";
+
+              if (tempCanvas && tempCanvas.width > 0 && tempCanvas.height > 0) {
+                newCtx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, width, height);
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (canvas.parentElement) {
+      resizeObserver.observe(canvas.parentElement);
+    } else {
+      resizeObserver.observe(canvas);
+    }
 
     // Impedir comportamento padrão de scroll em dispositivos touch ao desenhar no canvas
     const preventDefault = (e: Event) => {
@@ -48,6 +83,7 @@ export default function SignatureCanvas({ onSave, onClear }: SignatureCanvasProp
     document.body.addEventListener("touchmove", preventDefault, { passive: false });
 
     return () => {
+      resizeObserver.disconnect();
       document.body.removeEventListener("touchstart", preventDefault);
       document.body.removeEventListener("touchend", preventDefault);
       document.body.removeEventListener("touchmove", preventDefault);
