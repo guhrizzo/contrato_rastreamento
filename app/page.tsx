@@ -586,27 +586,27 @@ export default function Home() {
 
         {/* CABEÇALHO */}
         <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
-              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
-              <div>
-                <h1 className="font-extrabold text-lg uppercase tracking-wider flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
+              <div className="min-w-0">
+                <h1 className="font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wider leading-tight text-white">
                   Protect<span className="text-brand-yellow"> Rastreamento</span>
                 </h1>
-                <p className="text-[10px] text-zinc-400 font-semibold tracking-widest uppercase">
+                <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider sm:tracking-widest uppercase truncate">
                   Painel Corporativo de Contratos
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {isFormComplete() ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-900 text-green-100 rounded-full text-xs font-semibold">
-                  <CheckCircle className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-950/80 border border-green-800 text-green-300 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                  <CheckCircle className="w-3.5 h-3.5" />
                   Pronto
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-900 text-amber-100 rounded-full text-xs font-semibold">
-                  <AlertCircle className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/80 border border-amber-800 text-brand-yellow rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                  <AlertCircle className="w-3.5 h-3.5" />
                   Incompleto
                 </div>
               )}
