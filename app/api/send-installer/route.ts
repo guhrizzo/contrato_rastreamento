@@ -154,7 +154,7 @@ export async function POST(request: Request) {
     // Enviar o e-mail via Resend
     const response = await resend.emails.send({
       from: 'Protect Rastreamento <noreply@clube.gustavorizzo.net.br>',
-      to: ['noreply@clube.gustavorizzo.net.br'],
+      to: ['noreply@clube.gustavorizzo.net.br', email],
       subject: `🛠️ Novo Cadastro de Instalador: ${nomeCompleto}`,
       html: emailHtml,
       attachments: attachments.length > 0 ? attachments : undefined,
