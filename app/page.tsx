@@ -420,17 +420,31 @@ export default function Home() {
     if (!element || isGeneratingPDF || !isFormComplete() || !emailSent) return;
 
     setIsGeneratingPDF(true);
+
+    // Criar um clone temporário e anexar ao body off-screen para captura correta
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '-9999px';
+    clone.style.display = 'block';
+    clone.style.width = '794px'; // Largura aproximada de A4 em pixels
+    clone.style.height = 'auto';
+    clone.style.transform = 'none';
+    document.body.appendChild(clone);
+
     try {
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
 
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(clone, {
         scale: 1.7,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
+        width: 794,
+        height: clone.scrollHeight,
+        windowWidth: 794,
+        windowHeight: clone.scrollHeight,
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.98);
@@ -497,6 +511,7 @@ export default function Home() {
       console.error("Erro ao gerar PDF:", err);
       alert("Não foi possível gerar o PDF. Tente novamente.");
     } finally {
+      document.body.removeChild(clone);
       setIsGeneratingPDF(false);
     }
   };

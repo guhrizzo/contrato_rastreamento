@@ -2,16 +2,16 @@
 'use client';
 
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
-import { 
-  User, 
-  FileText, 
-  Mail, 
-  Phone, 
-  Briefcase, 
-  ShieldCheck, 
-  Upload, 
-  CheckCircle2, 
-  Loader2, 
+import {
+  User,
+  FileText,
+  Mail,
+  Phone,
+  Briefcase,
+  ShieldCheck,
+  Upload,
+  CheckCircle2,
+  Loader2,
   AlertTriangle,
   ArrowRight,
   ClipboardList,
@@ -71,6 +71,7 @@ export default function CadastroInstalador() {
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
@@ -192,6 +193,103 @@ export default function CadastroInstalador() {
     );
   };
 
+  const handleSavePDF = async () => {
+    const element = document.getElementById("contract-pdf");
+    if (!element || isGeneratingPDF || !isFormComplete() || !emailSent) return;
+
+    setIsGeneratingPDF(true);
+
+    // Criar um clone temporário e anexar ao body off-screen para captura correta
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '-9999px';
+    clone.style.display = 'block';
+    clone.style.width = '794px'; // Largura aproximada de A4 em pixels
+    clone.style.height = 'auto';
+    clone.style.transform = 'none';
+    document.body.appendChild(clone);
+
+    try {
+      const html2canvas = (await import("html2canvas-pro")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        width: 794,
+        height: clone.scrollHeight,
+        windowWidth: 794,
+        windowHeight: clone.scrollHeight,
+      });
+
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Canvas gerado vazio.");
+      }
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const canvasWidthMm = pdfWidth - 10;
+      const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const marginLeft = 5;
+      const marginTop = 5;
+
+      if (canvasHeightMm <= pdfHeight - 10) {
+        pdf.addImage(imgData, "JPEG", marginLeft, marginTop, canvasWidthMm, canvasHeightMm);
+      } else {
+        const pageHeightInCanvas = ((pdfHeight - 10) * canvas.width) / canvasWidthMm;
+        let currentPage = 1;
+        let currentYPosition = 0;
+
+        while (currentYPosition < canvas.height) {
+          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = heightToCrop;
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            tempCtx.drawImage(
+              canvas,
+              0, currentYPosition,
+              canvas.width, heightToCrop,
+              0, 0,
+              canvas.width, heightToCrop
+            );
+          }
+          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
+          if (currentPage > 1) {
+            pdf.addPage();
+          }
+          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
+          pdf.addImage(croppedImgData, "JPEG", marginLeft, marginTop, canvasWidthMm, heightInMm);
+          currentYPosition += heightToCrop;
+          currentPage++;
+        }
+      }
+
+      const fileName = `Ficha_Instalador_${formData.nomeCompleto.trim().replace(/\s+/g, "_") || "Instalador"}.pdf`;
+      pdf.save(fileName);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      alert("Não foi possível gerar o PDF. Tente novamente. Erro: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      document.body.removeChild(clone);
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isFormComplete()) {
@@ -235,34 +333,35 @@ export default function CadastroInstalador() {
 
   const handlePrint = () => {
     if (!isFormComplete() || !emailSent) {
-      alert('Preencha os dados obrigatórios e submeta o formulário por e-mail antes de imprimir.');
+      alert('Preencha todos os campos obrigatórios e envie o cadastro antes de imprimir.');
       return;
     }
-    window.print();
+    // Aguardar um tick para garantir que o DOM foi renderizado
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
-      
+
       {/* SELETOR MOBILE */}
       <div className="flex lg:hidden sticky top-0 bg-brand-black border-b border-zinc-800 z-30 no-print shadow-md">
         <button
           onClick={() => setMobileTab('form')}
-          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
-            mobileTab === 'form'
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${mobileTab === 'form'
               ? 'border-brand-yellow text-brand-yellow bg-zinc-900/10'
               : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+            }`}
         >
           Editar Cadastro
         </button>
         <button
           onClick={() => setMobileTab('preview')}
-          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
-            mobileTab === 'preview'
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${mobileTab === 'preview'
               ? 'border-brand-yellow text-brand-yellow bg-zinc-900/10'
               : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+            }`}
         >
           Visualizar Ficha
         </button>
@@ -308,7 +407,7 @@ export default function CadastroInstalador() {
 
       {/* COLUNA ESQUERDA: FORMULÁRIO */}
       <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
-        
+
         {/* CABEÇALHO DA BARRA LATERAL */}
         <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
           <div className="flex flex-wrap items-center justify-between gap-3 w-full">
@@ -341,21 +440,29 @@ export default function CadastroInstalador() {
           <div className="grid grid-cols-2 gap-3 w-full">
             <button
               onClick={handlePrint}
-              disabled={!isFormComplete() || !emailSent}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete()
+                  ? "Preencha todos os campos antes de imprimir"
+                  : !emailSent
+                  ? "Envie o cadastro primeiro para liberar a impressão"
+                  : "Imprimir contrato"
+              }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer className="w-4 h-4 shrink-0" />
               Imprimir
             </button>
             <button
-              onClick={() => {
-                if (!emailSent) {
-                  alert('Envie o formulário primeiro para habilitar.');
-                  return;
-                }
-                window.print();
-              }}
-              disabled={!isFormComplete() || !emailSent}
+              onClick={handleSavePDF}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete()
+                  ? "Preencha todos os campos antes de salvar PDF"
+                  : !emailSent
+                  ? "Envie o cadastro primeiro para liberar o PDF"
+                  : "Salvar contrato em PDF"
+              }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <FileDown className="w-4 h-4 shrink-0" />
@@ -367,7 +474,7 @@ export default function CadastroInstalador() {
             <div className="mt-1 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[10px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
               <AlertTriangle className="w-3.5 h-3.5 text-brand-yellow shrink-0 mt-0.5" />
               <span>
-                A impressão e download da ficha só serão liberados após você preencher todos os dados obrigatórios e clicar em <strong className="text-brand-yellow font-bold">Enviar Cadastro</strong> na aba "Finalizar".
+                A impressão e download da ficha só serão liberados após você preencher todos os dados obrigatórios e clicar em <strong className="text-brand-yellow font-bold">Enviar Cadastro</strong> na aba "Finalizar". {/* The print and PDF buttons are now enabled after form completion. */}
               </span>
             </div>
           )}
@@ -377,44 +484,40 @@ export default function CadastroInstalador() {
         <nav className="flex bg-zinc-100 border-b border-zinc-200">
           <button
             onClick={() => setActiveTab('client')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === 'client'
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'client'
                 ? 'bg-white border-brand-black text-brand-black'
                 : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <User className="w-4 h-4" /> Pessoal
           </button>
-          
+
           <button
             onClick={() => setActiveTab('skills')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === 'skills'
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'skills'
                 ? 'bg-white border-brand-black text-brand-black'
                 : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <Briefcase className="w-4 h-4" /> Habilidades
           </button>
 
           <button
             onClick={() => setActiveTab('professional')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === 'professional'
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'professional'
                 ? 'bg-white border-brand-black text-brand-black'
                 : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <Building2 className="w-4 h-4" /> Profissional
           </button>
 
           <button
             onClick={() => setActiveTab('finish')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === 'finish'
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'finish'
                 ? 'bg-white border-brand-black text-brand-black'
                 : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-4 h-4" /> Finalizar
           </button>
@@ -422,7 +525,7 @@ export default function CadastroInstalador() {
 
         {/* CONTEÚDO DAS ABAS */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+
           {/* TAB: PESSOAL */}
           {activeTab === 'client' && (
             <div className="space-y-4">
@@ -553,11 +656,10 @@ export default function CadastroInstalador() {
                   {tiposDisponiveis.map(tipo => (
                     <label
                       key={tipo}
-                      className={`flex items-center gap-3 p-3 border rounded-md cursor-pointer transition duration-150 ${
-                        formData.tiposInstalacao.includes(tipo)
+                      className={`flex items-center gap-3 p-3 border rounded-md cursor-pointer transition duration-150 ${formData.tiposInstalacao.includes(tipo)
                           ? 'bg-amber-50/70 border-brand-yellow-dark text-amber-950 font-semibold'
                           : 'bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100'
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"
@@ -751,7 +853,7 @@ export default function CadastroInstalador() {
 
       {/* COLUNA DIREITA: DOCUMENTO DE VISUALIZAÇÃO A4 (Tempo real) */}
       <section className={`flex-1 overflow-y-auto bg-zinc-200 py-10 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
-        <div 
+        <div
           className="a4-wrapper"
           style={{
             transform: `scale(${scale})`,
@@ -760,166 +862,166 @@ export default function CadastroInstalador() {
           }}
         >
           <div id="contract-pdf" className="a4-page text-brand-black relative">
-            
-            {/* Cabeçalho do Documento */}
-            <div className="flex justify-between items-center border-b-2 border-brand-black pb-5 mb-6">
-              <div className="flex items-center gap-3">
-                <img src="/protectrastreamento.png" alt="Logo" style={{ height: '40px', width: 'auto' }} />
-                <div>
-                  <h2 className="text-xl font-black uppercase tracking-tight leading-none text-zinc-950">
-                    PROTECT RASTREAMENTO
-                  </h2>
-                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-1">
-                    Rede Credenciada de Instaladores
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="inline-block px-3 py-1 bg-brand-yellow border-2 border-brand-black text-[10px] font-black uppercase tracking-wider">
-                  FICHA Nº {Math.floor(100000 + Math.random() * 900000)}
-                </div>
-              </div>
-            </div>
 
-            <h3 className="text-center font-black text-sm uppercase tracking-widest border-2 border-brand-black py-2.5 mb-6 bg-zinc-50">
-              FICHA DE REGISTRO E QUALIFICAÇÃO DE INSTALADOR
-            </h3>
+             {/* Cabeçalho do Documento */}
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #09090b', paddingBottom: '20px', marginBottom: '24px' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                 <img src="/protectrastreamento.png" alt="Logo" style={{ height: '40px', width: 'auto', pointerEvents: 'auto' }} />
+                 <div>
+                   <h2 style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.025em', lineHeight: 1, margin: 0, color: '#09090b' }}>
+                     PROTECT RASTREAMENTO
+                   </h2>
+                   <p style={{ fontSize: '9px', color: '#71717a', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px', margin: 0 }}>
+                     Rede Credenciada de Instaladores
+                   </p>
+                 </div>
+               </div>
+               <div style={{ textAlign: 'right' }}>
+                 <div style={{ display: 'inline-block', padding: '8px 12px', backgroundColor: '#facc15', border: '2px solid #09090b', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#09090b' }}>
+                   FICHA Nº {Math.floor(100000 + Math.random() * 900000)}
+                 </div>
+               </div>
+             </div>
 
-            {/* SEÇÃO 1: DADOS PESSOAIS */}
-            <div className="mb-6 avoid-break">
-              <h4 className="text-[11px] font-extrabold uppercase bg-brand-black text-white px-2 py-1 mb-3 tracking-wider">
-                1. Identificação do Profissional
-              </h4>
-              <table className="w-full text-xs border-collapse">
-                <tbody>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 w-1/4 uppercase">Nome Completo:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.nomeCompleto || '________________________________________'}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">CPF / RG:</td>
-                    <td className="py-2 text-zinc-900 font-medium">
-                      {formData.cpf ? `CPF: ${formData.cpf}` : 'CPF: _________________'} &nbsp;|&nbsp; 
-                      {formData.rg ? `RG: ${formData.rg}` : 'RG: _________________'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">E-mail:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.email || '________________________________________'}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">WhatsApp:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.phone || '________________________________________'}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+             <h3 style={{ textAlign: 'center', fontWeight: '900', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em', border: '2px solid #09090b', padding: '10px 8px', marginBottom: '24px', backgroundColor: '#f4f4f5', color: '#09090b', margin: '0 0 24px 0' }}>
+               FICHA DE REGISTRO E QUALIFICAÇÃO DE INSTALADOR
+             </h3>
+
+             {/* SEÇÃO 1: DADOS PESSOAIS */}
+             <div style={{ marginBottom: '24px' }}>
+               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                 1. Identificação do Profissional
+               </h4>
+               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                 <tbody>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Nome Completo:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.nomeCompleto || '________________________________________'}</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>CPF / RG:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>
+                       {formData.cpf ? `CPF: ${formData.cpf}` : 'CPF: _________________'} &nbsp;|&nbsp;
+                       {formData.rg ? `RG: ${formData.rg}` : 'RG: _________________'}
+                     </td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>E-mail:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.email || '________________________________________'}</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>WhatsApp:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.phone || '________________________________________'}</td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
 
             {/* SEÇÃO 2: CERTIFICAÇÃO E HABILIDADES */}
-            <div className="mb-6 avoid-break">
-              <h4 className="text-[11px] font-extrabold uppercase bg-brand-black text-white px-2 py-1 mb-3 tracking-wider">
-                2. Formação Técnica e Capacitação
-              </h4>
-              <table className="w-full text-xs border-collapse">
-                <tbody>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 w-2/5 uppercase">Curso Técnico na Área:</td>
-                    <td className="py-2 text-zinc-900 font-bold">{formData.cursoTecnico ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">Certificado em Rastreadores:</td>
-                    <td className="py-2 text-zinc-900 font-bold">{formData.certificadoInstalacao ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-bold text-zinc-500 uppercase valign-top">Habilidades declaradas:</td>
-                    <td className="py-2 text-zinc-900">
-                      {formData.tiposInstalacao.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {formData.tiposInstalacao.map(t => (
-                            <span key={t} className="bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded-sm text-[10px] font-semibold text-zinc-800">
-                              ✓ {t}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-zinc-400">Nenhum tipo de instalação selecionado</span>
-                      )}
-                      {formData.tiposInstalacao.includes('Outros') && formData.outrosInstalacao && (
-                        <div className="mt-2 p-2 bg-zinc-50 border border-zinc-200 text-[10px] text-zinc-600 rounded">
-                          <strong>Outros:</strong> {formData.outrosInstalacao}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+             <div style={{ marginBottom: '24px' }}>
+               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                 2. Formação Técnica e Capacitação
+               </h4>
+               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                 <tbody>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '40%', textTransform: 'uppercase', fontSize: '11px' }}>Curso Técnico na Área:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{formData.cursoTecnico ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Certificado em Rastreadores:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{formData.certificadoInstalacao ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
+                   </tr>
+                   <tr>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Habilidades declaradas:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontSize: '12px' }}>
+                       {formData.tiposInstalacao.length > 0 ? (
+                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                           {formData.tiposInstalacao.map(t => (
+                             <span key={t} style={{ backgroundColor: '#f4f4f5', border: '1px solid #d4d4d8', padding: '4px 8px', borderRadius: '2px', fontSize: '10px', fontWeight: '600', color: '#27272a' }}>
+                               ✓ {t}
+                             </span>
+                           ))}
+                         </div>
+                       ) : (
+                         <span style={{ color: '#a1a1aa' }}>Nenhum tipo de instalação selecionado</span>
+                       )}
+                       {formData.tiposInstalacao.includes('Outros') && formData.outrosInstalacao && (
+                         <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f4f4f5', border: '1px solid #e4e4e7', fontSize: '10px', color: '#52525b', borderRadius: '2px' }}>
+                           <strong>Outros:</strong> {formData.outrosInstalacao}
+                         </div>
+                       )}
+                     </td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
 
-            {/* SEÇÃO 3: EXPERIÊNCIA E REFERÊNCIA */}
-            <div className="mb-6 avoid-break">
-              <h4 className="text-[11px] font-extrabold uppercase bg-brand-black text-white px-2 py-1 mb-3 tracking-wider">
-                3. Última Empresa / Referência Comercial
-              </h4>
-              <table className="w-full text-xs border-collapse">
-                <tbody>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 w-1/4 uppercase">CNPJ Parceiro:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.cnpj || '________________________________________'}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">Nome Contato:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.nomeContato || '________________________________________'}</td>
-                  </tr>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 uppercase">Telefone:</td>
-                    <td className="py-2 text-zinc-900 font-medium">{formData.telefoneEmpresa || '________________________________________'}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+             {/* SEÇÃO 3: EXPERIÊNCIA E REFERÊNCIA */}
+             <div style={{ marginBottom: '24px' }}>
+               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                 3. Última Empresa / Referência Comercial
+               </h4>
+               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                 <tbody>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>CNPJ Parceiro:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.cnpj || '________________________________________'}</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Nome Contato:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.nomeContato || '________________________________________'}</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Telefone:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.telefoneEmpresa || '________________________________________'}</td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
 
-            {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
-            <div className="mb-6 avoid-break">
-              <h4 className="text-[11px] font-extrabold uppercase bg-brand-black text-white px-2 py-1 mb-3 tracking-wider">
-                4. Documentos e Informações Adicionais
-              </h4>
-              <table className="w-full text-xs border-collapse">
-                <tbody>
-                  <tr className="border-b border-zinc-200">
-                    <td className="py-2 font-bold text-zinc-500 w-1/4 uppercase">Anexo Enviado:</td>
-                    <td className="py-2 text-zinc-900 font-bold">{documentoFile ? `SIM (${documentoFile.nome})` : 'NÃO ANEXADO'}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-bold text-zinc-500 uppercase valign-top">Comentários:</td>
-                    <td className="py-2 text-zinc-900 font-medium whitespace-pre-line leading-relaxed">
-                      {formData.comentarios || 'Nenhum comentário adicional fornecido.'}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+             {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
+             <div style={{ marginBottom: '24px' }}>
+               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                 4. Documentos e Informações Adicionais
+               </h4>
+               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                 <tbody>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Anexo Enviado:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{documentoFile ? `SIM (${documentoFile.nome})` : 'NÃO ANEXADO'}</td>
+                   </tr>
+                   <tr>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Comentários:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                       {formData.comentarios || 'Nenhum comentário adicional fornecido.'}
+                     </td>
+                   </tr>
+                 </tbody>
+               </table>
+             </div>
 
-            {/* Declaração e Rodapé de Assinatura */}
-            <div className="mt-auto avoid-break border-t-2 border-brand-black pt-6">
-              <p className="text-[10px] text-zinc-600 leading-normal text-justify mb-8">
-                Declaro para os devidos fins de direito que todas as informações prestadas nesta ficha de qualificação são verdadeiras e completas. Fica a Protect Rastreamento autorizada a realizar a validação e auditoria dos referidos dados e documentos junto aos órgãos competentes ou às empresas indicadas como referências profissionais para a homologação do meu cadastro operacional.
-              </p>
-              
-              <div className="flex justify-between items-end gap-10 mt-10">
-                <div className="flex-1 text-center border-t border-zinc-400 pt-2">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase block">Assinatura do Instalador</span>
-                  <span className="text-xs text-zinc-900 font-semibold mt-1 block h-5">
-                    {formData.nomeCompleto || '___________________________'}
-                  </span>
-                </div>
-                <div className="w-1/3 text-center border-t border-zinc-400 pt-2">
-                  <span className="text-[10px] font-bold text-zinc-500 uppercase block">Data do Cadastro</span>
-                  <span className="text-xs text-zinc-900 font-semibold mt-1 block">
-                    {new Date().toLocaleDateString('pt-BR')}
-                  </span>
-                </div>
-              </div>
-            </div>
+             {/* Declaração e Rodapé de Assinatura */}
+             <div style={{ marginTop: 'auto', borderTop: '2px solid #09090b', paddingTop: '24px' }}>
+               <p style={{ fontSize: '10px', color: '#52525b', lineHeight: '1.6', textAlign: 'justify', marginBottom: '32px' }}>
+                 Declaro para os devidos fins de direito que todas as informações prestadas nesta ficha de qualificação são verdadeiras e completas. Fica a Protect Rastreamento autorizada a realizar a validação e auditoria dos referidos dados e documentos junto aos órgãos competentes ou às empresas indicadas como referências profissionais para a homologação do meu cadastro operacional.
+               </p>
+
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '40px' }}>
+                 <div style={{ flex: 1, textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
+                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Assinatura do Instalador</span>
+                   <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block', height: '20px' }}>
+                     {formData.nomeCompleto || '___________________________'}
+                   </span>
+                 </div>
+                 <div style={{ width: '33%', textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
+                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Data do Cadastro</span>
+                   <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block' }}>
+                     {new Date().toLocaleDateString('pt-BR')}
+                   </span>
+                 </div>
+               </div>
+             </div>
 
           </div>
         </div>

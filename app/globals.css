@@ -94,6 +94,13 @@ img {
     display: none !important;
   }
 
+  /* Garantir que a área do documento/contrato seja exibida na impressão */
+  section, main {
+    display: flex !important;
+    background-color: #ffffff !important;
+    padding: 0 !important;
+  }
+
   /* Estilizar o container principal para ocupar a folha inteira */
   .print-container {
     width: 100% !important;
@@ -103,17 +110,27 @@ img {
     border: none !important;
     box-shadow: none !important;
     background-color: #ffffff !important;
+    display: block !important;
+    flex-direction: initial !important;
+  }
+
+  .a4-wrapper {
+    transform: none !important;
+    height: auto !important;
+    display: block !important;
   }
 
   .a4-page {
     width: 100% !important;
     min-height: auto !important;
     height: auto !important;
-    padding: 0 !important;
+    padding: 15mm !important;
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
     background-color: #ffffff !important;
+    display: block !important;
+    flex-direction: initial !important;
   }
 
   /* Evitar quebra de página de forma inapropriada */
@@ -123,35 +140,36 @@ img {
   }
 
   /* Garantir que as tabelas ou textos fiquem nítidos na impressão */
-  p, h1, h2, h3, h4, td, th {
+  p, h1, h2, h3, h4, h5, h6, td, th, span, div {
+    color: #000000 !important;
+    background-color: transparent !important;
+  }
+
+  /* Manter cores de fundo para elementos que precisam */
+  .bg-brand-black {
+    background-color: #09090b !important;
+    color: #ffffff !important;
+  }
+
+  .bg-zinc-50, .bg-zinc-100 {
+    background-color: #fafafa !important;
     color: #000000 !important;
   }
-}
 
-/* Animações Premium */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
+  /* Tabelas e bordas */
+  table {
+    border-collapse: collapse !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-.animate-fadeIn {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+  tr, td, th {
+    border-color: #000000 !important;
+  }
 
-/* Animações do Modal */
-@keyframes fadeInBackdrop {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  /* Imagens */
+  img {
+    pointer-events: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
 }
 
 @keyframes scaleIn {
@@ -181,3 +199,4 @@ img {
   animation-duration: 200ms;
 }
 
+}
