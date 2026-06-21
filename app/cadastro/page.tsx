@@ -193,21 +193,21 @@ export default function CadastroInstalador() {
     );
   };
 
-  const handleSavePDF = async () => {
+  const generateDocumentPdf = async () => {
     const element = document.getElementById("contract-pdf");
-    if (!element || isGeneratingPDF || !isFormComplete() || !emailSent) return;
+    if (!element) throw new Error("Elemento não encontrado");
 
-    setIsGeneratingPDF(true);
-
-    // Criar um clone temporário e anexar ao body off-screen para captura correta
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.position = 'absolute';
     clone.style.left = '-9999px';
     clone.style.top = '-9999px';
     clone.style.display = 'block';
-    clone.style.width = '794px'; // Largura aproximada de A4 em pixels
+    clone.style.width = '794px';
+    clone.style.minHeight = 'auto';
     clone.style.height = 'auto';
+    clone.style.padding = '15mm';
     clone.style.transform = 'none';
+    clone.style.overflow = 'hidden';
     document.body.appendChild(clone);
 
     try {
@@ -234,8 +234,17 @@ export default function CadastroInstalador() {
 
       const pdfWidth = 210;
       const pdfHeight = 297;
-      const canvasWidthMm = pdfWidth - 10;
-      const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
+      const margin = 5;
+      const availableWidth = pdfWidth - margin * 2;
+      const availableHeight = pdfHeight - margin * 2;
+
+      let imgWidthMm = availableWidth;
+      let imgHeightMm = (canvas.height * imgWidthMm) / canvas.width;
+
+      if (imgHeightMm > availableHeight) {
+        imgHeightMm = availableHeight;
+        imgWidthMm = (canvas.width * imgHeightMm) / canvas.height;
+      }
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -243,49 +252,77 @@ export default function CadastroInstalador() {
         format: "a4",
       });
 
-      const marginLeft = 5;
-      const marginTop = 5;
+      const marginLeft = (pdfWidth - imgWidthMm) / 2;
+      const marginTop = (pdfHeight - imgHeightMm) / 2;
+      pdf.addImage(imgData, "JPEG", marginLeft, marginTop, imgWidthMm, imgHeightMm);
 
-      if (canvasHeightMm <= pdfHeight - 10) {
-        pdf.addImage(imgData, "JPEG", marginLeft, marginTop, canvasWidthMm, canvasHeightMm);
-      } else {
-        const pageHeightInCanvas = ((pdfHeight - 10) * canvas.width) / canvasWidthMm;
-        let currentPage = 1;
-        let currentYPosition = 0;
+      return pdf;
+    } finally {
+      document.body.removeChild(clone);
+    }
+  };
 
-        while (currentYPosition < canvas.height) {
-          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = heightToCrop;
-          const tempCtx = tempCanvas.getContext('2d');
-          if (tempCtx) {
-            tempCtx.drawImage(
-              canvas,
-              0, currentYPosition,
-              canvas.width, heightToCrop,
-              0, 0,
-              canvas.width, heightToCrop
-            );
-          }
-          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
-          if (currentPage > 1) {
-            pdf.addPage();
-          }
-          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
-          pdf.addImage(croppedImgData, "JPEG", marginLeft, marginTop, canvasWidthMm, heightInMm);
-          currentYPosition += heightToCrop;
-          currentPage++;
-        }
-      }
+  const handleSavePDF = async () => {
+    if (isGeneratingPDF || !isFormComplete() || !emailSent) return;
 
+    setIsGeneratingPDF(true);
+
+    try {
+      const pdf = await generateDocumentPdf();
       const fileName = `Ficha_Instalador_${formData.nomeCompleto.trim().replace(/\s+/g, "_") || "Instalador"}.pdf`;
       pdf.save(fileName);
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Não foi possível gerar o PDF. Tente novamente. Erro: " + (err instanceof Error ? err.message : String(err)));
     } finally {
-      document.body.removeChild(clone);
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handlePrint = async () => {
+    if (!isFormComplete() || !emailSent) {
+      alert('Preencha todos os campos obrigatórios e envie o cadastro antes de imprimir.');
+      return;
+    }
+    if (isGeneratingPDF) return;
+
+    setIsGeneratingPDF(true);
+
+    try {
+      const pdf = await generateDocumentPdf();
+      const blob = pdf.output('blob');
+      const url = URL.createObjectURL(blob);
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      iframe.style.visibility = 'hidden';
+      document.body.appendChild(iframe);
+      iframe.src = url;
+
+      let printed = false;
+      const cleanup = () => {
+        URL.revokeObjectURL(url);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      };
+      const triggerPrint = () => {
+        if (printed) return;
+        printed = true;
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        setTimeout(cleanup, 1000);
+      };
+
+      iframe.onload = () => setTimeout(triggerPrint, 100);
+      setTimeout(triggerPrint, 2000);
+    } catch (err) {
+      console.error("Erro ao imprimir:", err);
+      alert("Não foi possível preparar a impressão. Tente novamente.");
+    } finally {
       setIsGeneratingPDF(false);
     }
   };
@@ -329,17 +366,6 @@ export default function CadastroInstalador() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePrint = () => {
-    if (!isFormComplete() || !emailSent) {
-      alert('Preencha todos os campos obrigatórios e envie o cadastro antes de imprimir.');
-      return;
-    }
-    // Aguardar um tick para garantir que o DOM foi renderizado
-    setTimeout(() => {
-      window.print();
-    }, 100);
   };
 
   return (
@@ -450,8 +476,17 @@ export default function CadastroInstalador() {
               }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer className="w-4 h-4 shrink-0" />
-              Imprimir
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                  Preparando...
+                </>
+              ) : (
+                <>
+                  <Printer className="w-4 h-4 shrink-0" />
+                  Imprimir
+                </>
+              )}
             </button>
             <button
               onClick={handleSavePDF}
@@ -465,8 +500,17 @@ export default function CadastroInstalador() {
               }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <FileDown className="w-4 h-4 shrink-0" />
-              Salvar PDF
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4 shrink-0" />
+                  Salvar PDF
+                </>
+              )}
             </button>
           </div>
 
@@ -864,7 +908,7 @@ export default function CadastroInstalador() {
           <div id="contract-pdf" className="a4-page text-brand-black relative">
 
              {/* Cabeçalho do Documento */}
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #09090b', paddingBottom: '20px', marginBottom: '24px' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #09090b', paddingBottom: '16px', marginBottom: '18px' }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                  <img src="/protectrastreamento.png" alt="Logo" style={{ height: '40px', width: 'auto', pointerEvents: 'auto' }} />
                  <div>
@@ -883,12 +927,12 @@ export default function CadastroInstalador() {
                </div>
              </div>
 
-             <h3 style={{ textAlign: 'center', fontWeight: '900', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em', border: '2px solid #09090b', padding: '10px 8px', marginBottom: '24px', backgroundColor: '#f4f4f5', color: '#09090b', margin: '0 0 24px 0' }}>
+             <h3 style={{ textAlign: 'center', fontWeight: '900', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em', border: '2px solid #09090b', padding: '8px', marginBottom: '18px', backgroundColor: '#f4f4f5', color: '#09090b', margin: '0 0 18px 0' }}>
                FICHA DE REGISTRO E QUALIFICAÇÃO DE INSTALADOR
              </h3>
 
              {/* SEÇÃO 1: DADOS PESSOAIS */}
-             <div style={{ marginBottom: '24px' }}>
+             <div style={{ marginBottom: '18px' }}>
                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
                  1. Identificação do Profissional
                </h4>
@@ -918,7 +962,7 @@ export default function CadastroInstalador() {
              </div>
 
             {/* SEÇÃO 2: CERTIFICAÇÃO E HABILIDADES */}
-             <div style={{ marginBottom: '24px' }}>
+             <div style={{ marginBottom: '18px' }}>
                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
                  2. Formação Técnica e Capacitação
                </h4>
@@ -958,7 +1002,7 @@ export default function CadastroInstalador() {
              </div>
 
              {/* SEÇÃO 3: EXPERIÊNCIA E REFERÊNCIA */}
-             <div style={{ marginBottom: '24px' }}>
+             <div style={{ marginBottom: '18px' }}>
                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
                  3. Última Empresa / Referência Comercial
                </h4>
@@ -981,7 +1025,7 @@ export default function CadastroInstalador() {
              </div>
 
              {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
-             <div style={{ marginBottom: '24px' }}>
+             <div style={{ marginBottom: '18px' }}>
                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
                  4. Documentos e Informações Adicionais
                </h4>
@@ -1002,12 +1046,12 @@ export default function CadastroInstalador() {
              </div>
 
              {/* Declaração e Rodapé de Assinatura */}
-             <div style={{ marginTop: 'auto', borderTop: '2px solid #09090b', paddingTop: '24px' }}>
-               <p style={{ fontSize: '10px', color: '#52525b', lineHeight: '1.6', textAlign: 'justify', marginBottom: '32px' }}>
+             <div style={{ borderTop: '2px solid #09090b', paddingTop: '16px' }}>
+               <p style={{ fontSize: '10px', color: '#52525b', lineHeight: '1.5', textAlign: 'justify', marginBottom: '20px' }}>
                  Declaro para os devidos fins de direito que todas as informações prestadas nesta ficha de qualificação são verdadeiras e completas. Fica a Protect Rastreamento autorizada a realizar a validação e auditoria dos referidos dados e documentos junto aos órgãos competentes ou às empresas indicadas como referências profissionais para a homologação do meu cadastro operacional.
                </p>
 
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '40px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '20px' }}>
                  <div style={{ flex: 1, textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Assinatura do Instalador</span>
                    <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block', height: '20px' }}>
