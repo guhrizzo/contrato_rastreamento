@@ -47,104 +47,104 @@ export async function POST(request: Request) {
 
     // Criar o template HTML do e-mail com design premium e limpo
     const emailHtml = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #1f2937; line-height: 1.6;">
-        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-          <h1 style="color: #38bdf8; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em;">Protect Rastreamento</h1>
-          <p style="color: #94a3b8; margin: 8px 0 0 0; font-size: 14px;">Novo Cadastro de Instalador de Dispositivos</p>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #09090b; line-height: 1.6;">
+        <div style="background: linear-gradient(135deg, #09090b 0%, #27272a 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; border-bottom: 4px solid #facc15;">
+          <h1 style="color: #facc15; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em;">Protect Rastreamento</h1>
+          <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">Novo Cadastro de Instalador de Dispositivos</p>
         </div>
         
-        <div style="padding: 30px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-bottom: none;">
-          <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+        <div style="padding: 30px; background-color: #ffffff; border: 1px solid #e4e4e7; border-top: none; border-bottom: none;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
             Informações Pessoais
           </h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #64748b;">Nome Completo:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${nomeCompleto}</td>
+              <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #71717a;">Nome Completo:</td>
+              <td style="padding: 6px 0; color: #09090b;">${nomeCompleto}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">CPF:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${cpf}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">CPF:</td>
+              <td style="padding: 6px 0; color: #09090b;">${cpf}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">RG:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${rg}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">RG:</td>
+              <td style="padding: 6px 0; color: #09090b;">${rg}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">E-mail:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${email}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">E-mail:</td>
+              <td style="padding: 6px 0; color: #09090b;">${email}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">Telefone:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${phone}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Telefone:</td>
+              <td style="padding: 6px 0; color: #09090b;">${phone}</td>
             </tr>
           </table>
 
-          <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
             Experiência & Certificações
           </h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; width: 220px; color: #64748b;">Possui Curso Técnico:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${cursoTecnico ? 'Sim' : 'Não'}</td>
+              <td style="padding: 6px 0; font-weight: 600; width: 220px; color: #71717a;">Possui Curso Técnico:</td>
+              <td style="padding: 6px 0; color: #09090b;">${cursoTecnico ? 'Sim' : 'Não'}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">Possui Certificado de Rastreadores:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${certificadoInstalacao ? 'Sim' : 'Não'}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Possui Certificado de Rastreadores:</td>
+              <td style="padding: 6px 0; color: #09090b;">${certificadoInstalacao ? 'Sim' : 'Não'}</td>
             </tr>
           </table>
 
-          <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
             Tipos de Instalação Realizados
           </h2>
           <div style="margin-bottom: 25px;">
-            <ul style="margin: 0; padding-left: 20px; color: #0f172a;">
+            <ul style="margin: 0; padding-left: 20px; color: #09090b;">
               ${tiposInstalacao.map((tipo: string) => `<li style="margin-bottom: 4px;">${tipo}</li>`).join('')}
             </ul>
             ${outrosInstalacao ? `
-              <div style="margin-top: 10px; background-color: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <strong style="font-size: 13px; color: #475569;">Descrição do campo Outros:</strong>
-                <p style="margin: 4px 0 0 0; font-size: 14px; color: #334155;">${outrosInstalacao}</p>
+              <div style="margin-top: 10px; background-color: #fefce8; padding: 12px; border-radius: 6px; border: 1px solid #facc15;">
+                <strong style="font-size: 13px; color: #09090b;">Descrição do campo Outros:</strong>
+                <p style="margin: 4px 0 0 0; font-size: 14px; color: #27272a;">${outrosInstalacao}</p>
               </div>
             ` : ''}
           </div>
 
-          <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
             Referência Profissional
           </h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #64748b;">CNPJ da Empresa:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${cnpj || 'Não Informado'}</td>
+              <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #71717a;">CNPJ da Empresa:</td>
+              <td style="padding: 6px 0; color: #09090b;">${cnpj || 'Não Informado'}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">Nome do Contato:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${nomeContato || 'Não Informado'}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Nome do Contato:</td>
+              <td style="padding: 6px 0; color: #09090b;">${nomeContato || 'Não Informado'}</td>
             </tr>
             <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #64748b;">Telefone de Contato:</td>
-              <td style="padding: 6px 0; color: #0f172a;">${telefoneEmpresa || 'Não Informado'}</td>
+              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Telefone de Contato:</td>
+              <td style="padding: 6px 0; color: #09090b;">${telefoneEmpresa || 'Não Informado'}</td>
             </tr>
           </table>
 
           ${comentarios ? `
-            <h2 style="font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+            <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
               Comentários / Observações
             </h2>
-            <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; color: #334155; font-size: 14px;">
+            <div style="background-color: #fefce8; padding: 15px; border-radius: 8px; border: 1px solid #facc15; margin-bottom: 25px; color: #27272a; font-size: 14px;">
               ${comentarios.replace(/\n/g, '<br/>')}
             </div>
           ` : ''}
 
-          <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 15px; margin-top: 10px;">
-            <p style="margin: 0; font-size: 13px; color: #166534; font-weight: 500;">
+          <div style="background-color: #fef9c3; border: 1px solid #eab308; border-radius: 8px; padding: 15px; margin-top: 10px;">
+            <p style="margin: 0; font-size: 13px; color: #09090b; font-weight: 500;">
               ✓ O instalador declarou que todas as informações fornecidas são verdadeiras e completas e autorizou a verificação dos dados.
             </p>
           </div>
         </div>
 
-        <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px; text-align: center;">
-          <p style="color: #94a3b8; font-size: 11px; margin: 0;">
+        <div style="padding: 20px; background-color: #09090b; border: 1px solid #27272a; border-top: 3px solid #facc15; border-radius: 0 0 12px 12px; text-align: center;">
+          <p style="color: #a1a1aa; font-size: 11px; margin: 0;">
             Este é um e-mail automático gerado pelo Formulário de Cadastro da Protect Rastreamento.
           </p>
         </div>
