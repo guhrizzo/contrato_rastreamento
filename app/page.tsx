@@ -1377,6 +1377,7 @@ export default function Home() {
               </div>
 
               {/* ASSINATURA */}
+              
               <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: "auto", pageBreakInside: "avoid", breakInside: "avoid" }}>
 
                 <div className="text-xs text-zinc-600 mb-6 font-semibold flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -1414,6 +1415,29 @@ export default function Home() {
                     <p className="text-[7pt] text-zinc-500 font-mono">
                       {data.clientDoc ? `CPF/CNPJ: ${data.clientDoc}` : "CPF/CNPJ do Contratante"}
                     </p>
+                  </div>
+
+                </div>
+
+                {/* TESTEMUNHAS */}
+                <div className="grid grid-cols-2 gap-8 text-center text-[9pt] mt-8">
+
+                  <div className="flex flex-col items-center">
+                    <div className="h-16 flex items-center justify-center">
+                      <span className="text-[7.5pt] text-zinc-400 italic font-medium">Assinatura</span>
+                    </div>
+                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                    <p className="font-bold text-zinc-900 text-[8.5pt] uppercase tracking-wider">Testemunha 1</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono">CPF: _________________</p>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="h-16 flex items-center justify-center">
+                      <span className="text-[7.5pt] text-zinc-400 italic font-medium">Assinatura</span>
+                    </div>
+                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
+                    <p className="font-bold text-zinc-900 text-[8.5pt] uppercase tracking-wider">Testemunha 2</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono">CPF: _________________</p>
                   </div>
 
                 </div>
