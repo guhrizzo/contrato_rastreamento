@@ -21,9 +21,13 @@ interface ContractData {
 
   // Rastreamento/Serviço
   selectedPlan: string;
+  customPlanPrice: string;
   dueDate: string;
   contractDate: string;
 }
+
+const FROTA_PLAN_ID = "frota_telemetria";
+const FROTA_MIN_PRICE = 89.9;
 
 const PLANS = [
   { id: "basico_4g_moto", name: "Rastreamento Básico 4G (Moto) - Mensal", priceText: "R$ 59,90", detailText: "R$ 59,90 mensais", tracker: "Básico 4G (Moto)", billing: "Mensal" },
@@ -51,6 +55,7 @@ export default function Home() {
     clientState: "",
     clientCep: "",
     selectedPlan: "basico_4g_moto",
+    customPlanPrice: "",
     dueDate: "05",
     contractDate: "",
   });
@@ -100,6 +105,22 @@ export default function Home() {
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  const parsePlanPrice = (value: string): number | null => {
+    const normalized = value.trim().replace(/[^\d,]/g, "").replace(",", ".");
+    if (!normalized) return null;
+    const num = parseFloat(normalized);
+    return Number.isNaN(num) ? null : num;
+  };
+
+  const formatPlanPrice = (num: number): string =>
+    num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const isFrotaPlanSelected = data.selectedPlan === FROTA_PLAN_ID;
+  const frotaPriceValue = parsePlanPrice(data.customPlanPrice);
+  const isFrotaPriceValid =
+    !isFrotaPlanSelected ||
+    (frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE);
+
   // Função de validação
   const isFormComplete = (): boolean => {
     return (
@@ -115,6 +136,7 @@ export default function Home() {
       data.clientState.trim() !== "" &&
       data.clientCep.trim() !== "" &&
       data.selectedPlan.trim() !== "" &&
+      isFrotaPriceValid &&
       data.contractDate.trim() !== "" &&
       signatureImage !== null
     );
@@ -521,6 +543,29 @@ export default function Home() {
   };
 
   const activePlan = PLANS.find(p => p.id === data.selectedPlan) || PLANS[0];
+
+  const getDisplayPriceText = (): string => {
+    if (isFrotaPlanSelected && frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE) {
+      return `R$ ${formatPlanPrice(frotaPriceValue)}`;
+    }
+    return activePlan.priceText;
+  };
+
+  const getDisplayDetailText = (): string => {
+    if (isFrotaPlanSelected && frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE) {
+      return `R$ ${formatPlanPrice(frotaPriceValue)} mensais`;
+    }
+    return activePlan.detailText;
+  };
+
+  const handlePlanSelect = (planId: string) => {
+    setData((prev) => ({
+      ...prev,
+      selectedPlan: planId,
+      customPlanPrice: planId === FROTA_PLAN_ID ? prev.customPlanPrice || "89,90" : "",
+    }));
+    setIsPlanDropdownOpen(false);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
@@ -953,7 +998,7 @@ export default function Home() {
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
                       <span className="px-2.5 py-1 bg-brand-yellow/15 text-brand-black border border-brand-yellow/30 font-bold text-[10px] sm:text-xs rounded-full shadow-2xs text-left sm:text-right leading-tight max-w-full break-words">
-                        {activePlan.priceText}
+                        {getDisplayPriceText()}
                       </span>
                       <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-200 shrink-0 ${isPlanDropdownOpen ? 'transform rotate-180 text-brand-black' : ''}`} />
                     </div>
@@ -974,10 +1019,7 @@ export default function Home() {
                           <button
                             key={plan.id}
                             type="button"
-                            onClick={() => {
-                              setData((prev) => ({ ...prev, selectedPlan: plan.id }));
-                              setIsPlanDropdownOpen(false);
-                            }}
+                            onClick={() => handlePlanSelect(plan.id)}
                             className={`w-full flex flex-col sm:flex-row sm:items-start sm:justify-between text-left p-3.5 gap-2 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${
                               isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
                             }`}
@@ -1003,6 +1045,40 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+
+                {isFrotaPlanSelected && (
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                      Valor Mensal do Plano <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500">R$</span>
+                      <input
+                        type="text"
+                        name="customPlanPrice"
+                        value={data.customPlanPrice}
+                        onChange={handleChange}
+                        inputMode="decimal"
+                        placeholder="89,90"
+                        className={`w-full pl-10 pr-3 py-2.5 border rounded-md text-sm focus:outline-none focus:ring-1 bg-zinc-50 focus:bg-white transition-all duration-150 ${
+                          data.customPlanPrice && !isFrotaPriceValid
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                            : "border-zinc-200 focus:border-brand-black focus:ring-brand-black"
+                        }`}
+                      />
+                    </div>
+                    {data.customPlanPrice && !isFrotaPriceValid ? (
+                      <p className="text-xs text-red-600 mt-1 font-semibold">
+                        O valor mínimo para este plano é R$ 89,90.
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-zinc-500 mt-1">
+                        Informe o valor acordado. Mínimo: R$ 89,90 mensais.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col">
@@ -1234,7 +1310,7 @@ export default function Home() {
                     O CONTRATANTE pagará à CONTRATADA o valor mensal fixado de acordo com o plano de serviço selecionado:
                   </p>
                   <p className="mt-1 font-bold text-[9.5pt]">
-                    Mensalidade: {activePlan.priceText} ({activePlan.detailText})
+                    Mensalidade: {getDisplayPriceText()} ({getDisplayDetailText()})
                   </p>
                   <p>
                     Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
