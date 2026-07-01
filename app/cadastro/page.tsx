@@ -72,6 +72,7 @@ export default function CadastroInstalador() {
   const [errorMsg, setErrorMsg] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [fichaNumero] = useState(() => Math.floor(100000 + Math.random() * 900000));
 
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
@@ -435,7 +436,7 @@ export default function CadastroInstalador() {
       <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
 
         {/* CABEÇALHO DA BARRA LATERAL */}
-        <header className="p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
+        <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
           <div className="flex flex-wrap items-center justify-between gap-3 w-full">
             <div className="flex items-center gap-2.5 min-w-0">
               <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
@@ -568,7 +569,7 @@ export default function CadastroInstalador() {
         </nav>
 
         {/* CONTEÚDO DAS ABAS */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
 
           {/* TAB: PESSOAL */}
           {activeTab === 'client' && (
@@ -594,7 +595,7 @@ export default function CadastroInstalador() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col">
                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
                     <IdCard className="w-3.5 h-3.5" /> CPF <span className="text-rose-500">*</span>
@@ -759,7 +760,7 @@ export default function CadastroInstalador() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col">
                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
                     Nome de Contato
@@ -792,22 +793,22 @@ export default function CadastroInstalador() {
                 <label className="text-xs font-bold text-zinc-700 uppercase mb-2 block">
                   Documentação de Apoio
                 </label>
-                <div className="bg-zinc-50 border border-dashed border-zinc-300 rounded-lg p-5 text-center flex flex-col items-center">
+                <label className="bg-zinc-50 border border-dashed border-zinc-300 rounded-lg p-5 text-center flex flex-col items-center cursor-pointer hover:bg-zinc-100 transition">
                   <Upload className="w-8 h-8 text-zinc-400 mb-2" />
                   <span className="text-xs font-bold text-zinc-800">
                     {documentoFile ? documentoFile.nome : 'Selecione certificados ou currículo'}
                   </span>
                   <span className="text-[10px] text-zinc-500 mt-1 mb-3 block">PDF ou Imagem (Máx: 8MB)</span>
-                  <label className="bg-white border border-zinc-350 hover:bg-zinc-100 text-zinc-800 px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer shadow-sm transition">
+                  <span className="bg-white border border-zinc-300 hover:bg-zinc-200 text-zinc-800 px-4 py-2.5 min-h-[44px] rounded-md text-xs font-semibold shadow-sm transition flex items-center">
                     Upload de Documento
-                    <input
-                      type="file"
-                      accept=".pdf, image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf, image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
               </div>
             </div>
           )}
@@ -852,7 +853,7 @@ export default function CadastroInstalador() {
                     type="checkbox"
                     checked={formData.autorizacao}
                     onChange={() => handleCheckboxChange('autorizacao')}
-                    className="h-4.5 w-4.5 accent-brand-yellow rounded text-brand-black focus:ring-brand-black border-zinc-350"
+                    className="h-5 w-5 accent-brand-yellow rounded text-brand-black focus:ring-brand-black"
                   />
                   <span className="text-xs font-bold text-zinc-800">Li e concordo com os termos <span className="text-rose-500">*</span></span>
                 </label>
@@ -896,7 +897,7 @@ export default function CadastroInstalador() {
       </aside>
 
       {/* COLUNA DIREITA: DOCUMENTO DE VISUALIZAÇÃO A4 (Tempo real) */}
-      <section className={`flex-1 overflow-y-auto bg-zinc-200 py-10 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
+      <section className={`flex-1 overflow-y-auto bg-zinc-200 py-4 sm:py-10 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
         <div
           className="a4-wrapper"
           style={{
@@ -922,7 +923,7 @@ export default function CadastroInstalador() {
                </div>
                <div style={{ textAlign: 'right' }}>
                  <div style={{ display: 'inline-block', padding: '8px 12px', backgroundColor: '#facc15', border: '2px solid #09090b', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#09090b' }}>
-                   FICHA Nº {Math.floor(100000 + Math.random() * 900000)}
+                    FICHA Nº {fichaNumero}
                  </div>
                </div>
              </div>

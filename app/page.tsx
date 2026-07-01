@@ -28,6 +28,7 @@ interface ContractData {
 
 const FROTA_PLAN_ID = "frota_telemetria";
 const FROTA_MIN_PRICE = 89.9;
+const SOB_CONSULTA_SEM_MINIMO = ["satelital", "video_monitoramento"];
 
 const PLANS = [
   { id: "basico_4g_moto", name: "Rastreamento Básico 4G (Moto) - Mensal", priceText: "R$ 59,90", detailText: "R$ 59,90 mensais", tracker: "Básico 4G (Moto)", billing: "Mensal" },
@@ -116,10 +117,19 @@ export default function Home() {
     num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const isFrotaPlanSelected = data.selectedPlan === FROTA_PLAN_ID;
-  const frotaPriceValue = parsePlanPrice(data.customPlanPrice);
+  const isSobConsultaSemMinimo = SOB_CONSULTA_SEM_MINIMO.includes(data.selectedPlan);
+  const isCustomPricePlan = isFrotaPlanSelected || isSobConsultaSemMinimo;
+  const customPriceValue = parsePlanPrice(data.customPlanPrice);
+  // alias para manter compatibilidade
+  const frotaPriceValue = customPriceValue;
   const isFrotaPriceValid =
     !isFrotaPlanSelected ||
-    (frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE);
+    (customPriceValue !== null && customPriceValue >= FROTA_MIN_PRICE);
+  const isCustomPriceValid =
+    !isCustomPricePlan ||
+    (isFrotaPlanSelected
+      ? customPriceValue !== null && customPriceValue >= FROTA_MIN_PRICE
+      : customPriceValue !== null);
 
   // Função de validação
   const isFormComplete = (): boolean => {
@@ -136,7 +146,7 @@ export default function Home() {
       data.clientState.trim() !== "" &&
       data.clientCep.trim() !== "" &&
       data.selectedPlan.trim() !== "" &&
-      isFrotaPriceValid &&
+      isCustomPriceValid &&
       data.contractDate.trim() !== "" &&
       signatureImage !== null
     );
@@ -312,10 +322,10 @@ export default function Home() {
       }
 
       let htmlContent = element.innerHTML;
-      
+
       // Remove todas as tags <img> do HTML para o e-mail
       htmlContent = htmlContent.replace(/<img[^>]*>/g, "");
-      
+
       const response = await fetch("/api/send-contract", {
         method: "POST",
         headers: {
@@ -330,7 +340,7 @@ export default function Home() {
 
       const contentType = response.headers.get("content-type");
       let responseData: any = {};
-      
+
       if (contentType && contentType.includes("application/json")) {
         responseData = await response.json();
       } else {
@@ -410,8 +420,8 @@ export default function Home() {
           !isFormComplete()
             ? "Complete todos os campos para enviar"
             : !termsAccepted
-            ? "Aceite os termos para enviar"
-            : ""
+              ? "Aceite os termos para enviar"
+              : ""
         }
         className="w-full flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 uppercase"
       >
@@ -529,9 +539,8 @@ export default function Home() {
         }
       }
 
-      const fileName = `Contrato_Rastreamento_${
-        data.clientName.trim().replace(/\s+/g, "_") || "Cliente"
-      }.pdf`;
+      const fileName = `Contrato_Rastreamento_${data.clientName.trim().replace(/\s+/g, "_") || "Cliente"
+        }.pdf`;
       pdf.save(fileName);
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
@@ -545,24 +554,33 @@ export default function Home() {
   const activePlan = PLANS.find(p => p.id === data.selectedPlan) || PLANS[0];
 
   const getDisplayPriceText = (): string => {
-    if (isFrotaPlanSelected && frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE) {
-      return `R$ ${formatPlanPrice(frotaPriceValue)}`;
+    if (isFrotaPlanSelected && customPriceValue !== null && customPriceValue >= FROTA_MIN_PRICE) {
+      return `R$ ${formatPlanPrice(customPriceValue)}`;
+    }
+    if (isSobConsultaSemMinimo && customPriceValue !== null) {
+      return `R$ ${formatPlanPrice(customPriceValue)}`;
     }
     return activePlan.priceText;
   };
 
   const getDisplayDetailText = (): string => {
-    if (isFrotaPlanSelected && frotaPriceValue !== null && frotaPriceValue >= FROTA_MIN_PRICE) {
-      return `R$ ${formatPlanPrice(frotaPriceValue)} mensais`;
+    if (isFrotaPlanSelected && customPriceValue !== null && customPriceValue >= FROTA_MIN_PRICE) {
+      return `R$ ${formatPlanPrice(customPriceValue)} mensais`;
+    }
+    if (isSobConsultaSemMinimo && customPriceValue !== null) {
+      return `R$ ${formatPlanPrice(customPriceValue)} mensais`;
     }
     return activePlan.detailText;
   };
 
   const handlePlanSelect = (planId: string) => {
+    const isConsulta = planId === FROTA_PLAN_ID || SOB_CONSULTA_SEM_MINIMO.includes(planId);
     setData((prev) => ({
       ...prev,
       selectedPlan: planId,
-      customPlanPrice: planId === FROTA_PLAN_ID ? prev.customPlanPrice || "89,90" : "",
+      customPlanPrice: isConsulta
+        ? (planId === FROTA_PLAN_ID ? prev.customPlanPrice || "89,90" : "")
+        : "",
     }));
     setIsPlanDropdownOpen(false);
   };
@@ -573,21 +591,19 @@ export default function Home() {
       <div className="flex lg:hidden sticky top-0 bg-brand-black border-b border-zinc-800 z-30 no-print shadow-md">
         <button
           onClick={() => setMobileTab("form")}
-          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
-            mobileTab === "form"
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${mobileTab === "form"
               ? "border-brand-yellow text-brand-yellow bg-zinc-900/10"
               : "border-transparent text-zinc-400 hover:text-white"
-          }`}
+            }`}
         >
           Editar Contrato
         </button>
         <button
           onClick={() => setMobileTab("preview")}
-          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
-            mobileTab === "preview"
+          className={`flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${mobileTab === "preview"
               ? "border-brand-yellow text-brand-yellow bg-zinc-900/10"
               : "border-transparent text-zinc-400 hover:text-white"
-          }`}
+            }`}
         >
           Visualizar Documento
         </button>
@@ -604,7 +620,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="p-1 hover:bg-zinc-700 rounded transition-colors cursor-pointer"
+                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-zinc-700 rounded transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-zinc-300" />
               </button>
@@ -636,7 +652,7 @@ export default function Home() {
             <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="px-4 py-2 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
+                className="px-5 py-2.5 min-h-[44px] bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
               >
                 Entendi
               </button>
@@ -682,11 +698,11 @@ export default function Home() {
               onClick={handlePrint}
               disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
               title={
-                !isFormComplete() 
-                  ? "Preencha todos os campos e assine para habilitar" 
-                  : !emailSent 
-                  ? "Envie o contrato por e-mail primeiro para liberar a impressão" 
-                  : "Imprimir contrato"
+                !isFormComplete()
+                  ? "Preencha todos os campos e assine para habilitar"
+                  : !emailSent
+                    ? "Envie o contrato por e-mail primeiro para liberar a impressão"
+                    : "Imprimir contrato"
               }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -697,11 +713,11 @@ export default function Home() {
               onClick={handleSavePDF}
               disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
               title={
-                !isFormComplete() 
-                  ? "Preencha todos os campos e assine para habilitar" 
-                  : !emailSent 
-                  ? "Envie o contrato por e-mail primeiro para liberar o PDF" 
-                  : "Salvar contrato em PDF"
+                !isFormComplete()
+                  ? "Preencha todos os campos e assine para habilitar"
+                  : !emailSent
+                    ? "Envie o contrato por e-mail primeiro para liberar o PDF"
+                    : "Salvar contrato em PDF"
               }
               className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
             >
@@ -722,7 +738,7 @@ export default function Home() {
             </button>
           </div>
           {!emailSent && (
-            <div className="mt-3.5 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[10px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
+            <div className="mt-3.5 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[11px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
               <AlertTriangle className="w-3.5 h-3.5 text-brand-yellow shrink-0 mt-0.5" />
               <span>
                 A impressão e download do PDF só serão liberados após você preencher todos os dados, assinar e clicar em <strong className="text-brand-yellow font-bold">Enviar por Email</strong> na aba "Assinar".
@@ -735,33 +751,30 @@ export default function Home() {
         <nav className="flex bg-zinc-100 border-b border-zinc-200 shrink-0">
           <button
             onClick={() => setActiveTab("client")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === "client"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "client"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
-            }`}
+              }`}
           >
             <User className="w-4 h-4" /> Cliente
           </button>
 
           <button
             onClick={() => setActiveTab("plan")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === "plan"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "plan"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
-            }`}
+              }`}
           >
             <Settings className="w-4 h-4" /> Plano
           </button>
 
           <button
             onClick={() => setActiveTab("signature")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${
-              activeTab === "signature"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "signature"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
-            }`}
+              }`}
           >
             <PenTool className="w-4 h-4" /> Assinar
           </button>
@@ -985,7 +998,7 @@ export default function Home() {
                     <Zap className="w-3.5 h-3.5 shrink-0" />
                     Plano de Rastreamento
                   </label>
-                  
+
                   <button
                     type="button"
                     onClick={() => setIsPlanDropdownOpen(!isPlanDropdownOpen)}
@@ -1005,8 +1018,8 @@ export default function Home() {
                   </button>
 
                   {isPlanDropdownOpen && (
-                    <div 
-                      className="fixed inset-0 z-40 cursor-default" 
+                    <div
+                      className="fixed inset-0 z-40 cursor-default"
                       onClick={() => setIsPlanDropdownOpen(false)}
                     />
                   )}
@@ -1020,9 +1033,8 @@ export default function Home() {
                             key={plan.id}
                             type="button"
                             onClick={() => handlePlanSelect(plan.id)}
-                            className={`w-full flex flex-col sm:flex-row sm:items-start sm:justify-between text-left p-3.5 gap-2 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${
-                              isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
-                            }`}
+                            className={`w-full flex flex-col sm:flex-row sm:items-start sm:justify-between text-left p-3.5 gap-2 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
+                              }`}
                           >
                             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                               <span className={`text-sm font-bold leading-snug break-words ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
@@ -1032,11 +1044,10 @@ export default function Home() {
                                 {plan.tracker} • {plan.billing}
                               </span>
                             </div>
-                            <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight break-words max-w-full ${
-                              isSelected 
-                                ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs' 
+                            <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight break-words max-w-full ${isSelected
+                                ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs'
                                 : 'bg-zinc-50 text-zinc-600 border-zinc-200'
-                            }`}>
+                              }`}>
                               {plan.priceText}
                             </span>
                           </button>
@@ -1046,7 +1057,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {isFrotaPlanSelected && (
+                {isCustomPricePlan && (
                   <div className="flex flex-col">
                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
                       <DollarSign className="w-3.5 h-3.5 shrink-0" />
@@ -1060,21 +1071,22 @@ export default function Home() {
                         value={data.customPlanPrice}
                         onChange={handleChange}
                         inputMode="decimal"
-                        placeholder="89,90"
-                        className={`w-full pl-10 pr-3 py-2.5 border rounded-md text-sm focus:outline-none focus:ring-1 bg-zinc-50 focus:bg-white transition-all duration-150 ${
-                          data.customPlanPrice && !isFrotaPriceValid
+                        placeholder={isFrotaPlanSelected ? "89,90" : "0,00"}
+                        className={`w-full pl-10 pr-3 py-2.5 border rounded-md text-sm focus:outline-none focus:ring-1 bg-zinc-50 focus:bg-white transition-all duration-150 ${data.customPlanPrice && isFrotaPlanSelected && !isFrotaPriceValid
                             ? "border-red-400 focus:border-red-500 focus:ring-red-500"
                             : "border-zinc-200 focus:border-brand-black focus:ring-brand-black"
-                        }`}
+                          }`}
                       />
                     </div>
-                    {data.customPlanPrice && !isFrotaPriceValid ? (
+                    {data.customPlanPrice && isFrotaPlanSelected && !isFrotaPriceValid ? (
                       <p className="text-xs text-red-600 mt-1 font-semibold">
                         O valor mínimo para este plano é R$ 89,90.
                       </p>
                     ) : (
                       <p className="text-[11px] text-zinc-500 mt-1">
-                        Informe o valor acordado. Mínimo: R$ 89,90 mensais.
+                        {isFrotaPlanSelected
+                          ? "Informe o valor acordado. Mínimo: R$ 89,90 mensais."
+                          : "Informe o valor acordado com o cliente."}
                       </p>
                     )}
                   </div>
@@ -1142,7 +1154,7 @@ export default function Home() {
                 </div>
               )}
 
-              <div className="bg-white border border-zinc-100 p-4 rounded-xl shadow-sm">
+              <div className="bg-white border border-zinc-100 p-1.5 sm:p-4 rounded-xl shadow-sm">
                 <SignatureCanvas
                   onSave={handleSignatureSave}
                   onClear={handleSignatureClear}
@@ -1182,27 +1194,26 @@ export default function Home() {
       </aside>
 
       {/* CONTÊINER DO CONTRATO */}
-      <main 
-        className={`flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${
-          mobileTab === "preview" ? "flex" : "hidden lg:flex"
-        }`} 
+      <main
+        className={`flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${mobileTab === "preview" ? "flex" : "hidden lg:flex"
+          }`}
         style={{ userSelect: "none" }}
       >
-        <div 
-          className="a4-wrapper" 
+        <div
+          className="a4-wrapper"
           style={{ height: windowWidth < 794 ? `${contractHeight * scale}px` : "auto" }}
         >
-          <div 
+          <div
             className="print-container w-full max-w-[210mm] transition-transform duration-200"
             style={{
               transform: windowWidth < 794 ? `scale(${scale})` : "none",
               transformOrigin: "top center",
             }}
           >
-            <article 
+            <article
               ref={contractRef}
-              id="contract-pdf" 
-              className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none" 
+              id="contract-pdf"
+              className="a4-page shadow-2xl rounded-sm text-[11pt] leading-relaxed text-zinc-950 font-sans select-none"
               style={{ userSelect: "none" }}
             >
 
@@ -1239,11 +1250,11 @@ export default function Home() {
                 </p>
 
                 <p>
-                  <strong>CONTRATANTE:</strong><br/>
-                  Nome: <strong>{data.clientName || "___________________________________________"}</strong><br/>
-                  CPF/CNPJ: <strong>{data.clientDoc || "_____________________"}</strong><br/>
-                  Endereço: <strong>{data.clientAddress || "_________________________________"}, nº {data.clientNumber || "___"} - {data.clientBairro || "_________"} - {data.clientCity || "_______"}/{data.clientState || "__"} - CEP {data.clientCep || "________"}</strong><br/>
-                  Telefone: <strong>{data.clientPhone || "_________________"}</strong><br/>
+                  <strong>CONTRATANTE:</strong><br />
+                  Nome: <strong>{data.clientName || "___________________________________________"}</strong><br />
+                  CPF/CNPJ: <strong>{data.clientDoc || "_____________________"}</strong><br />
+                  Endereço: <strong>{data.clientAddress || "_________________________________"}, nº {data.clientNumber || "___"} - {data.clientBairro || "_________"} - {data.clientCity || "_______"}/{data.clientState || "__"} - CEP {data.clientCep || "________"}</strong><br />
+                  Telefone: <strong>{data.clientPhone || "_________________"}</strong><br />
                   E-mail: <strong>{data.clientEmail || "_________________________________"}</strong>
                 </p>
 
@@ -1377,27 +1388,40 @@ export default function Home() {
               </div>
 
               {/* ASSINATURA */}
-              
-              <div className="mt-6 pt-4 border-t border-zinc-200" style={{ pageBreakBefore: "auto", pageBreakInside: "avoid", breakInside: "avoid" }}>
 
-                <div className="text-xs text-zinc-600 mb-6 font-semibold flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <span>Declaração de Aceite: [X] Li e concordo com os termos deste contrato.</span>
-                  <span className="shrink-0">Local e data: Belo Horizonte, {data.contractDate || "___/___/_____"}</span>
+              <div className="mt-6" style={{ pageBreakBefore: "auto", pageBreakInside: "avoid", breakInside: "avoid" }}>
+
+                {/* Faixa local/data */}
+                <div className="bg-zinc-100 border border-zinc-200 rounded-md px-4 py-2.5 mb-5 flex items-center justify-between">
+                  <p className="text-[8pt] text-zinc-600 leading-relaxed max-w-[58%]">
+                    O CONTRATANTE declara que leu e compreendeu integralmente as cláusulas deste instrumento, anuindo expressamente com todas as suas condições.
+                  </p>
+                  <p className="text-[8.5pt] font-semibold text-zinc-800 text-right">
+                    Belo Horizonte – MG<br />
+                    <span className="font-bold text-zinc-900">{data.contractDate || "___/___/_____"}</span>
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 text-center text-[9pt]">
+                {/* Linha separadora decorativa */}
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="flex-1 h-px bg-zinc-300"></div>
+                  <span className="text-[7pt] font-bold uppercase tracking-widest text-zinc-400 px-2">Assinaturas</span>
+                  <div className="flex-1 h-px bg-zinc-300"></div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 text-center text-[9pt]">
 
                   <div className="flex flex-col items-center">
-                    <div className="h-16 flex items-center justify-center">
-                      <span className="text-[7.5pt] text-zinc-500 font-bold uppercase tracking-wider">CONTRATADA</span>
+                    <div className="h-14 flex items-center justify-center w-full border-b-2 border-zinc-700 mb-1.5">
+                      <span className="text-[7pt] text-zinc-400 italic">Assinatura da Contratada</span>
                     </div>
-                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
                     <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono">CNPJ: 42.818.864/0001-65</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 42.818.864/0001-65</p>
+                    <span className="mt-1 text-[6.5pt] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded">CONTRATADA</span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="h-16 flex items-center justify-center">
+                    <div className="h-14 flex items-center justify-center w-full border-b-2 border-zinc-700 mb-1.5">
                       {signatureImage ? (
                         <img
                           src={signatureImage}
@@ -1405,42 +1429,53 @@ export default function Home() {
                           className="max-h-12 object-contain"
                         />
                       ) : (
-                        <div className="text-[7pt] text-zinc-400 italic font-medium">Aguardando assinatura digital...</div>
+                        <span className="text-[7pt] text-zinc-400 italic">Assinatura do Contratante</span>
                       )}
                     </div>
-                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
                     <p className="font-bold text-zinc-900 text-[8.5pt] truncate max-w-full">
                       {data.clientName || "CONTRATANTE"}
                     </p>
-                    <p className="text-[7pt] text-zinc-500 font-mono">
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">
                       {data.clientDoc ? `CPF/CNPJ: ${data.clientDoc}` : "CPF/CNPJ do Contratante"}
                     </p>
+                    <span className="mt-1 text-[6.5pt] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded">CONTRATANTE</span>
                   </div>
 
                 </div>
 
                 {/* TESTEMUNHAS */}
-                <div className="grid grid-cols-2 gap-8 text-center text-[9pt] mt-8">
+                <div className="flex items-center gap-2 mt-6 mb-4">
+                  <div className="flex-1 h-px bg-zinc-200"></div>
+                  <span className="text-[7pt] font-bold uppercase tracking-widest text-zinc-400 px-2">Testemunhas</span>
+                  <div className="flex-1 h-px bg-zinc-200"></div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 text-center text-[9pt]">
 
                   <div className="flex flex-col items-center">
-                    <div className="h-16 flex items-center justify-center">
-                      <span className="text-[7.5pt] text-zinc-400 italic font-medium">Assinatura</span>
-                    </div>
-                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
-                    <p className="font-bold text-zinc-900 text-[8.5pt] uppercase tracking-wider">Testemunha 1</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono">CPF: _________________</p>
+                    <div className="h-12 w-full border-b border-dashed border-zinc-400 mb-1.5"></div>
+                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Testemunha 1</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: _______________________</p>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="h-16 flex items-center justify-center">
-                      <span className="text-[7.5pt] text-zinc-400 italic font-medium">Assinatura</span>
-                    </div>
-                    <div className="w-4/5 border-t border-zinc-400 mt-1 mb-1"></div>
-                    <p className="font-bold text-zinc-900 text-[8.5pt] uppercase tracking-wider">Testemunha 2</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono">CPF: _________________</p>
+                    <div className="h-12 w-full border-b border-dashed border-zinc-400 mb-1.5"></div>
+                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Testemunha 2</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: _______________________</p>
                   </div>
 
                 </div>
+
+                {/* Rodapé institucional */}
+                <div className="mt-5 pt-3 border-t border-zinc-200 flex items-center justify-between">
+                  <p className="text-[7pt] text-zinc-400">
+                    ProtectRastreamento.com · CNPJ 42.818.864/0001-65
+                  </p>
+                  <p className="text-[7pt] text-zinc-400">
+                    +55 (31) 3371-8600 · info@protectrastreamento.com
+                  </p>
+                </div>
+
               </div>
 
             </article>

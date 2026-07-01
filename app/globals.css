@@ -20,6 +20,10 @@
   --font-mono: var(--font-geist-mono), monospace;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background-color: var(--background);
   color: var(--color-brand-black);
@@ -33,6 +37,10 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.overflow-y-auto, .overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Permitir seleção apenas em campos de input */
@@ -170,6 +178,7 @@ img {
     pointer-events: auto !important;
     max-width: 100% !important;
     height: auto !important;
+  }
 }
 
 @keyframes scaleIn {
@@ -197,6 +206,4 @@ img {
 
 .duration-200 {
   animation-duration: 200ms;
-}
-
 }
