@@ -110,23 +110,27 @@ export async function POST(request: Request) {
             ` : ''}
           </div>
 
-          <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
-            Referência Profissional
-          </h2>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
-            <tr>
-              <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #71717a;">CNPJ da Empresa:</td>
-              <td style="padding: 6px 0; color: #09090b;">${cnpj || 'Não Informado'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Nome do Contato:</td>
-              <td style="padding: 6px 0; color: #09090b;">${nomeContato || 'Não Informado'}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Telefone de Contato:</td>
-              <td style="padding: 6px 0; color: #09090b;">${telefoneEmpresa || 'Não Informado'}</td>
-            </tr>
-          </table>
+           <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
+             Referência Profissional
+           </h2>
+           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+             <tr>
+               <td style="padding: 6px 0; font-weight: 600; width: 180px; color: #71717a;">CNPJ da Empresa:</td>
+               <td style="padding: 6px 0; color: #09090b;">${cnpj || 'Não Informado'}</td>
+             </tr>
+             <tr>
+               <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Nome do Contato:</td>
+               <td style="padding: 6px 0; color: #09090b;">${nomeContato || 'Não Informado'}</td>
+             </tr>
+             <tr>
+               <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Telefone de Contato:</td>
+               <td style="padding: 6px 0; color: #09090b;">${telefoneEmpresa || 'Não Informado'}</td>
+             </tr>
+             <tr>
+               <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Forma de Pagamento:</td>
+               <td style="padding: 6px 0; color: #09090b;">${formaPagamento || 'Não Informado'}</td>
+             </tr>
+           </table>
 
           ${comentarios ? `
             <h2 style="font-size: 18px; font-weight: 600; color: #09090b; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #facc15; padding-bottom: 8px;">
