@@ -1413,7 +1413,7 @@ export default function Home() {
 
                   <div className="flex flex-col items-center">
                     <div className="h-14 flex items-center justify-center w-full border-b-2 border-zinc-700 mb-1.5">
-                      <span className="text-[7pt] text-zinc-400 italic">Assinatura da Contratada</span>
+                      
                     </div>
                     <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
                     <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 42.818.864/0001-65</p>
@@ -1453,15 +1453,15 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-6 text-center text-[9pt]">
 
                   <div className="flex flex-col items-center">
-                    <div className="h-12 w-full border-b border-dashed border-zinc-400 mb-1.5"></div>
-                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Testemunha 1</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: _______________________</p>
+                    <img src="/assinatura2.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
+                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Antonio C. Costa Junior</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 01.244.200/0001-52</p>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="h-12 w-full border-b border-dashed border-zinc-400 mb-1.5"></div>
-                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Testemunha 2</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: _______________________</p>
+                    <img src="/assinatura1.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
+                    <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Emerson N. do Carmo</p>
+                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: 001.583.866-80</p>
                   </div>
 
                 </div>
