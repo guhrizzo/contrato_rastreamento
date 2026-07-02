@@ -1072,11 +1072,11 @@ export default function Home() {
                   >
                     <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                       <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider">Plano Selecionado</span>
-                      <span className="text-sm font-bold text-zinc-900 leading-snug break-words">{activePlan.name}</span>
-                      <span className="text-xs text-zinc-500 font-semibold break-words">{activePlan.tracker} ({activePlan.billing})</span>
+                      <span className="text-sm font-bold text-zinc-900 leading-snug wrap-break-words">{activePlan.name}</span>
+                      <span className="text-xs text-zinc-500 font-semibold wrap-break-words">{activePlan.tracker} ({activePlan.billing})</span>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
-                      <span className="px-2.5 py-1 bg-brand-yellow/15 text-brand-black border border-brand-yellow/30 font-bold text-[10px] sm:text-xs rounded-full shadow-2xs text-left sm:text-right leading-tight max-w-full break-words">
+                      <span className="px-2.5 py-1 bg-brand-yellow/15 text-brand-black border border-brand-yellow/30 font-bold text-[10px] sm:text-xs rounded-full shadow-2xs text-left sm:text-right leading-tight max-w-full wrap-break-words">
                         {getDisplayPriceText()}
                       </span>
                       <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform duration-200 shrink-0 ${isPlanDropdownOpen ? 'transform rotate-180 text-brand-black' : ''}`} />
