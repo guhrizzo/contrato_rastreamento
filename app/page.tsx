@@ -23,7 +23,9 @@ interface ContractData {
   selectedPlan: string;
   customPlanPrice: string;
   dueDate: string;
+  // Armazena no formato YYYY-MM-DD (compatível com input type="date")
   contractDate: string;
+  contractNumber: string;
 }
 
 const FROTA_PLAN_ID = "frota_telemetria";
@@ -32,14 +34,117 @@ const SOB_CONSULTA_SEM_MINIMO = ["satelital", "video_monitoramento"];
 
 const PLANS = [
   { id: "basico_4g_moto", name: "Rastreamento Básico 4G (Moto) - Mensal", priceText: "R$ 59,90", detailText: "R$ 59,90 mensais", tracker: "Básico 4G (Moto)", billing: "Mensal" },
+  { id: "basico_4g_moto_anual", name: "Rastreamento Básico 4G (Moto) - Anual (15% desconto)", priceText: "R$ 610,98", detailText: "R$ 610,98 anuais (15% desconto)", tracker: "Básico 4G (Moto)", billing: "Anual" },
   { id: "basico_4g_carro", name: "Rastreamento Básico 4G (Carro) - Mensal", priceText: "R$ 69,90", detailText: "R$ 69,90 mensais", tracker: "Básico 4G (Carro)", billing: "Mensal" },
+  { id: "basico_4g_carro_anual", name: "Rastreamento Básico 4G (Carro) - Anual (15% desconto)", priceText: "R$ 712,92", detailText: "R$ 712,92 anuais (15% desconto)", tracker: "Básico 4G (Carro)", billing: "Anual" },
   { id: "basico_4g_bloqueio", name: "Rastreamento Básico 4G (Com Bloqueio) - Mensal", priceText: "R$ 79,90", detailText: "R$ 79,90 mensais", tracker: "Básico 4G com Bloqueio", billing: "Mensal" },
+  { id: "basico_4g_bloqueio_anual", name: "Rastreamento Básico 4G (Com Bloqueio) - Anual (15% desconto)", priceText: "R$ 814,98", detailText: "R$ 814,98 anuais (15% desconto)", tracker: "Básico 4G com Bloqueio", billing: "Anual" },
   { id: "basico_tag_anual", name: "Rastreamento Básico TAG - Anual", priceText: "R$ 399,90", detailText: "R$ 399,90 anuais", tracker: "Básico TAG", billing: "Anual" },
   { id: "obd2_4g_mensal", name: "Rastreamento OBD2 4G - Mensal", priceText: "R$ 69,90", detailText: "R$ 69,90 mensais", tracker: "OBD2 4G", billing: "Mensal" },
+  { id: "obd2_4g_anual", name: "Rastreamento OBD2 4G - Anual (15% desconto)", priceText: "R$ 712,92", detailText: "R$ 712,92 anuais (15% desconto)", tracker: "OBD2 4G", billing: "Anual" },
   { id: "frota_telemetria", name: "Rastreamento Frota + Telemetria", priceText: "A partir de R$ 89,90 (Preço sob consulta)", detailText: "A partir de R$ 89,90 (preço sob consulta)", tracker: "Frota + Telemetria", billing: "Mensal (sob consulta)" },
   { id: "satelital", name: "Rastreamento Satelital", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Satelital", billing: "Sob consulta" },
   { id: "video_monitoramento", name: "Video Monitoramento", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Vídeo Monitoramento", billing: "Sob consulta" },
 ];
+
+// ============================================================
+// UTILITÁRIOS DE DATA
+// ============================================================
+
+/** Converte "YYYY-MM-DD" (valor do input type=date) para "DD/MM/AAAA" (exibição no contrato) */
+function isoToBR(iso: string): string {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+/** Retorna a data de hoje no formato "YYYY-MM-DD" para o input type=date */
+function todayISO(): string {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, "0");
+  const d = String(today.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+// ============================================================
+// NÚMERO POR EXTENSO (suporte até 999.999)
+// ============================================================
+function numeroParaExtenso(valor: number): string {
+  const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove",
+    "dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+  const dezenas = ["", "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+  const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+  const parteInteira = Math.floor(valor);
+  const parteDecimal = Math.round((valor - parteInteira) * 100);
+
+  function menorQue1000(n: number): string {
+    if (n === 0) return "";
+    if (n < 20) return unidades[n];
+    if (n < 100) {
+      const dez = Math.floor(n / 10);
+      const uni = n % 10;
+      return dezenas[dez] + (uni > 0 ? " e " + unidades[uni] : "");
+    }
+    // 100–999
+    const cent = Math.floor(n / 100);
+    const rest = n % 100;
+    if (n === 100) return "cem";
+    if (rest === 0) return centenas[cent];
+    return centenas[cent] + " e " + menorQue1000(rest);
+  }
+
+  let extensoReais = "";
+
+  if (parteInteira === 0) {
+    extensoReais = "";
+  } else if (parteInteira < 1000) {
+    extensoReais = menorQue1000(parteInteira);
+  } else if (parteInteira < 1000000) {
+    const milhar = Math.floor(parteInteira / 1000);
+    const resto = parteInteira % 1000;
+    const milharTexto = milhar === 1 ? "mil" : menorQue1000(milhar) + " mil";
+    if (resto > 0) {
+      if (resto < 100 || resto % 100 === 0) {
+        extensoReais = milharTexto + " e " + menorQue1000(resto);
+      } else {
+        extensoReais = milharTexto + " " + menorQue1000(resto);
+      }
+    } else {
+      extensoReais = milharTexto;
+    }
+  } else {
+    return `R$ ${valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  if (parteInteira > 0) {
+    if (parteInteira === 1) {
+      extensoReais += " real";
+    } else {
+      extensoReais += " reais";
+    }
+  }
+
+  let extensoCentavos = "";
+  if (parteDecimal > 0) {
+    extensoCentavos = menorQue1000(parteDecimal);
+    if (parteDecimal === 1) {
+      extensoCentavos += " centavo";
+    } else {
+      extensoCentavos += " centavos";
+    }
+  }
+
+  if (extensoReais !== "" && extensoCentavos !== "") {
+    return extensoReais + " e " + extensoCentavos;
+  } else if (extensoReais !== "") {
+    return extensoReais;
+  } else if (extensoCentavos !== "") {
+    return extensoCentavos;
+  }
+  return "zero reais";
+}
 
 export default function Home() {
   const [data, setData] = useState<ContractData>({
@@ -58,7 +163,9 @@ export default function Home() {
     selectedPlan: "basico_4g_moto",
     customPlanPrice: "",
     dueDate: "05",
+    // Inicia vazio; o useEffect preenche com hoje em YYYY-MM-DD
     contractDate: "",
+    contractNumber: "",
   });
 
   const [activeTab, setActiveTab] = useState<"client" | "vehicle" | "plan" | "signature">("client");
@@ -152,15 +259,11 @@ export default function Home() {
     );
   };
 
-  // Define a data atual no formato DD/MM/AAAA por padrão
+  // BUG FIX: preenche contractDate no formato YYYY-MM-DD (compatível com input type="date")
   useEffect(() => {
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, "0");
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const year = today.getFullYear();
     setData((prev) => ({
       ...prev,
-      contractDate: prev.contractDate || `${day}/${month}/${year}`,
+      contractDate: prev.contractDate || todayISO(),
     }));
   }, []);
 
@@ -174,88 +277,43 @@ export default function Home() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Bloqueio de Ctrl+P / Cmd+P
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
-
-      // Bloqueio de F12 - Developer Tools
       if (e.key === 'F12') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
-
-      // Bloqueio de Ctrl+Shift+I - Developer Tools (Chrome, Firefox)
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
-
-      // Bloqueio de Ctrl+Shift+C - Element Inspector
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
-
-      // Bloqueio de Ctrl+Shift+J - Console (Chrome)
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'j') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
-
-      // Bloqueio de Ctrl+Shift+K - Console (Firefox)
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockDialog();
-        return;
+        e.preventDefault(); e.stopPropagation(); showBlockDialog(); return;
       }
     };
 
-    // Previne o menu de contexto (clique direito) - GLOBAL
     const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      showBlockDialog();
-      return false;
+      e.preventDefault(); e.stopImmediatePropagation(); showBlockDialog(); return false;
     };
 
-    // Bloqueia seleção de texto para proteger o contrato
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('aside')) {
-        e.preventDefault();
-        return false;
-      }
+      if (!target.closest('aside')) { e.preventDefault(); return false; }
     };
 
-    // Bloqueia cópia de dados do contrato
     const handleCopy = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('#contract-pdf')) {
-        e.preventDefault();
-        return false;
-      }
+      if (target.closest('#contract-pdf')) { e.preventDefault(); return false; }
     };
 
-    // Bloqueia corte de dados
     const handleCut = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('#contract-pdf')) {
-        e.preventDefault();
-        return false;
-      }
+      if (target.closest('#contract-pdf')) { e.preventDefault(); return false; }
     };
 
     window.addEventListener('keydown', handleKeyDown, true);
@@ -263,7 +321,6 @@ export default function Home() {
     window.addEventListener('selectstart', handleSelectStart, true);
     window.addEventListener('copy', handleCopy, true);
     window.addEventListener('cut', handleCut, true);
-
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('selectstart', handleSelectStart, true);
@@ -282,9 +339,16 @@ export default function Home() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    let filteredValue = value;
+
+    // BUG FIX: clientNumber aceita letras (ex: "S/N", "12A") — removido do filtro numérico
+    if (name === "clientDoc" || name === "clientPhone" || name === "clientCep" || name === "clientRg") {
+      filteredValue = value.replace(/[^\d()\-.\s]/g, "");
+    }
+
     setData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: filteredValue,
     }));
   };
 
@@ -315,22 +379,15 @@ export default function Home() {
     setEmailSent(false);
 
     try {
-      // Obtém o HTML do contrato
       const element = document.getElementById("contract-pdf");
-      if (!element) {
-        throw new Error("Contrato não encontrado");
-      }
+      if (!element) throw new Error("Contrato não encontrado");
 
       let htmlContent = element.innerHTML;
-
-      // Remove todas as tags <img> do HTML para o e-mail
       htmlContent = htmlContent.replace(/<img[^>]*>/g, "");
 
       const response = await fetch("/api/send-contract", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientEmail: data.clientEmail,
           clientName: data.clientName,
@@ -353,9 +410,10 @@ export default function Home() {
       }
 
       setEmailSent(true);
+      if (responseData.contractNumber) {
+        setData(prev => ({ ...prev, contractNumber: String(responseData.contractNumber) }));
+      }
       setTermsAccepted(false);
-
-      // Mostra mensagem de sucesso
       alert(`Contrato enviado para ${data.clientEmail} com sucesso!`);
     } catch (err) {
       console.error("Erro ao enviar email:", err);
@@ -457,13 +515,12 @@ export default function Home() {
 
     setIsGeneratingPDF(true);
 
-    // Criar um clone temporário e anexar ao body off-screen para captura correta
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.position = 'absolute';
     clone.style.left = '-9999px';
     clone.style.top = '-9999px';
     clone.style.display = 'block';
-    clone.style.width = '794px'; // Largura aproximada de A4 em pixels
+    clone.style.width = '794px';
     clone.style.height = 'auto';
     clone.style.transform = 'none';
     document.body.appendChild(clone);
@@ -484,24 +541,15 @@ export default function Home() {
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 0.98);
-
       const pdfWidth = 210;
       const pdfHeight = 297;
-
       const canvasWidthMm = pdfWidth;
       const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
 
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const marginTop = 0;
-      const marginBottom = 0;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
       if (canvasHeightMm <= pdfHeight) {
-        pdf.addImage(imgData, "JPEG", 0, marginTop, canvasWidthMm, canvasHeightMm);
+        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidthMm, canvasHeightMm);
       } else {
         const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
         let currentPage = 1;
@@ -509,38 +557,27 @@ export default function Home() {
 
         while (currentYPosition < canvas.height) {
           const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
-
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = canvas.width;
           tempCanvas.height = heightToCrop;
 
           const tempCtx = tempCanvas.getContext('2d');
           if (tempCtx) {
-            tempCtx.drawImage(
-              canvas,
-              0, currentYPosition,
-              canvas.width, heightToCrop,
-              0, 0,
-              canvas.width, heightToCrop
-            );
+            tempCtx.drawImage(canvas, 0, currentYPosition, canvas.width, heightToCrop, 0, 0, canvas.width, heightToCrop);
           }
 
           const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
-
-          if (currentPage > 1) {
-            pdf.addPage();
-          }
+          if (currentPage > 1) pdf.addPage();
 
           const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
-          pdf.addImage(croppedImgData, "JPEG", 0, marginTop, canvasWidthMm, heightInMm);
+          pdf.addImage(croppedImgData, "JPEG", 0, 0, canvasWidthMm, heightInMm);
 
           currentYPosition += heightToCrop;
           currentPage++;
         }
       }
 
-      const fileName = `Contrato_Rastreamento_${data.clientName.trim().replace(/\s+/g, "_") || "Cliente"
-        }.pdf`;
+      const fileName = `Contrato_Rastreamento_${data.clientName.trim().replace(/\s+/g, "_") || "Cliente"}.pdf`;
       pdf.save(fileName);
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
@@ -571,6 +608,32 @@ export default function Home() {
       return `R$ ${formatPlanPrice(customPriceValue)} mensais`;
     }
     return activePlan.detailText;
+  };
+
+  // BUG FIX: retorna o valor base do plano sem dividir por 12.
+  // Para planos anuais, exibe o valor anual total no contrato.
+  const getPlanPriceValue = (): number => {
+    if (isCustomPricePlan && customPriceValue !== null) {
+      return customPriceValue;
+    }
+    const priceMatch = activePlan.priceText.match(/[\d.]+,\d{2}|[\d]+/);
+    if (priceMatch) {
+      return parsePlanPrice(priceMatch[0]) ?? 0;
+    }
+    return 0;
+  };
+
+  const getPriceExtenso = (): string => {
+    const price = getPlanPriceValue();
+    if (price === 0) return "";
+    return numeroParaExtenso(price);
+  };
+
+  const getEquipamentoValorRetirada = (): string => {
+    const monthlyPrice = getPlanPriceValue();
+    if (!monthlyPrice) return "R$ 0,00";
+    const withdrawalValue = monthlyPrice * 9;
+    return `R$ ${formatPlanPrice(withdrawalValue)}`;
   };
 
   const handlePlanSelect = (planId: string) => {
@@ -820,6 +883,7 @@ export default function Home() {
                       name="clientDoc"
                       value={data.clientDoc}
                       onChange={handleChange}
+                      inputMode="numeric"
                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: 000.000.000-00"
                     />
@@ -847,10 +911,11 @@ export default function Home() {
                       Telefone / WhatsApp
                     </label>
                     <input
-                      type="text"
+                      type="tel"
                       name="clientPhone"
                       value={data.clientPhone}
                       onChange={handleChange}
+                      inputMode="tel"
                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: (11) 99999-9999"
                     />
@@ -887,6 +952,7 @@ export default function Home() {
                     />
                   </div>
                   <div className="flex flex-col">
+                    {/* BUG FIX: clientNumber aceita texto livre (S/N, 12A, etc.) */}
                     <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
                       <Hash className="w-3.5 h-3.5" />
                       Número
@@ -897,7 +963,7 @@ export default function Home() {
                       value={data.clientNumber}
                       onChange={handleChange}
                       className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                      placeholder="Ex: 1000"
+                      placeholder="Ex: 1000 ou S/N"
                     />
                   </div>
                 </div>
@@ -1116,6 +1182,7 @@ export default function Home() {
                       <Calendar className="w-3.5 h-3.5" />
                       Data do Contrato
                     </label>
+                    {/* BUG FIX: value em YYYY-MM-DD para o input type=date funcionar */}
                     <input
                       type="date"
                       name="contractDate"
@@ -1177,7 +1244,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* SEÇÃO DE TERMOS E ENVIO POR EMAIL */}
               {renderTermsSection()}
             </div>
           )}
@@ -1239,7 +1305,7 @@ export default function Home() {
 
               {/* TÍTULO */}
               <h2 className="text-center font-extrabold text-xs uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
-                CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR
+                CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR Nº {data.contractNumber}
               </h2>
 
               {/* CORPO */}
@@ -1318,10 +1384,10 @@ export default function Home() {
                     CLÁUSULA 5 – PAGAMENTO
                   </h4>
                   <p>
-                    O CONTRATANTE pagará à CONTRATADA o valor mensal fixado de acordo com o plano de serviço selecionado:
+                    O CONTRATANTE pagará à CONTRATADA o valor fixado de acordo com o plano de serviço selecionado:
                   </p>
                   <p className="mt-1 font-bold text-[9.5pt]">
-                    Mensalidade: {getDisplayPriceText()} ({getDisplayDetailText()})
+                    Valor do plano: {getDisplayPriceText()} ({getPriceExtenso()})
                   </p>
                   <p>
                     Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
@@ -1363,7 +1429,7 @@ export default function Home() {
                     CLÁUSULA 9 – RETIRADA DO EQUIPAMENTO
                   </h4>
                   <p>
-                    Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor padrão de <strong>R$ 1.000,00</strong>.
+                    Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor de <strong>{getEquipamentoValorRetirada()}</strong> (valor do plano vezes 9).
                   </p>
                 </div>
 
@@ -1388,7 +1454,6 @@ export default function Home() {
               </div>
 
               {/* ASSINATURA */}
-
               <div className="mt-6" style={{ pageBreakBefore: "auto", pageBreakInside: "avoid", breakInside: "avoid" }}>
 
                 {/* Faixa local/data */}
@@ -1398,7 +1463,8 @@ export default function Home() {
                   </p>
                   <p className="text-[8.5pt] font-semibold text-zinc-800 text-right">
                     Belo Horizonte – MG<br />
-                    <span className="font-bold text-zinc-900">{data.contractDate || "___/___/_____"}</span>
+                    {/* BUG FIX: converte YYYY-MM-DD → DD/MM/AAAA para exibição */}
+                    <span className="font-bold text-zinc-900">{isoToBR(data.contractDate) || "___/___/_____"}</span>
                   </p>
                 </div>
 
@@ -1413,7 +1479,6 @@ export default function Home() {
 
                   <div className="flex flex-col items-center">
                     <div className="h-14 flex items-center justify-center w-full border-b-2 border-zinc-700 mb-1.5">
-                      
                     </div>
                     <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
                     <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 42.818.864/0001-65</p>

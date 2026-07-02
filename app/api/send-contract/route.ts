@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { getNextContractNumber } from '@/lib/firebaseAdmin';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -125,8 +126,11 @@ export async function POST(request: Request) {
       }, { status: 500 });
     }
 
+    const nextContractNumber = await getNextContractNumber();
+
     return NextResponse.json({
       success: true,
+      contractNumber: nextContractNumber,
       message: `Contrato enviado com sucesso para Info@protectrastreamento.com e ${clientEmail}`
     });
 
