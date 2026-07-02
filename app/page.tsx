@@ -1222,8 +1222,8 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-8 w-auto" />
                   <div>
-                    <h1 className="font-extrabold text-base uppercase tracking-wider">
-                      Protect<span className="text-brand-yellow"> Rastreamento</span>
+                    <h1 className="font-extrabold text-base tracking-wider">
+                      Protect<span className="">Rastreamento</span>.com
                     </h1>
                     <div className="text-[7pt] text-zinc-500 uppercase tracking-wider font-semibold">
                       Segurança &amp; Rastreamento
@@ -1336,7 +1336,7 @@ export default function Home() {
                     CLÁUSULA 6 – INADIMPLÊNCIA
                   </h4>
                   <p>
-                    O atraso no pagamento implicará em multa de 2%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
+                    O atraso no pagamento implicará em multa de 10%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
                   </p>
                 </div>
 
