@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       nomeContato,
       telefoneEmpresa,
       comentarios,
+      formaPagamento,
       autorizacao,
       documentoBase64,
       documentoNome,

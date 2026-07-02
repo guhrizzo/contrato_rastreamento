@@ -38,6 +38,7 @@ interface FormState {
   nomeContato: string;
   telefoneEmpresa: string;
   comentarios: string;
+  formaPagamento: string;
   autorizacao: boolean;
 }
 
@@ -56,6 +57,7 @@ export default function CadastroInstalador() {
     nomeContato: '',
     telefoneEmpresa: '',
     comentarios: '',
+    formaPagamento: '',
     autorizacao: false,
   });
 
@@ -190,6 +192,7 @@ export default function CadastroInstalador() {
       formData.email.trim() !== '' &&
       formData.phone.trim() !== '' &&
       formData.tiposInstalacao.length > 0 &&
+      formData.formaPagamento !== '' &&
       formData.autorizacao === true
     );
   };
@@ -823,6 +826,33 @@ export default function CadastroInstalador() {
                 <p className="text-xs text-zinc-500">Envie o cadastro completo para nossa aprovação</p>
               </div>
 
+              <div className="flex flex-col mb-4">
+                <label className="text-xs font-bold text-zinc-700 uppercase mb-2 block">
+                  Modo de Recebimento de Pagamentos <span className="text-rose-500">*</span>
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {['PAGAMENTO MENSAL', 'PAGAMENTO QUINZENAL', 'OUTRO'].map(opcao => (
+                    <label
+                      key={opcao}
+                      className={`flex items-center gap-3 p-3 border rounded-md cursor-pointer transition duration-150 ${formData.formaPagamento === opcao
+                          ? 'bg-amber-50/70 border-brand-yellow-dark text-amber-950 font-semibold'
+                          : 'bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100'
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        name="formaPagamento"
+                        value={opcao}
+                        checked={formData.formaPagamento === opcao}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 accent-brand-yellow text-brand-black focus:ring-brand-black"
+                      />
+                      <span className="text-xs">{opcao}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-col">
                 <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
                   Comentários / Observações
@@ -1025,28 +1055,48 @@ export default function CadastroInstalador() {
                </table>
              </div>
 
-             {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
-             <div style={{ marginBottom: '18px' }}>
-               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                 4. Documentos e Informações Adicionais
-               </h4>
-               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                 <tbody>
-                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
-                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Anexo Enviado:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{documentoFile ? `SIM (${documentoFile.nome})` : 'NÃO ANEXADO'}</td>
-                   </tr>
-                   <tr>
-                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Comentários:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
-                       {formData.comentarios || 'Nenhum comentário adicional fornecido.'}
-                     </td>
-                   </tr>
-                 </tbody>
-               </table>
-             </div>
+              {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
+              <div style={{ marginBottom: '18px' }}>
+                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                  4. Documentos e Informações Adicionais
+                </h4>
+                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Anexo Enviado:</td>
+                      <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{documentoFile ? `SIM (${documentoFile.nome})` : 'NÃO ANEXADO'}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Comentários:</td>
+                      <td style={{ padding: '8px', color: '#09090b', fontWeight: '500', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
+                        {formData.comentarios || 'Nenhum comentário adicional fornecido.'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-             {/* Declaração e Rodapé de Assinatura */}
+              {/* SEÇÃO 5: INFORMAÇÕES SOBRE O PAGAMENTO */}
+              <div style={{ marginBottom: '18px' }}>
+                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#002060', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                  INFORMAÇÕES SOBRE O PAGAMENTO
+                </h4>
+                <div style={{ fontSize: '11px', color: '#3f3f46', lineHeight: '1.5', textAlign: 'justify' }}>
+                  <p style={{ margin: '0 0 8px 0' }}>
+                    1. O pagamento será efetuado via transferência bancária ou PIX exclusivamente para a conta vinculada ao mesmo CNPJ/CPF com o qual foi firmado o presente contrato, mediante expressa aprovação da Softruck.
+                  </p>
+                  <p style={{ margin: '0 0 8px 0' }}>
+                    2. Preencha por qual modo deseja ou espera receber os pagamentos dos serviços realizados, sendo eles:
+                  </p>
+                   <div style={{ padding: '10px', border: '1px solid #d4d4d8', borderRadius: '4px', backgroundColor: '#f9fafb' }}>
+                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Forma selecionada: {formData.formaPagamento || 'Não selecionada'}</div>
+                     <div style={{ fontSize: '10px', marginTop: '4px' }}>{formData.comentarios || '__________________________________________________________________________'}</div>
+                   </div>
+                </div>
+              </div>
+
+              {/* Declaração e Rodapé de Assinatura */}
+
              <div style={{ borderTop: '2px solid #09090b', paddingTop: '16px' }}>
                <p style={{ fontSize: '10px', color: '#52525b', lineHeight: '1.5', textAlign: 'justify', marginBottom: '20px' }}>
                  Declaro para os devidos fins de direito que todas as informações prestadas nesta ficha de qualificação são verdadeiras e completas. Fica a Protect Rastreamento autorizada a realizar a validação e auditoria dos referidos dados e documentos junto aos órgãos competentes ou às empresas indicadas como referências profissionais para a homologação do meu cadastro operacional.
