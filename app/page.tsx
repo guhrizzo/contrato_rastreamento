@@ -30,7 +30,7 @@ interface ContractData {
 
 const FROTA_PLAN_ID = "frota_telemetria";
 const FROTA_MIN_PRICE = 89.9;
-const SOB_CONSULTA_SEM_MINIMO = ["satelital", "video_monitoramento"];
+const SOB_CONSULTA_SEM_MINIMO = ["satelital", "video_monitoramento", "diversos"];
 
 const PLANS = [
   { id: "basico_4g_moto", name: "Rastreamento Básico 4G (Moto) - Mensal", priceText: "R$ 59,90", detailText: "R$ 59,90 mensais", tracker: "Básico 4G (Moto)", billing: "Mensal" },
@@ -40,11 +40,13 @@ const PLANS = [
   { id: "basico_4g_bloqueio", name: "Rastreamento Básico 4G (Com Bloqueio) - Mensal", priceText: "R$ 79,90", detailText: "R$ 79,90 mensais", tracker: "Básico 4G com Bloqueio", billing: "Mensal" },
   { id: "basico_4g_bloqueio_anual", name: "Rastreamento Básico 4G (Com Bloqueio) - Anual (15% desconto)", priceText: "R$ 814,98", detailText: "R$ 814,98 anuais (15% desconto)", tracker: "Básico 4G com Bloqueio", billing: "Anual" },
   { id: "basico_tag_anual", name: "Rastreamento Básico TAG - Anual", priceText: "R$ 399,90", detailText: "R$ 399,90 anuais", tracker: "Básico TAG", billing: "Anual" },
+  { id: "basico_tag_mensal", name: "Rastreamento Básico TAG - Mensal", priceText: "R$ 49,90", detailText: "R$ 49,90 mensais", tracker: "Básico TAG", billing: "Mensal" },
   { id: "obd2_4g_mensal", name: "Rastreamento OBD2 4G - Mensal", priceText: "R$ 69,90", detailText: "R$ 69,90 mensais", tracker: "OBD2 4G", billing: "Mensal" },
   { id: "obd2_4g_anual", name: "Rastreamento OBD2 4G - Anual (15% desconto)", priceText: "R$ 712,92", detailText: "R$ 712,92 anuais (15% desconto)", tracker: "OBD2 4G", billing: "Anual" },
   { id: "frota_telemetria", name: "Rastreamento Frota + Telemetria", priceText: "A partir de R$ 89,90 (Preço sob consulta)", detailText: "A partir de R$ 89,90 (preço sob consulta)", tracker: "Frota + Telemetria", billing: "Mensal (sob consulta)" },
   { id: "satelital", name: "Rastreamento Satelital", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Satelital", billing: "Sob consulta" },
   { id: "video_monitoramento", name: "Video Monitoramento", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Vídeo Monitoramento", billing: "Sob consulta" },
+  { id: "diversos", name: "Rastreamento Diversos", priceText: "Preço sob consulta", detailText: "Preço sob consulta", tracker: "Diversos", billing: "Sob consulta" },
 ];
 
 // ============================================================
@@ -344,6 +346,8 @@ export default function Home() {
     // BUG FIX: clientNumber aceita letras (ex: "S/N", "12A") — removido do filtro numérico
     if (name === "clientDoc" || name === "clientPhone" || name === "clientCep" || name === "clientRg") {
       filteredValue = value.replace(/[^\d()\-.\s]/g, "");
+    } else if (name === "customPlanPrice") {
+      filteredValue = value.replace(/[^\d,]/g, "");
     }
 
     setData((prev) => ({
@@ -683,7 +687,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-zinc-700 rounded transition-colors cursor-pointer"
+                className="p-2.5 min-w-11 min-h-11 flex items-center justify-center hover:bg-zinc-700 rounded transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-zinc-300" />
               </button>
@@ -715,7 +719,7 @@ export default function Home() {
             <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
               <button
                 onClick={() => setShowPrintBlockDialog(false)}
-                className="px-5 py-2.5 min-h-[44px] bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
+                className="px-5 py-2.5 min-h-11 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
               >
                 Entendi
               </button>
@@ -814,7 +818,7 @@ export default function Home() {
         <nav className="flex bg-zinc-100 border-b border-zinc-200 shrink-0">
           <button
             onClick={() => setActiveTab("client")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "client"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-12 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "client"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
               }`}
@@ -824,7 +828,7 @@ export default function Home() {
 
           <button
             onClick={() => setActiveTab("plan")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "plan"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-12 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "plan"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
               }`}
@@ -834,7 +838,7 @@ export default function Home() {
 
           <button
             onClick={() => setActiveTab("signature")}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-[48px] text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "signature"
+            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-12 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "signature"
                 ? "bg-white border-brand-black text-brand-black"
                 : "border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50"
               }`}
@@ -1103,14 +1107,14 @@ export default function Home() {
                               }`}
                           >
                             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                              <span className={`text-sm font-bold leading-snug break-words ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
+                              <span className={`text-sm font-bold leading-snug wrap-break-words ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
                                 {plan.name}
                               </span>
-                              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider break-words">
+                              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider wrap-break-words">
                                 {plan.tracker} • {plan.billing}
                               </span>
                             </div>
-                            <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight break-words max-w-full ${isSelected
+                            <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight wrap-break-words max-w-full ${isSelected
                                 ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs'
                                 : 'bg-zinc-50 text-zinc-600 border-zinc-200'
                               }`}>
