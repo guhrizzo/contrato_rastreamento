@@ -61,18 +61,20 @@ export default function Footer() {
         <div className="pf-right">
           <h3 className="pf-col-title">Baixe o App</h3>
           <div className="pf-app-badges">
-            <a
+            
+              <a
               className="pf-badge"
               href="https://apps.apple.com/br/app/grupo-protect-rastreamento/id6738363845"
               target="_blank"
               rel="noopener noreferrer"
+              style={{backgroundColor: '#1a1a1a', border: 'none'}}
             >
-              <div className="pf-badge-icon">
+              <div className="pf-badge-icon" style={{color: 'white'}}>
                 <i className="ti ti-brand-apple" style={{ fontSize: "22px", lineHeight: 1 }} />
               </div>
-              <div className="pf-badge-text">
-                <span>Disponível na</span>
-                <span>App Store</span>
+              <div className="pf-badge-text" style={{color: 'white'}}>
+                <span style={{color: '#d1d1d1'}}>Disponível na</span>
+                <span style={{color: 'white'}}>App Store</span>
               </div>
             </a>
             <a
@@ -80,13 +82,14 @@ export default function Footer() {
               href="https://play.google.com/store/apps/details?id=com.softruck.protectrast"
               target="_blank"
               rel="noopener noreferrer"
+              style={{backgroundColor: '#1a1a1a', border: 'none'}}
             >
-              <div className="pf-badge-icon">
+              <div className="pf-badge-icon" style={{color: 'white'}}>
                 <i className="ti ti-brand-google-play" style={{ fontSize: "22px", lineHeight: 1 }} />
               </div>
-              <div className="pf-badge-text">
-                <span>Disponível no</span>
-                <span>Google Play</span>
+              <div className="pf-badge-text" style={{color: 'white'}}>
+                <span style={{color: '#d1d1d1'}}>Disponível no</span>
+                <span style={{color: 'white'}}>Google Play</span>
               </div>
             </a>
           </div>
