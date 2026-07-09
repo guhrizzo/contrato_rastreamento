@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from "react";
 /* ============================================================
    NAVBAR — Protect Rastreamento
    Fontes: DM Sans + Inter | Ícones: Tabler Icons (via CDN)
-   Inclui: topbar com redes sociais e seletor de idioma (Google
-   Translate), menu desktop com dropdowns (+ submenu de 2º nível
-   em "Pessoas"), drawer mobile com acordeões, e integração
-   completa com o widget do Google Translate.
+   Layout: topbar com logo + redes sociais + idioma + botão de
+   plataforma, e abaixo um menu estilo "pílula preta" com
+   dropdowns (+ submenu de 2º nível em "Pessoas").
+   Drawer mobile com acordeões e integração completa com o
+   widget do Google Translate.
    ============================================================ */
 
 type Lang = "pt" | "en" | "es";
@@ -187,8 +188,18 @@ export default function Navbar() {
 
   return (
     <div className="nb-root">
-      {/* ─── Topbar ─────────────────────────────────────────── */}
+      {/* ─── Topbar (logo + redes sociais + idioma + botão) ────── */}
       <div className="nb-topbar">
+        <a href="https://protectrastreamento.com.br/" className="nb-logo-link">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="nb-logo-img"
+            src="https://protectrastreamento.com.br/wp-content/uploads/2025/01/Sem-Titulo-1.png"
+            alt="Protect Rastreamento"
+            style={{ width: "auto", maxWidth: "100%", objectFit: "contain", display: "block" }}
+          />
+        </a>
+
         <div className="nb-socials">
           <a href="https://www.instagram.com/protect.rastreamento/" aria-label="Instagram">
             <i className="ti ti-brand-instagram" />
@@ -206,6 +217,7 @@ export default function Navbar() {
             <i className="ti ti-brand-youtube" />
           </a>
         </div>
+
         <div className="nb-topbar-right">
           <div className="nd-lang-desktop">
             {LANGS.map((l) => (
@@ -225,20 +237,19 @@ export default function Navbar() {
             Acessar plataforma
           </a>
         </div>
+
+        <button
+          className="nb-hamburger"
+          aria-label="Abrir menu"
+          aria-expanded={drawerOpen}
+          onClick={toggleDrawer}
+        >
+          <i className={drawerOpen ? "ti ti-x" : "ti ti-menu-2"} />
+        </button>
       </div>
 
-      {/* ─── Barra principal (logo + menu desktop) ─────────────── */}
+      {/* ─── Menu principal estilo pílula preta ─────────────────── */}
       <div className="nb-main">
-        <a href="https://protectrastreamento.com.br/" style={{ display: "block" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="nb-logo-img"
-            src="https://protectrastreamento.com.br/wp-content/uploads/2025/01/Sem-Titulo-1.png"
-            alt="Protect Rastreamento"
-            style={{ width: "auto", maxWidth: "100%", objectFit: "contain", display: "block" }}
-          />
-        </a>
-
         <nav className="nb-desktop-nav" aria-label="Menu principal">
           <div className="nd-item">
             <a href="https://protectrastreamento.com.br/" className="nd-link">
@@ -338,15 +349,6 @@ export default function Navbar() {
             <i className="ti ti-file-signature" aria-hidden="true" /> Contrato
           </a>
         </nav>
-
-        <button
-          className="nb-hamburger"
-          aria-label="Abrir menu"
-          aria-expanded={drawerOpen}
-          onClick={toggleDrawer}
-        >
-          <i className={drawerOpen ? "ti ti-x" : "ti ti-menu-2"} />
-        </button>
       </div>
 
       {/* ─── Drawer mobile ─────────────────────────────────────── */}
@@ -560,17 +562,16 @@ export default function Navbar() {
         }
         .nb-topbar {
           background: #f7f7f7;
-          padding: 8px 24px;
+          padding: 12px 24px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
           border-bottom: 1px solid #e8e8e8;
-          gap: 12px;
+          gap: 20px;
+          position: relative;
         }
-        .nb-topbar-right {
-          display: flex;
-          align-items: center;
-          gap: 14px;
+        .nb-logo-link {
+          display: block;
+          flex-shrink: 0;
         }
         .nb-socials {
           display: flex;
@@ -594,6 +595,12 @@ export default function Navbar() {
           background: #ffb703;
           color: #111;
           transform: translateY(-2px);
+        }
+        .nb-topbar-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-left: auto;
         }
         .nb-platform-btn {
           display: inline-flex;
@@ -640,16 +647,6 @@ export default function Navbar() {
         .nb-platform-btn-mobile i {
           font-size: 18px;
         }
-        .nb-main {
-          background: #fff;
-          padding: 10px 24px;
-          min-height: 75px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-bottom: 1px solid #ebebeb;
-          position: relative;
-        }
         .nb-hamburger {
           background: none;
           border: 1px solid #ddd;
@@ -664,16 +661,36 @@ export default function Navbar() {
           font-size: 20px;
           transition: border-color 0.2s, background 0.2s;
           flex-shrink: 0;
+          position: absolute;
+          right: 24px;
+          top: 50%;
+          transform: translateY(-50%);
         }
         .nb-hamburger:hover {
           border-color: #c99a00;
           background: #fafafa;
         }
+
+        .nb-main {
+          background: #fff;
+          padding: 14px 24px 18px;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 14px;
+          border-bottom: 1px solid #ebebeb;
+          position: relative;
+        }
+
         .nb-desktop-nav {
           display: flex;
           align-items: center;
-          gap: 0;
-          height: 100%;
+          justify-content: center;
+          width: 100%;
+          background: #1a1a1a;
+          gap: 32px;
+          border-radius: 50px;
+          padding: 6px 12px;
         }
         .nb-desktop-nav .nd-item {
           position: relative;
@@ -684,45 +701,49 @@ export default function Navbar() {
         .nb-desktop-nav .nd-link {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 5px;
-          padding: 0 11px;
+          padding: 12px 10px;
           height: 100%;
-          color: #333;
+          color: #fff;
           font-family: "DM Sans", sans-serif;
-          font-size: 14.5px;
-          font-weight: 500;
+          font-size: 12.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
           text-decoration: none;
           white-space: nowrap;
           cursor: pointer;
-          border-bottom: 2px solid transparent;
-          transition: color 0.2s, border-color 0.2s;
+          border-radius: 30px;
+          border-bottom: none;
+          transition: color 0.2s;
           user-select: none;
         }
         .nb-desktop-nav .nd-link i.ti-chevron-down {
           font-size: 11px;
-          color: #bbb;
-          transition: transform 0.2s;
+          color: #999;
+          transition: transform 0.2s, color 0.2s;
         }
         .nb-desktop-nav .nd-item:hover > .nd-link,
         .nb-desktop-nav .nd-item:focus-within > .nd-link {
-          color: #c99a00;
-          border-bottom-color: #f5c000;
+          color: #f5c000;
+          background: transparent;
         }
         .nb-desktop-nav .nd-item:hover > .nd-link i.ti-chevron-down,
         .nb-desktop-nav .nd-item:focus-within > .nd-link i.ti-chevron-down {
           transform: rotate(180deg);
-          color: #c99a00;
+          color: #f5c000;
         }
         .nd-dropdown {
           position: absolute;
           top: 100%;
           left: 0;
-          background: #fff;
-          border: 1px solid #ebebeb;
+          background: #1a1a1a;
+          border: 1px solid #333;
           border-top: 2px solid #f5c000;
           border-radius: 0 0 12px 12px;
-          min-width: 210px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          min-width: 220px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
           opacity: 0;
           pointer-events: none;
           transform: translateY(6px);
@@ -730,6 +751,7 @@ export default function Navbar() {
           z-index: 999;
           list-style: none;
           padding: 6px 0;
+          margin-top: 6px;
         }
         .nb-desktop-nav .nd-item:hover > .nd-dropdown,
         .nb-desktop-nav .nd-item:focus-within > .nd-dropdown {
@@ -742,25 +764,25 @@ export default function Navbar() {
           align-items: center;
           gap: 10px;
           padding: 10px 18px;
-          color: #555;
+          color: #eee;
           font-family: "Inter", sans-serif;
           font-size: 13px;
           text-decoration: none;
           transition: color 0.15s, background 0.15s, padding-left 0.15s;
-          border-bottom: 1px solid #f5f5f5;
+          border-bottom: 1px solid #2a2a2a;
         }
         .nd-dropdown li:last-child a {
           border-bottom: none;
         }
         .nd-dropdown li a:hover {
-          color: #c99a00;
-          background: #fef9e7;
-          padding-left: 24px;
+          color: #f5c000;
+          background: #262626;
+          padding-left: 22px;
         }
         .nd-dropdown li a i {
           font-size: 14px;
           color: #f5c000;
-          opacity: 0.85;
+          opacity: 0.9;
           flex-shrink: 0;
         }
 
@@ -769,7 +791,7 @@ export default function Navbar() {
         }
         .nd-dropdown li.nd-has-sub > a i.ti-chevron-right {
           font-size: 11px;
-          color: #bbb;
+          color: #666;
           margin-left: auto;
           padding-left: 8px;
         }
@@ -777,12 +799,12 @@ export default function Navbar() {
           position: absolute;
           top: -1px;
           left: 100%;
-          background: #fff;
-          border: 1px solid #ebebeb;
+          background: #1a1a1a;
+          border: 1px solid #333;
           border-top: 2px solid #f5c000;
           border-radius: 0 12px 12px 12px;
           min-width: 180px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
           opacity: 0;
           pointer-events: none;
           transform: translateX(6px);
@@ -832,16 +854,17 @@ export default function Navbar() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          margin-left: 8px;
-          padding: 8px 14px;
+          margin-left: 5px;
+          padding: 10px 14px;
           background: #ffb703;
           color: #111 !important;
           font-family: "DM Sans", sans-serif;
           font-weight: 700;
-          border-radius: 7px;
+          border-radius: 30px;
           text-decoration: none;
           transition: background 0.2s;
           white-space: nowrap;
+          flex-shrink: 0;
         }
         .nd-cta:hover {
           background: #e0ae00 !important;
@@ -1074,8 +1097,8 @@ export default function Navbar() {
             display: flex;
           }
           .nb-logo-img {
-            height: 65px !important;
-            max-width: 220px !important;
+            height: 50px !important;
+            max-width: 180px !important;
           }
           .nb-platform-btn {
             display: none;
@@ -1084,6 +1107,9 @@ export default function Navbar() {
             display: flex;
           }
           .nd-lang-desktop {
+            display: none;
+          }
+          .nb-socials {
             display: none;
           }
         }
@@ -1095,8 +1121,8 @@ export default function Navbar() {
             display: none;
           }
           .nb-logo-img {
-            height: 85px !important;
-            max-width: 280px !important;
+            height: 65px !important;
+            max-width: 240px !important;
           }
         }
       `}</style>
