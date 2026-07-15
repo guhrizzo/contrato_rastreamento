@@ -636,15 +636,20 @@ function makeId(gi: number, ii: number) {
 }
 
 export default function ProductSelector() {
-    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [quantities, setQuantities] = useState<Record<string, number>>({});
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-    const toggleSelected = (id: string) => {
-        setSelected((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
+    const updateQuantity = (id: string, delta: number) => {
+        setQuantities((prev) => {
+            const current = prev[id] || 0;
+            const next = Math.max(0, current + delta);
+            const copy = { ...prev };
+            if (next === 0) {
+                delete copy[id];
+            } else {
+                copy[id] = next;
+            }
+            return copy;
         });
     };
 
@@ -657,7 +662,7 @@ export default function ProductSelector() {
         });
     };
 
-    const clearSelection = () => setSelected(new Set());
+    const clearSelection = () => setQuantities({});
 
     // mapa id -> nome, para montar a lista final sem precisar varrer o DOM
     const idToName = useMemo(() => {
@@ -670,22 +675,25 @@ export default function ProductSelector() {
         return map;
     }, []);
 
-    const selectedCount = selected.size;
+    const selectedCount = Object.values(quantities).reduce((acc, q) => acc + q, 0);
+    const selectedItemsCount = Object.keys(quantities).length;
 
     const handleSend = () => {
-        if (selectedCount === 0) return;
+        if (selectedItemsCount === 0) return;
 
-        const names: string[] = [];
-        selected.forEach((id) => {
+        const lines: string[] = [];
+        let index = 1;
+        Object.entries(quantities).forEach(([id, qty]) => {
             const name = idToName.get(id);
-            if (name) names.push(name);
+            if (name && qty > 0) {
+                lines.push(`${index}. ${qty}x ${name}`);
+                index++;
+            }
         });
 
         let msg = "Olá! Gostaria de solicitar um orçamento dos seguintes produtos:\n\n";
-        names.forEach((name, i) => {
-            msg += `${i + 1}. ${name}\n`;
-        });
-        msg += "\nAguardo o retorno, obrigado!";
+        msg += lines.join("\n");
+        msg += "\n\nAguardo o retorno, obrigado!";
 
         const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
         window.open(url, "_blank", "noopener");
@@ -706,7 +714,9 @@ export default function ProductSelector() {
 
                 <div>
                     {DATA.map((group, gi) => {
-                        const catCount = group.items.filter((_, ii) => selected.has(makeId(gi, ii))).length;
+                        const catCount = group.items.reduce((acc, _, ii) => {
+                            return acc + (quantities[makeId(gi, ii)] || 0);
+                        }, 0);
 
                         return (
                             <div className="psel-cat" key={group.cat}>
@@ -722,7 +732,8 @@ export default function ProductSelector() {
                                 <div className="psel-grid">
                                     {group.items.map((item, ii) => {
                                         const id = makeId(gi, ii);
-                                        const isSelected = selected.has(id);
+                                        const qty = quantities[id] || 0;
+                                        const isSelected = qty > 0;
                                         const isExpanded = expanded.has(id);
                                         const list = item.list && item.list.length ? item.list : FALLBACK_LIST;
 
@@ -730,22 +741,10 @@ export default function ProductSelector() {
                                             <div
                                                 key={id}
                                                 className={`psel-card${isSelected ? " selected" : ""}`}
-                                                onClick={() => toggleSelected(id)}
+                                                onClick={() => toggleExpanded(id)}
                                             >
                                                 <div className="psel-img-wrap">
                                                     {item.tag && <span className="psel-tag">{item.tag}</span>}
-                                                    <div className="psel-check">
-                                                        <svg
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth={3}
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        >
-                                                            <path d="M5 12l5 5L19 7" />
-                                                        </svg>
-                                                    </div>
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img src={item.img} alt={item.n} loading="lazy" />
                                                 </div>
@@ -767,16 +766,50 @@ export default function ProductSelector() {
                                                         </div>
                                                     </div>
 
-                                                    <button
-                                                        type="button"
-                                                        className="psel-more"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleExpanded(id);
-                                                        }}
-                                                    >
-                                                        {isExpanded ? "Ver menos" : "Ver mais"}
-                                                    </button>
+                                                    <div className="psel-actions" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="psel-qty-control">
+                                                            <button type="button" className="psel-qty-btn" onClick={() => updateQuantity(id, -1)} disabled={qty === 0}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M5 12h14" /></svg>
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                className="psel-qty-val"
+                                                                value={qty.toString()}
+                                                                onChange={(e) => {
+                                                                    const raw = e.target.value;
+                                                                    if (raw === '') {
+                                                                        // Se esvaziar, zera a quantidade (remove)
+                                                                        setQuantities(prev => {
+                                                                            const copy = { ...prev };
+                                                                            delete copy[id];
+                                                                            return copy;
+                                                                        });
+                                                                    } else {
+                                                                        const val = parseInt(raw, 10);
+                                                                        if (!isNaN(val) && val >= 0) {
+                                                                            setQuantities(prev => {
+                                                                                const copy = { ...prev };
+                                                                                if (val === 0) delete copy[id];
+                                                                                else copy[id] = val;
+                                                                                return copy;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <button type="button" className="psel-qty-btn psel-qty-plus" onClick={() => updateQuantity(id, 1)}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 5v14M5 12h14" /></svg>
+                                                            </button>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="psel-more"
+                                                            onClick={() => toggleExpanded(id)}
+                                                        >
+                                                            {isExpanded ? "Ocultar" : "Detalhes"}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -788,12 +821,12 @@ export default function ProductSelector() {
                 </div>
             </div>
 
-            <div className={`psel-bar${selectedCount > 0 ? " show" : ""}`}>
+            <div className={`psel-bar${selectedItemsCount > 0 ? " show" : ""}`}>
                 <div className="psel-bar-info">
                     <b>
-                        {selectedCount} {selectedCount === 1 ? "produto" : "produtos"}
+                        {selectedCount} {selectedCount === 1 ? "item selecionado" : "itens selecionados"}
                     </b>
-                    <small>selecionados para o orçamento</small>
+                    <small>{selectedItemsCount} {selectedItemsCount === 1 ? "produto diferente" : "produtos diferentes"}</small>
                 </div>
                 <div className="psel-bar-actions">
                     <button className="psel-clear" onClick={clearSelection}>
@@ -910,12 +943,9 @@ export default function ProductSelector() {
           display: inline-block;
         }
 
-        /* Grid: colunas de largura mínima fixa, distribuídas igualmente
-           (auto-fit fecha os "buracos" quando sobram poucos itens na
-           última linha) e todos os cards com a mesma altura de linha. */
         .psel-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           grid-auto-rows: 1fr;
           align-items: stretch;
           gap: 20px;
@@ -930,9 +960,12 @@ export default function ProductSelector() {
           overflow: hidden;
           cursor: pointer;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
           background: #fff;
+        }
+        .psel-card:last-child:nth-child(odd) {
+          grid-column: 1 / -1;
         }
         .psel-card:hover {
           transform: translateY(-3px);
@@ -944,16 +977,19 @@ export default function ProductSelector() {
         }
 
         .psel-img-wrap {
-          width: 100%;
-          aspect-ratio: 1 / 1;
+          width: 220px;
           background: var(--imgbg);
-          padding: 24px;
+          padding: 20px;
           position: relative;
           flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-right: 1px solid var(--line);
         }
         .psel-card :global(img) {
           width: 100%;
-          height: 100%;
+          max-height: 180px;
           object-fit: contain;
         }
 
@@ -969,45 +1005,16 @@ export default function ProductSelector() {
           padding: 4px 9px;
           border-radius: 5px;
           text-transform: uppercase;
-        }
-        .psel-check {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          border: 2px solid #d8d8d8;
-          background: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
           z-index: 2;
         }
-        .psel-check svg {
-          width: 13px;
-          height: 13px;
-          opacity: 0;
-          transition: opacity 0.2s ease;
-          color: var(--ink);
-        }
-        .psel-card.selected .psel-check {
-          background: var(--gold);
-          border-color: var(--gold);
-        }
-        .psel-card.selected .psel-check svg {
-          opacity: 1;
-        }
-
         /* Corpo do card ocupa o restante da altura da linha; o botão
            "Ver mais" fica sempre colado no rodapé (margin-top: auto),
            então todos os cards de uma mesma linha terminam alinhados. */
         .psel-body {
-          padding: 16px 16px 14px;
+          padding: 20px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 12px;
           flex: 1;
         }
         .psel-body-top {
@@ -1031,12 +1038,11 @@ export default function ProductSelector() {
         }
 
         .psel-extra {
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.4s ease;
+          max-height: none;
+          overflow: visible;
         }
         .psel-extra.open {
-          max-height: 600px;
+          /* fallback if ever needed */
         }
         .psel-extra-inner {
           padding-top: 10px;
@@ -1063,10 +1069,65 @@ export default function ProductSelector() {
           margin: 8px 0 0;
         }
 
-        .psel-more {
+        .psel-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
           margin-top: auto;
-          display: block;
-          width: 100%;
+          padding-top: 14px;
+        }
+
+        .psel-qty-control {
+          display: flex;
+          align-items: center;
+          border: 1.5px solid var(--line);
+          border-radius: 8px;
+          overflow: hidden;
+          background: #fff;
+        }
+        .psel-qty-btn {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg);
+          border: none;
+          cursor: pointer;
+          color: var(--ink);
+          transition: background 0.2s;
+        }
+        .psel-qty-btn:hover:not(:disabled) {
+          background: #e0e0e0;
+        }
+        .psel-qty-btn:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+        .psel-qty-btn svg {
+          width: 16px;
+          height: 16px;
+        }
+        .psel-qty-val {
+          width: 40px;
+          text-align: center;
+          font-weight: 800;
+          font-size: 14px;
+          color: var(--ink);
+          border: none;
+          background: transparent;
+          outline: none;
+          -moz-appearance: textfield;
+        }
+        .psel-qty-val::-webkit-outer-spin-button,
+        .psel-qty-val::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        .psel-more {
+          display: none;
+          flex: 1;
           background: transparent;
           color: var(--ink);
           font-family: inherit;
@@ -1166,7 +1227,33 @@ export default function ProductSelector() {
 
         @media (max-width: 1024px) {
           .psel-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
+          }
+        }
+        @media (max-width: 768px) {
+          .psel-extra {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+          }
+          .psel-extra.open {
+            max-height: 600px;
+          }
+          .psel-more {
+            display: block;
+          }
+          .psel-card {
+            flex-direction: column;
+          }
+          .psel-img-wrap {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--line);
+            aspect-ratio: 1 / 1;
+            padding: 24px;
+          }
+          .psel-card :global(img) {
+            max-height: 100%;
           }
         }
         @media (max-width: 560px) {
