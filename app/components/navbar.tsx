@@ -317,6 +317,8 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-aventuras/"><i className="ti ti-mountain"></i>Aventuras</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-mineracao/"><i className="ti ti-hammer"></i>Mineração</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-concretagem/"><i className="ti ti-building"></i>Concretagem</a></li>
+                <li><a href="https://protectrastreamento.com.br/video-monitoramento/"><i className="ti ti-video"></i>Vídeo Monitoramento</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-satelital/"><i className="ti ti-satellite"></i>Rastreamento Satelital</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
               </ul>
@@ -375,6 +377,8 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-aventuras/"><i className="ti ti-mountain"></i>Aventuras</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-mineracao/"><i className="ti ti-hammer"></i>Mineração</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-concretagem/"><i className="ti ti-building"></i>Concretagem</a></li>
+                <li><a href="https://protectrastreamento.com.br/video-monitoramento/"><i className="ti ti-video"></i>Vídeo Monitoramento</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-satelital/"><i className="ti ti-satellite"></i>Rastreamento Satelital</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
               </ul>
