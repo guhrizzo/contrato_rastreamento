@@ -819,6 +819,13 @@ export default function ProductSelector() {
                         );
                     })}
                 </div>
+
+                <div className="psel-sim">
+                  <SimCardM2M />
+                </div>
+                <div className="psel-payment">
+                  <PaymentMethods />
+                </div>
             </div>
 
             <div className={`psel-bar${selectedItemsCount > 0 ? " show" : ""}`}>
@@ -846,8 +853,6 @@ export default function ProductSelector() {
                     </button>
                 </div>
             </div>
-            <SimCardM2M />
-            <PaymentMethods />
             <Footer />
             <style jsx>{`
         .psel {
@@ -876,6 +881,12 @@ export default function ProductSelector() {
           box-sizing: border-box;
           flex: 1;
           width: 100%;
+        }
+        .psel-sim {
+          margin-top: 8px;
+        }
+        .psel-payment {
+          margin-top: 64px;
         }
         .psel * {
           box-sizing: border-box;
@@ -989,7 +1000,7 @@ export default function ProductSelector() {
         }
         .psel-card :global(img) {
           width: 100%;
-          max-height: 180px;
+          max-height: 240px; /* Aumentado de 180px */
           object-fit: contain;
         }
 
