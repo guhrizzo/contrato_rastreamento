@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { getNextTrackerNumber } from '@/lib/firebaseAdmin';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -46,12 +47,15 @@ export async function POST(request: Request) {
       });
     }
 
+    // Obter o número da ficha
+    const fichaNumero = await getNextTrackerNumber();
+
     // Criar o template HTML do e-mail com design premium e limpo
     const emailHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #09090b; line-height: 1.6;">
         <div style="background: linear-gradient(135deg, #09090b 0%, #27272a 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; border-bottom: 4px solid #facc15;">
           <h1 style="color: #facc15; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em;">Protect Rastreamento</h1>
-          <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">Novo Cadastro de Instalador de Dispositivos</p>
+          <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">Novo Cadastro de Instalador de Dispositivos - FICHA Nº ${fichaNumero}</p>
         </div>
         
         <div style="padding: 30px; background-color: #ffffff; border: 1px solid #e4e4e7; border-top: none; border-bottom: none;">
@@ -175,6 +179,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: 'Cadastro enviado com sucesso!',
+      fichaNumero,
     });
 
   } catch (error) {

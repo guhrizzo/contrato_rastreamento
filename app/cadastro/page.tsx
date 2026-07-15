@@ -74,7 +74,7 @@ export default function CadastroInstalador() {
   const [errorMsg, setErrorMsg] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [fichaNumero] = useState(() => Math.floor(100000 + Math.random() * 900000));
+  const [fichaNumero, setFichaNumero] = useState<number | null>(null);
 
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
@@ -363,6 +363,9 @@ export default function CadastroInstalador() {
         throw new Error(data.error || 'Ocorreu um erro ao enviar o formulário.');
       }
 
+      if (data.fichaNumero) {
+        setFichaNumero(data.fichaNumero);
+      }
       setEmailSent(true);
       setSuccess(true);
     } catch (err: any) {
@@ -953,7 +956,7 @@ export default function CadastroInstalador() {
                </div>
                <div style={{ textAlign: 'right' }}>
                  <div style={{ display: 'inline-block', padding: '8px 12px', backgroundColor: '#facc15', border: '2px solid #09090b', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#09090b' }}>
-                    FICHA Nº {fichaNumero}
+                    FICHA Nº {fichaNumero || 'PENDENTE'}
                  </div>
                </div>
              </div>

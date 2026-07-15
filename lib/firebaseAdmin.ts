@@ -34,3 +34,24 @@ export async function getNextContractNumber(): Promise<number> {
     return currentNumber;
   });
 }
+
+export async function getNextTrackerNumber(): Promise<number> {
+  const docRef = db.collection('config').doc('rastreadores');
+  
+  return await db.runTransaction(async (transaction: Transaction) => {
+    const doc = await transaction.get(docRef);
+    if (!doc.exists) {
+      // Se não existir, inicia em 2500
+      transaction.set(docRef, { proximoNumero: 2501 });
+      return 2500;
+    }
+    
+    const data = doc.data();
+    const currentNumber = data?.proximoNumero || 2500;
+    
+    // Atualiza o próximo para o próximo envio
+    transaction.update(docRef, { proximoNumero: currentNumber + 1 });
+    
+    return currentNumber;
+  });
+}
