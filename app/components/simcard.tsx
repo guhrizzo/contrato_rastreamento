@@ -273,6 +273,7 @@ export default function SimCardM2M() {
 
         .pm2m-chips {
           display: flex;
+          flex-wrap: wrap;
           gap: 12px;
           justify-content: center;
           margin-bottom: 26px;
@@ -609,9 +610,7 @@ export default function SimCardM2M() {
           .pm2m-wrap {
             padding: 20px 14px 40px;
           }
-          .pm2m-chips {
-            flex-wrap: wrap;
-          }
+
           .pm2m-wa-btn {
             font-size: 14px;
             padding: 12px 24px;
