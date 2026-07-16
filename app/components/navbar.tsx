@@ -329,7 +329,7 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://contrato.protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
-                <li><a href="https://protectrastreamento.com.br/servicos/"><i className="ti ti-star"></i>Serviços</a></li>
+                {/*<li><a href="https://protectrastreamento.com.br/servicos/"><i className="ti ti-star"></i>Serviços</a></li>*/}
                 <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </div>
@@ -389,7 +389,7 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
-                <li><a href="https://protectrastreamento.com.br/servicos/"><i className="ti ti-star"></i>Serviços</a></li>
+                {/*<li><a href="https://protectrastreamento.com.br/servicos/"><i className="ti ti-star"></i>Serviços</a></li>*/}
                 <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </li>
