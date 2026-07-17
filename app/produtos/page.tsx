@@ -710,6 +710,14 @@ export default function ProductSelector() {
                         Monte seu <span>pedido</span>
                     </h2>
                     <p>Selecione os produtos de interesse e envie sua lista direto pelo WhatsApp.</p>
+                    <div className="psel-stock-notice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <span>Entrega mediante a consulta de estoque</span>
+                    </div>
                 </div>
 
                 <div>
@@ -912,6 +920,26 @@ export default function ProductSelector() {
           font-weight: 800;
         }
 
+        .psel-stock-notice {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 14px;
+          padding: 9px 16px;
+          background: #fff8d6;
+          border: 1.5px solid var(--gold);
+          color: var(--gold-deep);
+          font-size: 13px;
+          font-weight: 700;
+          border-radius: 999px;
+          letter-spacing: 0.01em;
+        }
+        .psel-stock-notice svg {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+
         .psel-cat {
           border: 1px solid var(--line);
           border-radius: 16px;
@@ -956,10 +984,10 @@ export default function ProductSelector() {
 
         .psel-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: 1fr;
           grid-auto-rows: 1fr;
           align-items: stretch;
-          gap: 20px;
+          gap: 14px;
           padding: 20px;
         }
 
@@ -975,9 +1003,6 @@ export default function ProductSelector() {
           transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
           background: #fff;
         }
-        .psel-card:last-child:nth-child(odd) {
-          grid-column: 1 / -1;
-        }
         .psel-card:hover {
           transform: translateY(-3px);
           box-shadow: 0 14px 28px -18px rgba(0, 0, 0, 0.22);
@@ -988,9 +1013,9 @@ export default function ProductSelector() {
         }
 
         .psel-img-wrap {
-          width: 220px;
+          width: 120px;
           background: var(--imgbg);
-          padding: 20px;
+          padding: 12px;
           position: relative;
           flex-shrink: 0;
           display: flex;
@@ -1000,7 +1025,7 @@ export default function ProductSelector() {
         }
         .psel-card :global(img) {
           width: 100%;
-          max-height: 240px; /* Aumentado de 180px */
+          max-height: 100px;
           object-fit: contain;
         }
 
@@ -1254,17 +1279,17 @@ export default function ProductSelector() {
             display: block;
           }
           .psel-card {
-            flex-direction: column;
+            flex-direction: row;
           }
           .psel-img-wrap {
-            width: 100%;
-            border-right: none;
-            border-bottom: 1px solid var(--line);
-            aspect-ratio: 1 / 1;
-            padding: 24px;
+            width: 110px;
+            border-right: 1px solid var(--line);
+            border-bottom: none;
+            padding: 10px;
+            aspect-ratio: auto;
           }
           .psel-card :global(img) {
-            max-height: 100%;
+            max-height: 100px;
           }
         }
         @media (max-width: 560px) {

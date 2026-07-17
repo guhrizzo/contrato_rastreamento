@@ -155,19 +155,21 @@ export default function SimCardM2M() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] items-stretch overflow-hidden rounded-[20px] border border-[#ececec] bg-white">
-        {/* Visual — foto limpa, sem texto por cima */}
-        <div className="relative min-h-[240px] lg:min-h-[480px] overflow-hidden bg-[#111]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.8fr] items-stretch overflow-hidden rounded-[20px] border border-[#ececec] bg-white">
+        
+        <div className="relative min-h-[200px] lg:min-h-[480px] overflow-hidden bg-[#f6f6f6]">
           <div
             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out hover:scale-105"
             style={{ backgroundImage: `url('${SIM_IMAGE}')` }}
           />
+          {/* Vinheta sutil pra integrar com o painel branco ao lado */}
+          <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white/70 to-transparent pointer-events-none" />
         </div>
 
         {/* Seleção */}
         <div
-          className="flex flex-col gap-7"
-          style={{ padding: "32px 32px 40px" }}
+          className="relative flex flex-col gap-7"
+          style={{ padding: "32px 36px 40px" }}
         >
           <BrandGroup
             title="Operadoras"
