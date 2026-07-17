@@ -759,6 +759,14 @@ export default function ProductSelector() {
 
                                                 <div className="psel-body">
                                                     <div className="psel-body-top">
+                                                        <div className="psel-stock-tag">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                            </svg>
+                                                            <span>Entrega mediante a consulta de estoque</span>
+                                                        </div>
                                                         <p className="psel-name">{item.n}</p>
                                                         {item.sub && <p className="psel-sub">{item.sub}</p>}
 
@@ -1071,6 +1079,27 @@ export default function ProductSelector() {
           color: var(--ink-soft);
           line-height: 1.45;
           margin: 0;
+        }
+
+        .psel-stock-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          align-self: flex-start;
+          padding: 4px 10px;
+          background: #fff8d6;
+          border: 1px solid var(--gold);
+          color: var(--gold-deep);
+          font-size: 10.5px;
+          font-weight: 700;
+          border-radius: 999px;
+          letter-spacing: 0.01em;
+          line-height: 1.2;
+        }
+        .psel-stock-tag svg {
+          width: 12px;
+          height: 12px;
+          flex-shrink: 0;
         }
 
         .psel-extra {
