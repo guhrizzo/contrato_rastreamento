@@ -477,7 +477,7 @@ export default function CadastroInstalador() {
               <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
               <div className="min-w-0">
                 <h1 className="font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wider leading-tight text-white">
-                  Protect<span className="text-brand-yellow"> Rastreamento</span>
+                  Protect<span className="text-brand-yellow">Rastreamento.com.br</span>
                 </h1>
                 <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider sm:tracking-widest uppercase truncate">
                   Cadastro de Instalador
@@ -1006,7 +1006,7 @@ export default function CadastroInstalador() {
                  <img src="/protectrastreamento.png" alt="Logo" style={{ height: '40px', width: 'auto', pointerEvents: 'auto' }} />
                  <div>
                    <h2 style={{ fontSize: '20px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.025em', lineHeight: 1, margin: 0, color: '#09090b' }}>
-                     PROTECT RASTREAMENTO
+                     PROTECTRASTREAMENTO.COM.BR
                    </h2>
                    <p style={{ fontSize: '9px', color: '#71717a', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px', margin: 0 }}>
                      Rede Credenciada de Instaladores
