@@ -24,6 +24,11 @@ import {
   Info
 } from 'lucide-react';
 
+interface HabilidadePreco {
+  tipo: string;
+  valor: number | '';
+}
+
 interface FormState {
   nomeCompleto: string;
   cpf: string;
@@ -33,6 +38,7 @@ interface FormState {
   cursoTecnico: boolean;
   certificadoInstalacao: boolean;
   tiposInstalacao: string[];
+  precosHabilidades: HabilidadePreco[];
   outrosInstalacao: string;
   cnpj: string;
   nomeContato: string;
@@ -52,6 +58,7 @@ export default function CadastroInstalador() {
     cursoTecnico: false,
     certificadoInstalacao: false,
     tiposInstalacao: [],
+    precosHabilidades: [],
     outrosInstalacao: '',
     cnpj: '',
     nomeContato: '',
@@ -159,8 +166,30 @@ export default function CadastroInstalador() {
       const novaLista = existe
         ? prev.tiposInstalacao.filter(t => t !== tipo)
         : [...prev.tiposInstalacao, tipo];
-      return { ...prev, tiposInstalacao: novaLista };
+
+      const novaListaPrecos: HabilidadePreco[] = existe
+        ? prev.precosHabilidades.filter(p => p.tipo !== tipo)
+        : [...prev.precosHabilidades, { tipo, valor: '' }];
+
+      return { ...prev, tiposInstalacao: novaLista, precosHabilidades: novaListaPrecos };
     });
+  };
+
+  const handlePrecoChange = (tipo: string, valor: string) => {
+    setFormData(prev => ({
+      ...prev,
+      precosHabilidades: prev.precosHabilidades.map(p =>
+        p.tipo === tipo ? { ...p, valor: valor === '' ? '' : Number(valor) } : p
+      )
+    }));
+  };
+
+  const formatCurrency = (valor: number | '' | undefined): string => {
+    if (valor === '' || valor === undefined || valor === null || isNaN(Number(valor))) return 'Não definido';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(Number(valor));
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -704,23 +733,53 @@ export default function CadastroInstalador() {
                   Tipos de Instalação Praticados <span className="text-rose-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 gap-2.5">
-                  {tiposDisponiveis.map(tipo => (
-                    <label
-                      key={tipo}
-                      className={`flex items-center gap-3 p-3 border rounded-md cursor-pointer transition duration-150 ${formData.tiposInstalacao.includes(tipo)
-                          ? 'bg-amber-50/70 border-brand-yellow-dark text-amber-950 font-semibold'
-                          : 'bg-zinc-50 border-zinc-200 text-zinc-700 hover:bg-zinc-100'
-                        }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.tiposInstalacao.includes(tipo)}
-                        onChange={() => handleTipoInstalacaoChange(tipo)}
-                        className="h-4 w-4 accent-brand-yellow text-brand-black focus:ring-brand-black"
-                      />
-                      <span className="text-xs">{tipo}</span>
-                    </label>
-                  ))}
+                  {tiposDisponiveis.map(tipo => {
+                    const isSelected = formData.tiposInstalacao.includes(tipo);
+                    const precoAtual = formData.precosHabilidades.find(p => p.tipo === tipo)?.valor;
+                    return (
+                      <div
+                        key={tipo}
+                        className={`border rounded-md transition duration-150 ${isSelected
+                            ? 'bg-amber-50/70 border-brand-yellow-dark text-amber-950 font-semibold'
+                            : 'bg-zinc-50 border-zinc-200 text-zinc-700'
+                          }`}
+                      >
+                        <label className="flex items-center gap-3 p-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleTipoInstalacaoChange(tipo)}
+                            className="h-4 w-4 accent-brand-yellow text-brand-black focus:ring-brand-black"
+                          />
+                          <span className="text-xs flex-1">{tipo}</span>
+                        </label>
+                        {isSelected && (
+                          <div className="px-3 pb-3 pt-0 animate-fadeIn">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pl-7">
+                              <label className="text-[10px] font-bold text-zinc-600 uppercase whitespace-nowrap">
+                                Valor do Serviço (R$):
+                              </label>
+                              <div className="relative flex-1 max-w-[200px]">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-semibold pointer-events-none">
+                                  R$
+                                </span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={precoAtual === undefined || precoAtual === '' ? '' : precoAtual}
+                                  onChange={(e) => handlePrecoChange(tipo, e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-full pl-9 pr-2 py-1.5 border border-zinc-300 rounded-md text-xs focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                                  placeholder="0,00"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1010,27 +1069,33 @@ export default function CadastroInstalador() {
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Certificado em Rastreadores:</td>
                      <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{formData.certificadoInstalacao ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
                    </tr>
-                   <tr>
-                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Habilidades declaradas:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontSize: '12px' }}>
-                       {formData.tiposInstalacao.length > 0 ? (
-                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
-                           {formData.tiposInstalacao.map(t => (
-                             <span key={t} style={{ backgroundColor: '#f4f4f5', border: '1px solid #d4d4d8', padding: '4px 8px', borderRadius: '2px', fontSize: '10px', fontWeight: '600', color: '#27272a' }}>
-                               ✓ {t}
-                             </span>
-                           ))}
-                         </div>
-                       ) : (
-                         <span style={{ color: '#a1a1aa' }}>Nenhum tipo de instalação selecionado</span>
-                       )}
-                       {formData.tiposInstalacao.includes('Outros') && formData.outrosInstalacao && (
-                         <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f4f4f5', border: '1px solid #e4e4e7', fontSize: '10px', color: '#52525b', borderRadius: '2px' }}>
-                           <strong>Outros:</strong> {formData.outrosInstalacao}
-                         </div>
-                       )}
-                     </td>
-                   </tr>
+                    <tr>
+                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Habilidades declaradas e valores:</td>
+                      <td style={{ padding: '8px', color: '#09090b', fontSize: '12px' }}>
+                        {formData.tiposInstalacao.length > 0 ? (
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '4px' }}>
+                            <tbody>
+                              {formData.tiposInstalacao.map(t => {
+                                const preco = formData.precosHabilidades.find(p => p.tipo === t)?.valor;
+                                return (
+                                  <tr key={t} style={{ borderBottom: '1px solid #e4e4e7' }}>
+                                    <td style={{ padding: '4px 0', fontSize: '11px', fontWeight: '600', color: '#27272a' }}>✓ {t}</td>
+                                    <td style={{ padding: '4px 0', fontSize: '11px', fontWeight: 'bold', color: '#09090b', textAlign: 'right' }}>{formatCurrency(preco)}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <span style={{ color: '#a1a1aa' }}>Nenhum tipo de instalação selecionado</span>
+                        )}
+                        {formData.tiposInstalacao.includes('Outros') && formData.outrosInstalacao && (
+                          <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f4f4f5', border: '1px solid #e4e4e7', fontSize: '10px', color: '#52525b', borderRadius: '2px' }}>
+                            <strong>Outros:</strong> {formData.outrosInstalacao}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
                  </tbody>
                </table>
              </div>

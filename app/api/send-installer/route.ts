@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       cursoTecnico,
       certificadoInstalacao,
       tiposInstalacao,
+      precosHabilidades,
       outrosInstalacao,
       cnpj,
       nomeContato,
@@ -103,9 +104,20 @@ export async function POST(request: Request) {
             Tipos de Instalação Realizados
           </h2>
           <div style="margin-bottom: 25px;">
-            <ul style="margin: 0; padding-left: 20px; color: #09090b;">
-              ${tiposInstalacao.map((tipo: string) => `<li style="margin-bottom: 4px;">${tipo}</li>`).join('')}
-            </ul>
+            <table style="width: 100%; border-collapse: collapse;">
+              ${tiposInstalacao.map((tipo: string) => {
+                const precoObj = Array.isArray(precosHabilidades) ? precosHabilidades.find((p: any) => p.tipo === tipo) : null;
+                const valor = precoObj && precoObj.valor !== '' && precoObj.valor !== null && precoObj.valor !== undefined
+                  ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(precoObj.valor))
+                  : 'Não definido';
+                return `
+                  <tr>
+                    <td style="padding: 6px 0; color: #09090b; border-bottom: 1px solid #f4f4f5;">• ${tipo}</td>
+                    <td style="padding: 6px 0; color: #09090b; font-weight: 700; text-align: right; border-bottom: 1px solid #f4f4f5;">${valor}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </table>
             ${outrosInstalacao ? `
               <div style="margin-top: 10px; background-color: #fefce8; padding: 12px; border-radius: 6px; border: 1px solid #facc15;">
                 <strong style="font-size: 13px; color: #09090b;">Descrição do campo Outros:</strong>
