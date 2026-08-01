@@ -212,7 +212,7 @@ img {
    NAVBAR - ESTILOS
    ============================================ */
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+.nb-root, .nb-root *, .nb-drawer, .nb-drawer * { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* Esconde barra do Google Translate */
 .goog-te-banner-frame,

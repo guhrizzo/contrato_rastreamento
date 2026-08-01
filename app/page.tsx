@@ -848,21 +848,21 @@ export default function Home() {
         </nav>
 
         {/* FORMULÁRIO */}
-        <div className={`flex-1 min-h-0 p-4 sm:p-6 space-y-6 ${isPlanDropdownOpen ? "overflow-visible" : "overflow-y-auto"}`}>
+        <div className={`flex-1 min-h-0 p-4 sm:p-6 space-y-7 ${isPlanDropdownOpen ? "overflow-visible" : "overflow-y-auto"}`}>
 
           {/* TAB: CLIENTE */}
           {activeTab === "client" && (
-            <div className="space-y-4">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className="space-y-5">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Contratante
                 </h3>
                 <p className="text-xs text-zinc-500">Insira os dados cadastrais do cliente</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-5">
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <User className="w-3.5 h-3.5" />
                     Nome Completo / Razão Social
                   </label>
@@ -871,14 +871,14 @@ export default function Home() {
                     name="clientName"
                     value={data.clientName}
                     onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="Ex: Gustavo Sauro"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <IdCard className="w-3.5 h-3.5 shrink-0" />
                       CPF ou CNPJ
                     </label>
@@ -888,12 +888,12 @@ export default function Home() {
                       value={data.clientDoc}
                       onChange={handleChange}
                       inputMode="numeric"
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: 000.000.000-00"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <IdCard className="w-3.5 h-3.5" />
                       RG ou CNH
                     </label>
@@ -902,15 +902,15 @@ export default function Home() {
                       name="clientRg"
                       value={data.clientRg}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: 00.000.000-0"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Phone className="w-3.5 h-3.5 shrink-0" />
                       Telefone / WhatsApp
                     </label>
@@ -920,12 +920,12 @@ export default function Home() {
                       value={data.clientPhone}
                       onChange={handleChange}
                       inputMode="tel"
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: (11) 99999-9999"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Mail className="w-3.5 h-3.5" />
                       E-mail
                     </label>
@@ -934,15 +934,15 @@ export default function Home() {
                       name="clientEmail"
                       value={data.clientEmail}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: cliente@provedor.com"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <div className="sm:col-span-2 flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Building2 className="w-3.5 h-3.5 shrink-0" />
                       Endereço (Rua, Av.)
                     </label>
@@ -951,13 +951,13 @@ export default function Home() {
                       name="clientAddress"
                       value={data.clientAddress}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: Av. Paulista"
                     />
                   </div>
                   <div className="flex flex-col">
                     {/* BUG FIX: clientNumber aceita texto livre (S/N, 12A, etc.) */}
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Hash className="w-3.5 h-3.5" />
                       Número
                     </label>
@@ -966,15 +966,15 @@ export default function Home() {
                       name="clientNumber"
                       value={data.clientNumber}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: 1000 ou S/N"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
                       Complemento
                     </label>
@@ -983,12 +983,12 @@ export default function Home() {
                       name="clientComp"
                       value={data.clientComp}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: Apto 12"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" />
                       Bairro
                     </label>
@@ -997,15 +997,15 @@ export default function Home() {
                       name="clientBairro"
                       value={data.clientBairro}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: Centro"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <div className="sm:col-span-2 flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
                       Cidade
                     </label>
@@ -1014,12 +1014,12 @@ export default function Home() {
                       name="clientCity"
                       value={data.clientCity}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: São Paulo"
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" />
                       Estado
                     </label>
@@ -1028,14 +1028,14 @@ export default function Home() {
                       name="clientState"
                       value={data.clientState}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                       placeholder="Ex: SP"
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5" />
                     CEP
                   </label>
@@ -1044,7 +1044,7 @@ export default function Home() {
                     name="clientCep"
                     value={data.clientCep}
                     onChange={handleChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="Ex: 01000-000"
                   />
                 </div>
@@ -1054,17 +1054,17 @@ export default function Home() {
 
           {/* TAB: PLANO */}
           {activeTab === "plan" && (
-            <div className={`space-y-4 ${isPlanDropdownOpen ? "pb-48" : ""}`}>
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className={`space-y-5 ${isPlanDropdownOpen ? "pb-48" : ""}`}>
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Plano e Rastreamento
                 </h3>
                 <p className="text-xs text-zinc-500">Selecione o plano de rastreamento e vencimentos</p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-5">
                 <div className={`flex flex-col relative ${isPlanDropdownOpen ? "z-50" : ""}`}>
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5 shrink-0" />
                     Plano de Rastreamento
                   </label>
@@ -1129,7 +1129,7 @@ export default function Home() {
 
                 {isCustomPricePlan && (
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <DollarSign className="w-3.5 h-3.5 shrink-0" />
                       Valor Mensal do Plano <span className="text-rose-500">*</span>
                     </label>
@@ -1162,9 +1162,9 @@ export default function Home() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       Dia de Vencimento
                     </label>
@@ -1172,7 +1172,7 @@ export default function Home() {
                       name="dueDate"
                       value={data.dueDate}
                       onChange={handleChange}
-                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 cursor-pointer"
                     >
                       <option value="05">Todo dia 05</option>
                       <option value="10">Todo dia 10</option>
@@ -1182,7 +1182,7 @@ export default function Home() {
                     </select>
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       Data do Contrato
                     </label>
@@ -1202,8 +1202,8 @@ export default function Home() {
 
           {/* TAB: ASSINATURA */}
           {activeTab === "signature" && (
-            <div className="space-y-4">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className="space-y-5">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
                   <PenTool className="w-4 h-4" />
                   Assinatura Digital
@@ -1313,7 +1313,7 @@ export default function Home() {
               </h2>
 
               {/* CORPO */}
-              <div className="space-y-4 text-justify text-[9pt] leading-normal text-zinc-800">
+              <div className="space-y-5 text-justify text-[9pt] leading-relaxed text-zinc-800">
 
                 <p>
                   <strong>CONTRATADA:</strong> <strong>GRUPO PROTECT LTDA</strong>, pessoa jurídica de direito privado, inscrita no CNPJ sob nº <strong>42.818.864/0001-65</strong>, nome fantasia <strong>ProtectRastreamento.com</strong>, com sede na Rua General Andrade Neves, 622 – Bairro Grajaú – Belo Horizonte – MG – CEP 30431-128, telefone +55 (31) 3371-8600, e-mail info@protectrastreamento.com, doravante denominada simplesmente <strong>CONTRATADA</strong>.
@@ -1333,7 +1333,7 @@ export default function Home() {
                 </p>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 1 – OBJETO
                   </h4>
                   <p>
@@ -1349,7 +1349,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 2 – NATUREZA DO SERVIÇO
                   </h4>
                   <p>
@@ -1363,7 +1363,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 3 – LIMITAÇÃO DE RESPONSABILIDADE
                   </h4>
                   <p>
@@ -1372,7 +1372,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 4 – EQUIPAMENTO EM COMODATO
                   </h4>
                   <p>
@@ -1384,7 +1384,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 5 – PAGAMENTO
                   </h4>
                   <p>
@@ -1402,7 +1402,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 6 – INADIMPLÊNCIA
                   </h4>
                   <p>
@@ -1411,7 +1411,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 7 – PRAZO DE CONTRATO
                   </h4>
                   <p>
@@ -1420,7 +1420,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 8 – CANCELAMENTO
                   </h4>
                   <p>
@@ -1429,7 +1429,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 9 – RETIRADA DO EQUIPAMENTO
                   </h4>
                   <p>
@@ -1438,7 +1438,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 10 – PRIVACIDADE E LGPD
                   </h4>
                   <p>
@@ -1447,7 +1447,7 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1 uppercase text-[8pt] tracking-wider print:border-black">
+                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
                     CLÁUSULA 11 – FORO
                   </h4>
                   <p>

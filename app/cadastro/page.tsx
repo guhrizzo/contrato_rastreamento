@@ -604,12 +604,12 @@ export default function CadastroInstalador() {
         </nav>
 
         {/* CONTEÚDO DAS ABAS */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-7">
 
           {/* TAB: PESSOAL */}
           {activeTab === 'client' && (
-            <div className="space-y-4">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className="space-y-5">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Instalador
                 </h3>
@@ -617,7 +617,7 @@ export default function CadastroInstalador() {
               </div>
 
               <div className="flex flex-col">
-                <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                   <User className="w-3.5 h-3.5" /> Nome Completo <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -625,14 +625,14 @@ export default function CadastroInstalador() {
                   name="nomeCompleto"
                   value={formData.nomeCompleto}
                   onChange={handleInputChange}
-                  className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                  className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                   placeholder="Nome completo do instalador"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <IdCard className="w-3.5 h-3.5" /> CPF <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -640,12 +640,12 @@ export default function CadastroInstalador() {
                     name="cpf"
                     value={formData.cpf}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="000.000.000-00"
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <IdCard className="w-3.5 h-3.5" /> RG <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -653,15 +653,15 @@ export default function CadastroInstalador() {
                     name="rg"
                     value={formData.rg}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="Apenas números"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <Mail className="w-3.5 h-3.5" /> E-mail <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -669,12 +669,12 @@ export default function CadastroInstalador() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="exemplo@email.com"
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1 flex items-center gap-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
                     <Phone className="w-3.5 h-3.5" /> Celular (WhatsApp) <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -682,7 +682,7 @@ export default function CadastroInstalador() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="(00) 00000-0000"
                   />
                 </div>
@@ -693,7 +693,7 @@ export default function CadastroInstalador() {
           {/* TAB: HABILIDADES */}
           {activeTab === 'skills' && (
             <div className="space-y-5">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Experiência e Formação
                 </h3>
@@ -785,7 +785,7 @@ export default function CadastroInstalador() {
 
               {formData.tiposInstalacao.includes('Outros') && (
                 <div className="flex flex-col animate-fadeIn">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
                     Especifique os outros tipos de instalação <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -793,7 +793,7 @@ export default function CadastroInstalador() {
                     value={formData.outrosInstalacao}
                     onChange={handleInputChange}
                     rows={3}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 resize-none"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 resize-none"
                     placeholder="Descreva sua experiência especial..."
                   />
                 </div>
@@ -803,8 +803,8 @@ export default function CadastroInstalador() {
 
           {/* TAB: PROFISSIONAL */}
           {activeTab === 'professional' && (
-            <div className="space-y-4">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className="space-y-5">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Histórico e Anexos
                 </h3>
@@ -812,7 +812,7 @@ export default function CadastroInstalador() {
               </div>
 
               <div className="flex flex-col">
-                <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
+                <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
                   CNPJ da Empresa
                 </label>
                 <input
@@ -820,14 +820,14 @@ export default function CadastroInstalador() {
                   name="cnpj"
                   value={formData.cnpj}
                   onChange={handleInputChange}
-                  className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                  className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                   placeholder="00.000.000/0000-00"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
                     Nome de Contato
                   </label>
                   <input
@@ -835,12 +835,12 @@ export default function CadastroInstalador() {
                     name="nomeContato"
                     value={formData.nomeContato}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="Nome do responsável"
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
+                  <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
                     Telefone
                   </label>
                   <input
@@ -848,7 +848,7 @@ export default function CadastroInstalador() {
                     name="telefoneEmpresa"
                     value={formData.telefoneEmpresa}
                     onChange={handleInputChange}
-                    className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                    className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
                     placeholder="(00) 00000-0000"
                   />
                 </div>
@@ -880,8 +880,8 @@ export default function CadastroInstalador() {
 
           {/* TAB: FINALIZAR */}
           {activeTab === 'finish' && (
-            <div className="space-y-4">
-              <div className="border-l-4 border-brand-yellow pl-3 mb-2">
+            <div className="space-y-5">
+              <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Autorização e Envio
                 </h3>
@@ -916,7 +916,7 @@ export default function CadastroInstalador() {
               </div>
 
               <div className="flex flex-col">
-                <label className="text-xs font-bold text-zinc-700 uppercase mb-1">
+                <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
                   Comentários / Observações
                 </label>
                 <textarea
@@ -924,7 +924,7 @@ export default function CadastroInstalador() {
                   value={formData.comentarios}
                   onChange={handleInputChange}
                   rows={4}
-                  className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 resize-none"
+                  className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150 resize-none"
                   placeholder="Instale periféricos adicionais ou observações..."
                 />
               </div>

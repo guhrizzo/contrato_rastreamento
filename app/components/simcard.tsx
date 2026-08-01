@@ -163,7 +163,7 @@ export default function SimCardM2M() {
             style={{ backgroundImage: `url('${SIM_IMAGE}')` }}
           />
           {/* Vinheta sutil pra integrar com o painel branco ao lado */}
-          <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white/70 to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-12 bg-linear-to-l from-white/70 to-transparent pointer-events-none" />
         </div>
 
         {/* Seleção */}
