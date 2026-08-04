@@ -13,12 +13,14 @@ interface SimBrand {
 }
 
 const OPERADORAS: SimBrand[] = [
+  { name: "M2M", logo: "/logos/m2m.png" },
   { name: "Vivo", logo: "/logos/logo-vivo.png" },
   { name: "Claro", logo: "/logos/logo-claro.png" },
   { name: "TIM", logo: "/logos/logo-tim.png" },
 ];
 
 const MULTIOPERADORAS: SimBrand[] = [
+  { name: "M2M", logo: "/logos/m2m.png" },
   { name: "ARQIA", logo: "/logos/logo-arquia.png" },
   { name: "Algar", logo: "/logos/logo-algar.png" },
   { name: "VIRTUEYES", logo: "/logos/logo-virtueyes.png" },
@@ -37,6 +39,7 @@ function BrandTile({
   selected: boolean;
   onToggle: () => void;
 }) {
+  const isM2M = brand.name === "M2M";
   return (
     <button
       type="button"
@@ -45,13 +48,13 @@ function BrandTile({
       aria-label={`${selected ? "Remover" : "Selecionar"} ${brand.name}`}
       className={[
         "group relative flex flex-col items-center justify-center gap-3",
-        "min-h-[96px] px-3 py-4 w-full",
+        "min-h-[120px] px-3 py-5 w-full",
         "border rounded-2xl cursor-pointer font-['DM_Sans',sans-serif]",
         "outline-none transition-all duration-200 ease-out",
         "hover:-translate-y-0.5",
         "focus-visible:ring-2 focus-visible:ring-[#F5C000] focus-visible:ring-offset-2",
         selected
-          ? "border-[#F5C000] bg-[rgba(245,192,0,0.1)] shadow-[0_10px_24px_-16px_rgba(245,192,0,0.85)]"
+          ? "border-[#F5C000] bg-[rgba(245,192,0,0.15)] shadow-[0_10px_24px_-16px_rgba(245,192,0,0.85)]"
           : "border-[#e8e8e8] bg-[#fafafa] hover:border-[#F5C000]/70 hover:bg-white",
       ].join(" ")}
     >
@@ -80,10 +83,15 @@ function BrandTile({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={brand.logo}
-        alt=""
-        className="h-7 w-auto max-w-[88px] object-contain block"
+        alt={brand.name}
+        className={[
+          "w-auto object-contain block",
+          isM2M ? "h-16 max-w-[150px]" : "h-9 max-w-[110px]",
+        ].join(" ")}
       />
-      <span className="text-[12px] font-bold text-[#1a1a1a] tracking-wide">{brand.name}</span>
+      <span className="text-[12px] font-bold text-[#1a1a1a] tracking-wide">
+        {brand.name}
+      </span>
     </button>
   );
 }
@@ -92,12 +100,14 @@ function BrandGroup({
   title,
   description,
   brands,
+  prefix,
   selected,
   onToggle,
 }: {
   title: string;
   description: string;
   brands: SimBrand[];
+  prefix: string;
   selected: Set<string>;
   onToggle: (name: string) => void;
 }) {
@@ -107,15 +117,18 @@ function BrandGroup({
         <h3 className="text-[15px] font-extrabold text-[#1a1a1a] m-0 tracking-wide">{title}</h3>
         <p className="mt-1 text-[13px] text-[#6a6a6a] leading-snug m-0">{description}</p>
       </div>
-      <div className="grid grid-cols-3 gap-2.5 max-[480px]:grid-cols-1 max-[480px]:gap-2">
-        {brands.map((brand) => (
-          <BrandTile
-            key={brand.name}
-            brand={brand}
-            selected={selected.has(brand.name)}
-            onToggle={() => onToggle(brand.name)}
-          />
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-[480px]:grid-cols-1 max-[480px]:gap-2">
+        {brands.map((brand) => {
+          const key = `${prefix}:${brand.name}`;
+          return (
+            <BrandTile
+              key={key}
+              brand={brand}
+              selected={selected.has(key)}
+              onToggle={() => onToggle(key)}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -134,11 +147,17 @@ export default function SimCardM2M() {
   };
 
   const hasSelection = selected.size > 0;
-  const selectedNames = [...selected];
+
+  // Pega só o nome (sem prefixo) e filtra tokens de controle
+  const allNames = [...selected].map((k) => k.split(":")[1]);
+  const allTiles = allNames.filter((n) => n && n !== "__generic");
+  const genericSelected = selected.size > 0 && allTiles.length === 0;
 
   const whatsappUrl = (() => {
     if (!hasSelection) return "#";
-    const msg = `Olá, vim pelo site e tenho interesse nos Sim Cards M2M das operadoras: ${selectedNames.join(", ")}. Gostaria de mais informações!`;
+    const msg = genericSelected
+      ? `Olá, vim pelo site e tenho interesse em um chip m2m. Gostaria de mais informações!`
+      : `Olá, vim pelo site e tenho interesse nos Sim Cards M2M das operadoras: ${allTiles.join(", ")}. Gostaria de mais informações!`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   })();
 
@@ -155,16 +174,9 @@ export default function SimCardM2M() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.8fr] items-stretch overflow-hidden rounded-[20px] border border-[#ececec] bg-white">
+      <div className="grid grid-cols-1 items-stretch overflow-hidden rounded-[20px] border border-[#ececec] bg-white">
         
-        <div className="relative min-h-[200px] lg:min-h-[480px] overflow-hidden bg-[#f6f6f6]">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out hover:scale-105"
-            style={{ backgroundImage: `url('${SIM_IMAGE}')` }}
-          />
-          {/* Vinheta sutil pra integrar com o painel branco ao lado */}
-          <div className="absolute inset-y-0 right-0 w-12 bg-linear-to-l from-white/70 to-transparent pointer-events-none" />
-        </div>
+        <div className="relative hidden" aria-hidden="true" />
 
         {/* Seleção */}
         <div
@@ -175,6 +187,7 @@ export default function SimCardM2M() {
             title="Operadoras"
             description="Chips M2M Vivo, Claro e TIM."
             brands={OPERADORAS}
+            prefix="op"
             selected={selected}
             onToggle={toggle}
           />
@@ -185,6 +198,7 @@ export default function SimCardM2M() {
             title="Multioperadoras"
             description="Chips M2M Arqia, Algar e Virtueyes."
             brands={MULTIOPERADORAS}
+            prefix="mo"
             selected={selected}
             onToggle={toggle}
           />
@@ -196,7 +210,7 @@ export default function SimCardM2M() {
             >
               <p className="m-0 text-[13px] font-medium text-[#7a7a7a] tabular-nums">
                 {hasSelection
-                  ? `${selected.size} ${selected.size === 1 ? "operadora selecionada" : "operadoras selecionadas"}`
+                  ? `${allTiles.length + (genericSelected ? 1 : 0)} ${(allTiles.length + (genericSelected ? 1 : 0)) === 1 ? "operadora selecionada" : "operadoras selecionadas"}`
                   : "Nenhuma operadora selecionada"}
               </p>
               {hasSelection && (
@@ -236,7 +250,7 @@ export default function SimCardM2M() {
               <span>Solicitar via WhatsApp</span>
               {hasSelection && (
                 <span className="inline-flex min-w-[28px] items-center justify-center rounded-md bg-white/20 px-2 py-0.5 text-[12px] font-extrabold tabular-nums text-white">
-                  {selected.size}
+                  {allTiles.length + (genericSelected ? 1 : 0)}
                 </span>
               )}
             </a>

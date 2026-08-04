@@ -1008,6 +1008,7 @@ export default function ProductSelector() {
           cursor: pointer;
           display: flex;
           flex-direction: row;
+          align-items: stretch;
           transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
           background: #fff;
         }
@@ -1021,11 +1022,11 @@ export default function ProductSelector() {
         }
 
         .psel-img-wrap {
-          width: 120px;
+          flex: 0 0 46%;
+          max-width: 420px;
           background: var(--imgbg);
-          padding: 12px;
+          padding: 18px 20px 18px 48px;
           position: relative;
-          flex-shrink: 0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1033,7 +1034,8 @@ export default function ProductSelector() {
         }
         .psel-card :global(img) {
           width: 100%;
-          max-height: 100px;
+          height: 100%;
+          max-height: 260px;
           object-fit: contain;
         }
 
@@ -1309,16 +1311,20 @@ export default function ProductSelector() {
           }
           .psel-card {
             flex-direction: row;
+            align-items: stretch;
           }
           .psel-img-wrap {
-            width: 110px;
+            flex: 0 0 46%;
+            max-width: 260px;
             border-right: 1px solid var(--line);
             border-bottom: none;
-            padding: 10px;
+            padding: 14px 16px 14px 32px;
             aspect-ratio: auto;
           }
           .psel-card :global(img) {
-            max-height: 100px;
+            width: 100%;
+            height: 100%;
+            max-height: 240px;
           }
         }
         @media (max-width: 560px) {
