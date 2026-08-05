@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
 import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info } from "lucide-react";
 
@@ -677,56 +678,70 @@ export default function Home() {
       </div>
 
       {/* MODAL DE BLOQUEIO */}
-      {showPrintBlockDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200">
-            <div className="bg-linear-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-6 h-6 text-brand-yellow shrink-0" />
-                <h2 className="text-lg font-bold text-white">Proteção Ativa</h2>
+      <AnimatePresence>
+        {showPrintBlockDialog && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="bg-white rounded-lg shadow-2xl max-w-md w-full"
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="bg-linear-to-r from-brand-black to-zinc-800 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6 text-brand-yellow shrink-0" />
+                  <h2 className="text-lg font-bold text-white">Proteção Ativa</h2>
+                </div>
+                <button
+                  onClick={() => setShowPrintBlockDialog(false)}
+                  className="p-2.5 min-w-11 min-h-11 flex items-center justify-center hover:bg-zinc-700 rounded transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5 text-zinc-300" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowPrintBlockDialog(false)}
-                className="p-2.5 min-w-11 min-h-11 flex items-center justify-center hover:bg-zinc-700 rounded transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5 text-zinc-300" />
-              </button>
-            </div>
 
-            <div className="px-6 py-5 space-y-3">
-              <p className="text-sm text-zinc-700">
-                A impressão direta não é permitida nesta aplicação por razões de segurança.
-              </p>
-              <p className="text-sm text-zinc-600">Isso inclui:</p>
-              <ul className="text-sm text-zinc-600 space-y-1 ml-3">
-                <li>✗ <strong>Ctrl+P</strong> ou <strong>Cmd+P</strong></li>
-                <li>✗ <strong>Clique direito</strong> do mouse</li>
-                <li>✗ Menu do navegador → Imprimir</li>
-                <li>✗ <strong>F12</strong> - Developer Tools</li>
-                <li>✗ <strong>Ctrl+Shift+I/C/J/K</strong> - Ferramentas de dev</li>
-              </ul>
-              <p className="text-sm text-zinc-700 mt-4">
-                Para imprimir com segurança, use o botão <strong className="text-brand-yellow">Imprimir</strong> após preencher todos os campos.
-              </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4 flex gap-2 items-start">
-                <Info className="w-4 h-4 text-blue-800 shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-900 font-semibold">
-                  Complete todos os dados e assine antes de imprimir ou salvar em PDF.
+              <div className="px-6 py-5 space-y-3">
+                <p className="text-sm text-zinc-700">
+                  A impressão direta não é permitida nesta aplicação por razões de segurança.
                 </p>
+                <p className="text-sm text-zinc-600">Isso inclui:</p>
+                <ul className="text-sm text-zinc-600 space-y-1 ml-3">
+                  <li>✗ <strong>Ctrl+P</strong> ou <strong>Cmd+P</strong></li>
+                  <li>✗ <strong>Clique direito</strong> do mouse</li>
+                  <li>✗ Menu do navegador → Imprimir</li>
+                  <li>✗ <strong>F12</strong> - Developer Tools</li>
+                  <li>✗ <strong>Ctrl+Shift+I/C/J/K</strong> - Ferramentas de dev</li>
+                </ul>
+                <p className="text-sm text-zinc-700 mt-4">
+                  Para imprimir com segurança, use o botão <strong className="text-brand-yellow">Imprimir</strong> após preencher todos os campos.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4 flex gap-2 items-start">
+                  <Info className="w-4 h-4 text-blue-800 shrink-0 mt-0.5" />
+                  <p className="text-xs text-blue-900 font-semibold">
+                    Complete todos os dados e assine antes de imprimir ou salvar em PDF.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
-              <button
-                onClick={() => setShowPrintBlockDialog(false)}
-                className="px-5 py-2.5 min-h-11 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
-              >
-                Entendi
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="bg-zinc-50 px-6 py-4 border-t border-zinc-200 flex justify-end">
+                <button
+                  onClick={() => setShowPrintBlockDialog(false)}
+                  className="px-5 py-2.5 min-h-11 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black cursor-pointer font-bold text-sm rounded-md transition-colors"
+                >
+                  Entendi
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* PAINEL DE CONTROLE */}
       <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm overflow-x-hidden ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
@@ -849,10 +864,18 @@ export default function Home() {
 
         {/* FORMULÁRIO */}
         <div className={`flex-1 min-h-0 p-4 sm:p-6 space-y-7 ${isPlanDropdownOpen ? "overflow-visible" : "overflow-y-auto"}`}>
+          <AnimatePresence initial={false}>
 
           {/* TAB: CLIENTE */}
           {activeTab === "client" && (
-            <div className="space-y-5">
+            <motion.div
+              key="client"
+              className="space-y-5"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Contratante
@@ -1049,12 +1072,19 @@ export default function Home() {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* TAB: PLANO */}
           {activeTab === "plan" && (
-            <div className={`space-y-5 ${isPlanDropdownOpen ? "pb-48" : ""}`}>
+            <motion.div
+              key="plan"
+              className={`space-y-5 ${isPlanDropdownOpen ? "pb-48" : ""}`}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Plano e Rastreamento
@@ -1094,37 +1124,45 @@ export default function Home() {
                     />
                   )}
 
-                  {isPlanDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1.5 bg-white border border-zinc-200/90 rounded-lg shadow-xl max-h-[min(320px,50vh)] overflow-y-auto divide-y divide-zinc-100/80 animate-in fade-in slide-in-from-top-2 duration-150">
-                      {PLANS.map((plan) => {
-                        const isSelected = plan.id === data.selectedPlan;
-                        return (
-                          <button
-                            key={plan.id}
-                            type="button"
-                            onClick={() => handlePlanSelect(plan.id)}
-                            className={`w-full flex flex-col sm:flex-row sm:items-start sm:justify-between text-left p-3.5 gap-2 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
-                              }`}
-                          >
-                            <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                              <span className={`text-sm font-bold leading-snug wrap-break-words ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
-                                {plan.name}
+                  <AnimatePresence>
+                    {isPlanDropdownOpen && (
+                      <motion.div
+                        className="absolute top-full left-0 right-0 z-50 mt-1.5 bg-white border border-zinc-200/90 rounded-lg shadow-xl max-h-[min(320px,50vh)] overflow-y-auto divide-y divide-zinc-100/80"
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        {PLANS.map((plan) => {
+                          const isSelected = plan.id === data.selectedPlan;
+                          return (
+                            <button
+                              key={plan.id}
+                              type="button"
+                              onClick={() => handlePlanSelect(plan.id)}
+                              className={`w-full flex flex-col sm:flex-row sm:items-start sm:justify-between text-left p-3.5 gap-2 hover:bg-zinc-50 active:bg-zinc-100/80 transition-colors cursor-pointer ${isSelected ? 'bg-amber-50/40 border-l-4 border-l-brand-yellow' : 'border-l-4 border-l-transparent'
+                                }`}
+                            >
+                              <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                                <span className={`text-sm font-bold leading-snug wrap-break-words ${isSelected ? 'text-zinc-950' : 'text-zinc-800'}`}>
+                                  {plan.name}
+                                </span>
+                                <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider wrap-break-words">
+                                  {plan.tracker} • {plan.billing}
+                                </span>
+                              </div>
+                              <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight wrap-break-words max-w-full ${isSelected
+                                  ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs'
+                                  : 'bg-zinc-50 text-zinc-600 border-zinc-200'
+                                }`}>
+                                {plan.priceText}
                               </span>
-                              <span className="text-[11px] text-zinc-400 font-semibold uppercase tracking-wider wrap-break-words">
-                                {plan.tracker} • {plan.billing}
-                              </span>
-                            </div>
-                            <span className={`self-start sm:self-center px-2.5 py-1 text-[10px] sm:text-xs font-bold rounded-full border leading-tight wrap-break-words max-w-full ${isSelected
-                                ? 'bg-brand-yellow text-brand-black border-brand-yellow shadow-2xs'
-                                : 'bg-zinc-50 text-zinc-600 border-zinc-200'
-                              }`}>
-                              {plan.priceText}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {isCustomPricePlan && (
@@ -1197,12 +1235,128 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+
+              {/* RESUMO DO PLANO SELECIONADO */}
+              <div className="mt-6 bg-linear-to-br from-zinc-900 to-zinc-800 text-white rounded-lg p-4 sm:p-5 border border-zinc-700 shadow-md">
+                <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-zinc-700">
+                  <Zap className="w-4 h-4 text-brand-yellow shrink-0" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-white">
+                    Resumo do Plano Selecionado
+                  </h4>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 shrink-0">Plano</span>
+                    <span className="text-xs font-bold text-right text-white wrap-break-words flex-1">{activePlan.name}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 shrink-0">Equipamento</span>
+                    <span className="text-xs font-semibold text-right text-zinc-200 wrap-break-words flex-1">{activePlan.tracker}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 shrink-0">Cobrança</span>
+                    <span className="text-xs font-semibold text-right text-zinc-200 wrap-break-words flex-1">{activePlan.billing}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3 pt-2.5 mt-1 border-t border-zinc-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 shrink-0">Valor</span>
+                    <span className="text-sm font-extrabold text-right text-brand-yellow wrap-break-words flex-1">
+                      {getDisplayPriceText()}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 shrink-0">Vencimento</span>
+                    <span className="text-xs font-semibold text-right text-zinc-200 wrap-break-words flex-1">Todo dia {data.dueDate || "__"}</span>
+                  </div>
+                  {isCustomPricePlan && customPriceValue !== null && (
+                    <div className="pt-2.5 mt-1 border-t border-zinc-700">
+                      <p className="text-[10px] text-zinc-400 leading-relaxed">
+                        <span className="font-bold text-brand-yellow">Por extenso: </span>
+                        <span className="italic text-zinc-200">{getPriceExtenso()}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* VANTAGENS INCLUSAS */}
+              <div className="mt-5 bg-white border border-zinc-200 rounded-lg p-4 sm:p-5 shadow-xs">
+                <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-zinc-100">
+                  <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-brand-black">
+                    Vantagens Inclusas
+                  </h4>
+                </div>
+
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Monitoramento 24h via plataforma web e aplicativo mobile</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Localização em tempo real com histórico de rotas</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Notificações de ignição, movimento e cercas virtuais</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Suporte técnico via WhatsApp e telefone</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Equipamento em comodato (sem custo adicional)</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Instalação técnica incluída</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* INFORMAÇÕES IMPORTANTES */}
+              <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-blue-200">
+                  <Info className="w-4 h-4 text-blue-700 shrink-0" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-900">
+                    Informações Importantes
+                  </h4>
+                </div>
+
+                <ul className="space-y-2.5 text-[11px] text-blue-900 leading-relaxed">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold shrink-0">•</span>
+                    <span>O contrato possui <strong>prazo mínimo de 12 meses</strong>. Após esse período, passa a vigorar por prazo indeterminado.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold shrink-0">•</span>
+                    <span>Em caso de cancelamento antecipado, será cobrada <strong>multa de 30%</strong> sobre o valor restante do contrato.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold shrink-0">•</span>
+                    <span>O equipamento rastreador é cedido em <strong>regime de comodato</strong>, devendo ser devolvido ao final do contrato.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600 font-bold shrink-0">•</span>
+                    <span>O não pagamento após <strong>15 dias de atraso</strong> acarretará na suspensão do serviço.</span>
+                  </li>
+                </ul>
+              </div>
+            </motion.div>
           )}
 
           {/* TAB: ASSINATURA */}
           {activeTab === "signature" && (
-            <div className="space-y-5">
+            <motion.div
+              key="signature"
+              className="space-y-5"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
                   <PenTool className="w-4 h-4" />
@@ -1249,9 +1403,10 @@ export default function Home() {
               )}
 
               {renderTermsSection()}
-            </div>
+            </motion.div>
           )}
 
+          </AnimatePresence>
         </div>
 
         {/* FOOTER */}
