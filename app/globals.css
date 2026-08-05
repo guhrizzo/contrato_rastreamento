@@ -247,6 +247,14 @@ body { top: 0 !important; position: static !important; }
 
 .nb-logo-link { display: block; flex-shrink: 0; }
 
+.nb-logo-img {
+  height: 92px;
+  max-width: 320px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .nb-socials { display: flex; gap: 8px; align-items: center; }
 .nb-socials a {
   display: inline-flex;
@@ -678,7 +686,7 @@ body { top: 0 !important; position: static !important; }
 @media (max-width: 1024px) {
   .nb-desktop-nav { display: none; }
   .nb-hamburger { display: flex; }
-  .nb-logo-img { height: 50px !important; max-width: 180px !important; }
+  .nb-logo-img { height: 70px !important; max-width: 220px !important; }
   .nb-platform-dropdown { display: none; }
   .nb-platform-btn-mobile { display: flex; }
   .nd-lang-desktop { display: none; }
@@ -687,7 +695,7 @@ body { top: 0 !important; position: static !important; }
 @media (min-width: 1025px) {
   .nb-drawer { display: none !important; }
   .nb-hamburger { display: none; }
-  .nb-logo-img { height: 65px !important; max-width: 240px !important; }
+  .nb-logo-img { height: 92px !important; max-width: 320px !important; }
 }
 
 /* Elementor compat (caso seja embutido) */
