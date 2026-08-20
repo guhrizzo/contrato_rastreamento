@@ -94,6 +94,16 @@ export default function Footer() {
             </a>
           </div>
 
+          <div className="pf-lgpd-note">
+            <div className="ic">
+              <i className="ti ti-shield-check" />
+            </div>
+            <p>
+              A LGPD (Lei nº 13.709/2018) regula o tratamento de dados pessoais no Brasil, protegendo a
+              privacidade e os direitos fundamentais dos indivíduos.
+            </p>
+          </div>
+
           <div className="pf-social-label">Redes Sociais</div>
           <div className="pf-social-icons">
             <a
@@ -317,6 +327,39 @@ export default function Footer() {
           font-family: var(--font-head);
           font-weight: 600;
           color: var(--text-head);
+        }
+
+        .pf-lgpd-note {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 14px;
+          background: var(--gold-soft);
+          border: 1px solid var(--gold-border);
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+        .pf-lgpd-note .ic {
+          flex-shrink: 0;
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          background: var(--gold-soft);
+          border: 1px solid var(--gold-border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .pf-lgpd-note .ic i {
+          font-size: 14px;
+          color: var(--gold);
+          line-height: 1;
+        }
+        .pf-lgpd-note p {
+          font-size: 11.5px;
+          color: var(--muted);
+          line-height: 1.6;
+          padding-top: 2px;
         }
 
         .pf-social-label {
