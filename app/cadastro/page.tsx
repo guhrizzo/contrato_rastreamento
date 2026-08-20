@@ -469,7 +469,7 @@ export default function CadastroInstalador() {
       )}
 
       {/* COLUNA ESQUERDA: FORMULÁRIO */}
-      <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:max-h-screen lg:self-start lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
+      <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
 
         {/* CABEÇALHO DA BARRA LATERAL */}
         <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
@@ -615,11 +615,11 @@ export default function CadastroInstalador() {
         </nav>
 
         {/* CONTEÚDO DAS ABAS */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-7">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col">
 
           {/* TAB: PESSOAL */}
           {activeTab === 'client' && (
-            <div className="space-y-5">
+            <div className="space-y-5 my-auto">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Instalador
@@ -703,7 +703,7 @@ export default function CadastroInstalador() {
 
           {/* TAB: HABILIDADES */}
           {activeTab === 'skills' && (
-            <div className="space-y-5">
+            <div className="space-y-5 my-auto">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Experiência e Formação
@@ -814,7 +814,7 @@ export default function CadastroInstalador() {
 
           {/* TAB: PROFISSIONAL */}
           {activeTab === 'professional' && (
-            <div className="space-y-5">
+            <div className="space-y-5 my-auto">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Histórico e Anexos
@@ -891,7 +891,7 @@ export default function CadastroInstalador() {
 
           {/* TAB: FINALIZAR */}
           {activeTab === 'finish' && (
-            <div className="space-y-5">
+            <div className="space-y-5 my-auto">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Autorização e Envio
