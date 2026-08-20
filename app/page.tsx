@@ -1689,13 +1689,11 @@ export default function Home() {
                   <div className="flex flex-col items-center">
                     <img src="/assinatura2.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Antonio C. Costa Junior</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 01.244.200/0001-52</p>
                   </div>
 
                   <div className="flex flex-col items-center">
                     <img src="/assinatura1.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Emerson N. do Carmo</p>
-                    <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: 001.583.866-80</p>
                   </div>
 
                 </div>
