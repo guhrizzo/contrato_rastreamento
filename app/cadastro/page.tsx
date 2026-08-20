@@ -21,7 +21,8 @@ import {
   AlertCircle,
   Building2,
   IdCard,
-  Info
+  Info,
+  Home
 } from 'lucide-react';
 
 interface HabilidadePreco {
@@ -496,6 +497,16 @@ export default function CadastroInstalador() {
                   Incompleto
                 </div>
               )}
+              <a
+                href="https://protectrastreamento.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Voltar ao site público"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors"
+              >
+                <Home className="w-3.5 h-3.5" />
+                Site
+              </a>
             </div>
           </div>
 

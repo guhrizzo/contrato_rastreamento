@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info, Home as HomeIcon } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -772,6 +772,16 @@ export default function Home() {
                   Incompleto
                 </div>
               )}
+              <a
+                href="https://protectrastreamento.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Voltar ao site público"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors"
+              >
+                <HomeIcon className="w-3.5 h-3.5" />
+                Site
+              </a>
             </div>
           </div>
 
