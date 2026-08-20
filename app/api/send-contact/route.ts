@@ -1,5 +1,5 @@
 // app/api/send-contact/route.ts
-// Endpoint que recebe o Webhook do Elementor Form (site institucional Protect Rastreamento)
+// Endpoint que recebe o POST do formulário de contato (fetch direto do navegador)
 // e envia o e-mail de notificação usando Resend.
 
 import { Resend } from 'resend';
@@ -11,13 +11,38 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const TO_EMAIL = 'Info@protectrastreamento.com';
 const FROM_EMAIL = 'Protect Rastreamento <noreply@clube.gustavorizzo.net.br>'; // domínio verificado no Resend
 
+// Troque pelo domínio real onde o formulário fica publicado (confira www vs sem www).
+const ALLOWED_ORIGINS = [
+  'https://protectrastreamento.com.br',
+  'https://www.protectrastreamento.com.br',
+];
+
+function corsHeaders(origin: string | null) {
+  const allowOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+}
+
+// Navegadores mandam um preflight OPTIONS antes do POST real quando é cross-origin.
+// Sem isso, o fetch() do navegador falha antes mesmo de chegar no POST.
+export async function OPTIONS(request: Request) {
+  const origin = request.headers.get('origin');
+  return new NextResponse(null, { status: 204, headers: corsHeaders(origin) });
+}
+
 export async function POST(request: Request) {
+  const origin = request.headers.get('origin');
+  const headers = corsHeaders(origin);
+
   try {
     if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json({ error: 'RESEND_API_KEY não configurada' }, { status: 500 });
+      return NextResponse.json({ error: 'RESEND_API_KEY não configurada' }, { status: 500, headers });
     }
 
-    // O Elementor envia os campos como form-urlencoded ou JSON, dependendo da config do Webhook.
+    // O formulário envia os campos como form-urlencoded ou JSON, dependendo da origem.
     // Tratamos os dois casos para não depender de configuração exata.
     const contentType = request.headers.get('content-type') || '';
     const fields: Record<string, string> = {};
@@ -118,13 +143,13 @@ export async function POST(request: Request) {
       console.error('Erro Resend:', response.error);
       return NextResponse.json({
         error: `Falha ao enviar email: ${response.error.message || 'Erro desconhecido no Resend'}`,
-      }, { status: 500 });
+      }, { status: 500, headers });
     }
 
-    return NextResponse.json({ success: true, id: response.data?.id });
+    return NextResponse.json({ success: true, id: response.data?.id }, { headers });
   } catch (error) {
     console.error('Erro no webhook de contato:', error);
     const msg = error instanceof Error ? error.message : 'Erro interno';
-    return NextResponse.json({ error: `Erro interno ao processar o contato: ${msg}` }, { status: 500 });
+    return NextResponse.json({ error: `Erro interno ao processar o contato: ${msg}` }, { status: 500, headers });
   }
 }
