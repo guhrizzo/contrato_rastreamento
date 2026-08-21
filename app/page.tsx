@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, AlertTriangle, Info, Home as HomeIcon } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -182,6 +182,16 @@ export default function Home() {
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1024);
   const [contractHeight, setContractHeight] = useState<number>(1123);
   const contractRef = useRef<HTMLDivElement | null>(null);
+
+  // Painel do formulário retrátil (desktop): permite ver o contrato em tela cheia
+  const [panelOpen, setPanelOpen] = useState(true);
+  useEffect(() => {
+    const saved = localStorage.getItem("painelAberto:contrato");
+    if (saved === "false") setPanelOpen(false);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("painelAberto:contrato", String(panelOpen));
+  }, [panelOpen]);
 
   // Listener para redimensionamento de janela
   useEffect(() => {
@@ -677,6 +687,24 @@ export default function Home() {
         </button>
       </div>
 
+      {/* BOTÃO FLUTUANTE: reabrir painel do formulário (desktop) */}
+      <AnimatePresence>
+        {!panelOpen && (
+          <motion.button
+            key="reopen-panel"
+            onClick={() => setPanelOpen(true)}
+            title="Mostrar formulário do contrato"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.2 }}
+            className="hidden lg:flex fixed top-4 left-4 z-40 items-center justify-center w-10 h-10 rounded-full bg-brand-black hover:bg-zinc-800 border-2 border-brand-yellow text-brand-yellow shadow-lg transition-colors cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* MODAL DE BLOQUEIO */}
       <AnimatePresence>
         {showPrintBlockDialog && (
@@ -744,7 +772,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* PAINEL DE CONTROLE */}
-      <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm overflow-x-hidden ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
+      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[45%] xl:w-[38%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
         {/* CABEÇALHO */}
         <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow shrink-0">
@@ -782,6 +810,13 @@ export default function Home() {
                 <HomeIcon className="w-3.5 h-3.5" />
                 Site
               </a>
+              <button
+                onClick={() => setPanelOpen(false)}
+                title="Ocultar formulário e ver o contrato em tela cheia"
+                className="hidden lg:flex items-center justify-center w-7 h-7 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 

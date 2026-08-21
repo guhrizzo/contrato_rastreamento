@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   User,
   FileText,
@@ -22,7 +23,9 @@ import {
   Building2,
   IdCard,
   Info,
-  Home
+  Home,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface HabilidadePreco {
@@ -87,6 +90,16 @@ export default function CadastroInstalador() {
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Painel do formulário retrátil (desktop): permite ver a ficha em tela cheia
+  const [panelOpen, setPanelOpen] = useState(true);
+  useEffect(() => {
+    const saved = localStorage.getItem('painelAberto:cadastro');
+    if (saved === 'false') setPanelOpen(false);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem('painelAberto:cadastro', String(panelOpen));
+  }, [panelOpen]);
 
   // Listener para redimensionamento de janela
   useEffect(() => {
@@ -430,6 +443,24 @@ export default function CadastroInstalador() {
         </button>
       </div>
 
+      {/* BOTÃO FLUTUANTE: reabrir painel do formulário (desktop) */}
+      <AnimatePresence>
+        {!panelOpen && (
+          <motion.button
+            key="reopen-panel"
+            onClick={() => setPanelOpen(true)}
+            title="Mostrar formulário de cadastro"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.2 }}
+            className="hidden lg:flex fixed top-4 left-4 z-40 items-center justify-center w-10 h-10 rounded-full bg-brand-black hover:bg-zinc-800 border-2 border-brand-yellow text-brand-yellow shadow-lg transition-colors cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* MODAL DE BLOQUEIO */}
       {showPrintBlockDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -469,7 +500,7 @@ export default function CadastroInstalador() {
       )}
 
       {/* COLUNA ESQUERDA: FORMULÁRIO */}
-      <aside className={`w-full lg:w-[45%] xl:w-[38%] bg-white border-b lg:border-b-0 lg:border-r border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 no-print z-10 shadow-sm ${mobileTab === 'form' ? 'flex' : 'hidden lg:flex'}`}>
+      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[45%] xl:w-[38%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
         {/* CABEÇALHO DA BARRA LATERAL */}
         <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
@@ -507,6 +538,13 @@ export default function CadastroInstalador() {
                 <Home className="w-3.5 h-3.5" />
                 Site
               </a>
+              <button
+                onClick={() => setPanelOpen(false)}
+                title="Ocultar formulário e ver a ficha em tela cheia"
+                className="hidden lg:flex items-center justify-center w-7 h-7 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
