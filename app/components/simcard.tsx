@@ -2,7 +2,8 @@
 /* ============================================================
    SIM CARD M2M
    Fonte: DM Sans | Paleta: Preto #1a1a1a / Dourado #F5C000 / Branco
-   Interativo — seleciona operadoras e solicita via WhatsApp.
+   Interativo — seleciona operadoras, define a quantidade de chips
+   de cada uma e solicita via WhatsApp.
    ============================================================ */
 
 import { useState } from "react";
@@ -27,72 +28,106 @@ const MULTIOPERADORAS: SimBrand[] = [
 ];
 
 const WHATSAPP_NUMBER = "553133718600";
-const SIM_IMAGE =
-  "https://protectrastreamento.com.br/wp-content/uploads/2025/09/WhatsApp-Image-2025-09-23-at-14.19.00-e1761251572170.webp";
 
 function BrandTile({
   brand,
-  selected,
+  quantity,
   onToggle,
+  onQtyChange,
 }: {
   brand: SimBrand;
-  selected: boolean;
+  quantity: number;
   onToggle: () => void;
+  onQtyChange: (delta: number) => void;
 }) {
   const isM2M = brand.name === "M2M";
+  const selected = quantity > 0;
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={selected}
-      aria-label={`${selected ? "Remover" : "Selecionar"} ${brand.name}`}
+    <div
       className={[
         "group relative flex flex-col items-center justify-center gap-3",
         "min-h-[120px] px-3 py-5 w-full",
-        "border rounded-2xl cursor-pointer font-['DM_Sans',sans-serif]",
-        "outline-none transition-all duration-200 ease-out",
-        "hover:-translate-y-0.5",
-        "focus-visible:ring-2 focus-visible:ring-[#F5C000] focus-visible:ring-offset-2",
+        "border rounded-2xl font-['DM_Sans',sans-serif]",
+        "transition-all duration-200 ease-out",
         selected
           ? "border-[#F5C000] bg-[rgba(245,192,0,0.15)] shadow-[0_10px_24px_-16px_rgba(245,192,0,0.85)]"
           : "border-[#e8e8e8] bg-[#fafafa] hover:border-[#F5C000]/70 hover:bg-white",
       ].join(" ")}
     >
-      <span
-        className={[
-          "absolute top-2.5 right-2.5 flex h-5 w-5 items-center justify-center rounded-full",
-          "border transition-all duration-200",
-          selected
-            ? "border-[#F5C000] bg-[#F5C000] scale-100 opacity-100"
-            : "border-[#d0d0d0] bg-white scale-90 opacity-70 group-hover:opacity-100 group-hover:scale-100",
-        ].join(" ")}
-        aria-hidden
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={selected}
+        aria-label={`${selected ? "Remover" : "Selecionar"} ${brand.name}`}
+        className="flex w-full flex-col items-center justify-center gap-3 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#F5C000] focus-visible:ring-offset-2 rounded-xl"
       >
-        <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
-          <path
-            d="M2.5 6.2l2.2 2.2L9.5 3.5"
-            stroke="#1a1a1a"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={selected ? "opacity-100" : "opacity-0"}
-          />
-        </svg>
-      </span>
+        <span
+          className={[
+            "absolute top-2.5 right-2.5 flex h-5 w-5 items-center justify-center rounded-full",
+            "border transition-all duration-200",
+            selected
+              ? "border-[#F5C000] bg-[#F5C000] scale-100 opacity-100"
+              : "border-[#d0d0d0] bg-white scale-90 opacity-70 group-hover:opacity-100 group-hover:scale-100",
+          ].join(" ")}
+          aria-hidden
+        >
+          <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
+            <path
+              d="M2.5 6.2l2.2 2.2L9.5 3.5"
+              stroke="#1a1a1a"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={selected ? "opacity-100" : "opacity-0"}
+            />
+          </svg>
+        </span>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={brand.logo}
-        alt={brand.name}
-        className={[
-          "w-auto object-contain block",
-          isM2M ? "h-16 max-w-[150px]" : "h-9 max-w-[110px]",
-        ].join(" ")}
-      />
-      <span className="text-[12px] font-bold text-[#1a1a1a] tracking-wide">
-        {brand.name}
-      </span>
-    </button>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={brand.logo}
+          alt={brand.name}
+          className={[
+            "w-auto object-contain block",
+            isM2M ? "h-16 max-w-[150px]" : "h-9 max-w-[110px]",
+          ].join(" ")}
+        />
+        <span className="text-[12px] font-bold text-[#1a1a1a] tracking-wide">
+          {brand.name}
+        </span>
+      </button>
+
+      {selected && (
+        <div
+          className="flex items-center overflow-hidden rounded-lg border border-[#F5C000]/50 bg-white"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => onQtyChange(-1)}
+            aria-label={`Diminuir quantidade de ${brand.name}`}
+            className="flex h-7 w-7 items-center justify-center bg-transparent text-[#1a1a1a] transition-colors hover:bg-[#f5f0da] cursor-pointer"
+          >
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2.4}>
+              <path d="M5 12h14" strokeLinecap="round" />
+            </svg>
+          </button>
+          <span className="w-7 text-center text-[12.5px] font-extrabold text-[#1a1a1a] tabular-nums">
+            {quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => onQtyChange(1)}
+            aria-label={`Aumentar quantidade de ${brand.name}`}
+            className="flex h-7 w-7 items-center justify-center bg-transparent text-[#1a1a1a] transition-colors hover:bg-[#f5f0da] cursor-pointer"
+          >
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={2.4}>
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -101,15 +136,17 @@ function BrandGroup({
   description,
   brands,
   prefix,
-  selected,
+  quantities,
   onToggle,
+  onQtyChange,
 }: {
   title: string;
   description: string;
   brands: SimBrand[];
   prefix: string;
-  selected: Set<string>;
-  onToggle: (name: string) => void;
+  quantities: Record<string, number>;
+  onToggle: (key: string) => void;
+  onQtyChange: (key: string, delta: number) => void;
 }) {
   return (
     <div>
@@ -124,8 +161,9 @@ function BrandGroup({
             <BrandTile
               key={key}
               brand={brand}
-              selected={selected.has(key)}
+              quantity={quantities[key] || 0}
               onToggle={() => onToggle(key)}
+              onQtyChange={(delta) => onQtyChange(key, delta)}
             />
           );
         })}
@@ -135,33 +173,48 @@ function BrandGroup({
 }
 
 export default function SimCardM2M() {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const toggle = (name: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
+  const toggle = (key: string) => {
+    setQuantities((prev) => {
+      const copy = { ...prev };
+      if (copy[key]) {
+        delete copy[key];
+      } else {
+        copy[key] = 1;
+      }
+      return copy;
     });
   };
 
-  const hasSelection = selected.size > 0;
+  const updateQty = (key: string, delta: number) => {
+    setQuantities((prev) => {
+      const next = (prev[key] || 0) + delta;
+      const copy = { ...prev };
+      if (next <= 0) {
+        delete copy[key];
+      } else {
+        copy[key] = next;
+      }
+      return copy;
+    });
+  };
 
-  // Pega só o nome (sem prefixo) e filtra tokens de controle
-  const allNames = [...selected].map((k) => k.split(":")[1]);
-  const allTiles = allNames.filter((n) => n && n !== "__generic");
-  const genericSelected = selected.size > 0 && allTiles.length === 0;
+  const entries = Object.entries(quantities);
+  const hasSelection = entries.length > 0;
+  const totalChips = entries.reduce((acc, [, qty]) => acc + qty, 0);
+  const chipWord = totalChips === 1 ? "chip" : "chips";
 
   const whatsappUrl = (() => {
     if (!hasSelection) return "#";
-    const msg = genericSelected
-      ? `Olá, vim pelo site e tenho interesse em um chip m2m. Gostaria de mais informações!`
-      : `Olá, vim pelo site e tenho interesse nos Sim Cards M2M das operadoras: ${allTiles.join(", ")}. Gostaria de mais informações!`;
+    const lista = entries
+      .map(([key, qty]) => `${qty}x ${key.split(":")[1]}`)
+      .join(", ");
+    const msg = `Olá, vim pelo site e tenho interesse em ${totalChips} ${chipWord} m2m: ${lista}. Gostaria de mais informações!`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   })();
 
-  const clearSelection = () => setSelected(new Set());
+  const clearSelection = () => setQuantities({});
 
   return (
     <section className="w-full font-['DM_Sans',sans-serif] pt-10 pb-2 box-border">
@@ -170,12 +223,12 @@ export default function SimCardM2M() {
           Sim Card <span className="text-[#c89400]">M2M</span>
         </h2>
         <p className="mt-2 mb-0 text-[14.5px] text-[#5a5a5a] leading-relaxed">
-          Selecione as operadoras e envie o pedido direto no WhatsApp.
+          Selecione as operadoras, escolha a quantidade de chips de cada uma e envie o pedido direto no WhatsApp.
         </p>
       </header>
 
       <div className="grid grid-cols-1 items-stretch overflow-hidden rounded-[20px] border border-[#ececec] bg-white">
-        
+
         <div className="relative hidden" aria-hidden="true" />
 
         {/* Seleção */}
@@ -188,8 +241,9 @@ export default function SimCardM2M() {
             description="Chips M2M Vivo, Claro e TIM."
             brands={OPERADORAS}
             prefix="op"
-            selected={selected}
+            quantities={quantities}
             onToggle={toggle}
+            onQtyChange={updateQty}
           />
 
           <div className="h-px w-full bg-[#ececec]" />
@@ -199,8 +253,9 @@ export default function SimCardM2M() {
             description="Chips M2M Arqia, Algar e Virtueyes."
             brands={MULTIOPERADORAS}
             prefix="mo"
-            selected={selected}
+            quantities={quantities}
             onToggle={toggle}
+            onQtyChange={updateQty}
           />
 
           <div className="mt-auto" style={{ paddingTop: 28 }}>
@@ -210,7 +265,7 @@ export default function SimCardM2M() {
             >
               <p className="m-0 text-[13px] font-medium text-[#7a7a7a] tabular-nums">
                 {hasSelection
-                  ? `${allTiles.length + (genericSelected ? 1 : 0)} ${(allTiles.length + (genericSelected ? 1 : 0)) === 1 ? "operadora selecionada" : "operadoras selecionadas"}`
+                  ? `${totalChips} ${chipWord} · ${entries.length} ${entries.length === 1 ? "operadora selecionada" : "operadoras selecionadas"}`
                   : "Nenhuma operadora selecionada"}
               </p>
               {hasSelection && (
@@ -250,7 +305,7 @@ export default function SimCardM2M() {
               <span>Solicitar via WhatsApp</span>
               {hasSelection && (
                 <span className="inline-flex min-w-[28px] items-center justify-center rounded-md bg-white/20 px-2 py-0.5 text-[12px] font-extrabold tabular-nums text-white">
-                  {allTiles.length + (genericSelected ? 1 : 0)}
+                  {totalChips}
                 </span>
               )}
             </a>
