@@ -1025,7 +1025,7 @@ export default function ProductSelector() {
           flex: 0 0 50%;
           max-width: 50%;
           background: var(--imgbg);
-          padding: 18px 20px 18px 48px;
+          padding: 12px;
           position: relative;
           display: flex;
           align-items: center;
@@ -1035,7 +1035,7 @@ export default function ProductSelector() {
         .psel-card :global(img) {
           width: 100%;
           height: 100%;
-          max-height: 260px;
+          max-height: 380px;
           object-fit: contain;
         }
 
@@ -1324,13 +1324,13 @@ export default function ProductSelector() {
             max-width: 50%;
             border-right: 1px solid var(--line);
             border-bottom: none;
-            padding: 14px 16px 14px 32px;
+            padding: 10px;
             aspect-ratio: auto;
           }
           .psel-card :global(img) {
             width: 100%;
             height: 100%;
-            max-height: 240px;
+            max-height: 320px;
           }
         }
         @media (max-width: 560px) {
