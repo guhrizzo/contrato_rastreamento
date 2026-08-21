@@ -536,7 +536,7 @@ export default function CadastroInstalador() {
                 className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors"
               >
                 <Home className="w-3.5 h-3.5" />
-                Site
+                Voltar ao site
               </a>
               <button
                 onClick={() => setPanelOpen(false)}
