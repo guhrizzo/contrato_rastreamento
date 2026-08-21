@@ -99,8 +99,8 @@ export default function Footer() {
               <i className="ti ti-shield-check" />
             </div>
             <p>
-              A LGPD (Lei nº 13.709/2018) regula o tratamento de dados pessoais no Brasil, protegendo a
-              privacidade e os direitos fundamentais dos indivíduos.
+              Seus dados pessoais são tratados com segurança, transparência e de acordo com a Lei Geral de
+              Proteção de Dados (LGPD – Lei nº 13.709/2018).
             </p>
           </div>
 

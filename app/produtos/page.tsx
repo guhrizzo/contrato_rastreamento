@@ -958,7 +958,7 @@ export default function ProductSelector() {
         .psel-cat-head {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
           gap: 12px;
           padding: 18px 22px;
           background: #fff;
@@ -1022,8 +1022,8 @@ export default function ProductSelector() {
         }
 
         .psel-img-wrap {
-          flex: 0 0 46%;
-          max-width: 420px;
+          flex: 0 0 50%;
+          max-width: 50%;
           background: var(--imgbg);
           padding: 18px 20px 18px 48px;
           position: relative;
@@ -1066,6 +1066,8 @@ export default function ProductSelector() {
         .psel-body-top {
           display: flex;
           flex-direction: column;
+          align-items: center;
+          text-align: center;
           gap: 6px;
         }
         .psel-name {
@@ -1087,7 +1089,7 @@ export default function ProductSelector() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          align-self: flex-start;
+          align-self: center;
           padding: 4px 10px;
           background: #fff8d6;
           border: 1px solid var(--gold);
@@ -1118,15 +1120,18 @@ export default function ProductSelector() {
         }
         .psel-extra-inner ul {
           margin: 0;
-          padding-left: 16px;
+          padding: 0;
+          list-style: none;
           display: flex;
           flex-direction: column;
+          align-items: center;
           gap: 5px;
         }
         .psel-extra-inner ul li {
           font-size: 11.5px;
           color: #555;
           line-height: 1.55;
+          text-align: center;
         }
         .psel-extra-note {
           font-size: 11px;
@@ -1139,6 +1144,7 @@ export default function ProductSelector() {
         .psel-actions {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 12px;
           margin-top: auto;
           padding-top: 14px;
@@ -1314,8 +1320,8 @@ export default function ProductSelector() {
             align-items: stretch;
           }
           .psel-img-wrap {
-            flex: 0 0 46%;
-            max-width: 260px;
+            flex: 0 0 50%;
+            max-width: 50%;
             border-right: 1px solid var(--line);
             border-bottom: none;
             padding: 14px 16px 14px 32px;

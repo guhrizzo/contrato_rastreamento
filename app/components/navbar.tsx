@@ -27,6 +27,7 @@ export default function Navbar() {
     // Toggle submenus mobile
     const toggles: [string, string][] = [
       ["toggle-rast", "sub-rast"],
+      ["toggle-empresas", "sub-empresas"],
       ["toggle-parc", "sub-parc"],
       ["toggle-cli", "sub-cli"],
       ["toggle-platform-mobile", "sub-platform-mobile"],
@@ -286,10 +287,7 @@ export default function Navbar() {
             <div className="nd-item">
               <span className="nd-link" tabIndex={0}>Rastreamento <i className="ti ti-chevron-down"></i></span>
               <ul className="nd-dropdown">
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-frotas/"><i className="ti ti-truck"></i>Frotas</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-veiculos/"><i className="ti ti-car"></i>Veículos</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos/"><i className="ti ti-tool"></i>Equipamentos</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-agro/"><i className="ti ti-plant"></i>Equipamentos Agro</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-animais/"><i className="ti ti-paw"></i>Animais</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-embarcacoes/"><i className="ti ti-anchor"></i>Embarcação</a></li>
                 <li className="nd-has-sub">
@@ -303,12 +301,20 @@ export default function Navbar() {
                 </li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-para-bikes/"><i className="ti ti-bike"></i>Bikes</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-aventuras/"><i className="ti ti-mountain"></i>Aventuras</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
+              </ul>
+            </div>
+            <div className="nd-item">
+              <span className="nd-link" tabIndex={0}>Para Empresas <i className="ti ti-chevron-down"></i></span>
+              <ul className="nd-dropdown">
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-frotas/"><i className="ti ti-truck"></i>Frotas</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos/"><i className="ti ti-tool"></i>Equipamentos</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-agro/"><i className="ti ti-plant"></i>Equipamentos Agro</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-mineracao/"><i className="ti ti-hammer"></i>Mineração</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-concretagem/"><i className="ti ti-building"></i>Concretagem</a></li>
                 <li><a href="https://protectrastreamento.com.br/video-monitoramento/"><i className="ti ti-video"></i>Vídeo Monitoramento</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-satelital/"><i className="ti ti-satellite"></i>Rastreamento Satelital</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
               </ul>
             </div>
             <div className="nd-item">
@@ -317,7 +323,6 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://contrato.protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
-                <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </div>
             <div className="nd-item">
@@ -327,6 +332,7 @@ export default function Navbar() {
                 <li><a target="_blank" href="https://contrato.protectrastreamento.com.br" rel="noopener noreferrer"><i className="ti ti-check"></i>Contratar</a></li>
                 <li><a href="https://protectrastreamento.com.br/manual-do-usuario/"><i className="ti ti-book"></i>Manual do usuário</a></li>
                 <li><a href="https://protectrastreamento.softruck.com/access/login"><i className="ti ti-map-search"></i>Localize seu veículo</a></li>
+                <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </div>
             <div className="nd-item">
@@ -361,10 +367,7 @@ export default function Navbar() {
                 <i className="ti ti-chevron-down"></i>
               </div>
               <ul className="nb-sub" id="sub-rast">
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-frotas/"><i className="ti ti-truck"></i>Frotas</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-veiculos/"><i className="ti ti-car"></i>Veículos</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos/"><i className="ti ti-tool"></i>Equipamentos</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-agro/"><i className="ti ti-plant"></i>Equipamentos Agro</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-animais/"><i className="ti ti-paw"></i>Animais</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-embarcacao/"><i className="ti ti-anchor"></i>Embarcação</a></li>
                 <li>
@@ -379,12 +382,23 @@ export default function Navbar() {
                 </li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-para-bikes/"><i className="ti ti-bike"></i>Bikes</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-aventuras/"><i className="ti ti-mountain"></i>Aventuras</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
+              </ul>
+            </li>
+            <li>
+              <div className="nb-item" id="toggle-empresas">
+                <span><i className="ti ti-building-factory-2 nb-icon-left"></i>Para Empresas</span>
+                <i className="ti ti-chevron-down"></i>
+              </div>
+              <ul className="nb-sub" id="sub-empresas">
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-frotas/"><i className="ti ti-truck"></i>Frotas</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos/"><i className="ti ti-tool"></i>Equipamentos</a></li>
+                <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-agro/"><i className="ti ti-plant"></i>Equipamentos Agro</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-mineracao/"><i className="ti ti-hammer"></i>Mineração</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-de-equipamentos-de-concretagem/"><i className="ti ti-building"></i>Concretagem</a></li>
                 <li><a href="https://protectrastreamento.com.br/video-monitoramento/"><i className="ti ti-video"></i>Vídeo Monitoramento</a></li>
                 <li><a href="https://protectrastreamento.com.br/rastreamento-satelital/"><i className="ti ti-satellite"></i>Rastreamento Satelital</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-armas-e-coletes/"><i className="ti ti-shield"></i>Armas e Coletes</a></li>
-                <li><a href="https://protectrastreamento.com.br/rastreamento-de-cofres-e-outros/"><i className="ti ti-lock"></i>Cofres e Outros</a></li>
               </ul>
             </li>
             <li>
@@ -396,7 +410,6 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
-                <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </li>
             <li>
@@ -409,6 +422,7 @@ export default function Navbar() {
                 <li><a target="_blank" href="https://contrato.protectrastreamento.com.br/" rel="noopener noreferrer"><i className="ti ti-check"></i>Contratar</a></li>
                 <li><a href="https://protectrastreamento.com.br/manual-do-usuario/"><i className="ti ti-book"></i>Manual do usuário</a></li>
                 <li><a href="https://protectrastreamento.softruck.com/access/login"><i className="ti ti-map-search"></i>Localize seu veículo</a></li>
+                <li><a href="https://protectrastreamento.com.br/politica-de-privacidade/"><i className="ti ti-file-text"></i>Política de privacidade</a></li>
               </ul>
             </li>
             <li><a href="https://protectrastreamento.com.br/blog/" className="nb-item"><span><i className="ti ti-article nb-icon-left"></i>Blog</span></a></li>
