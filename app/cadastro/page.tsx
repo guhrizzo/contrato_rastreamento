@@ -109,7 +109,8 @@ export default function CadastroInstalador() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const scale = windowWidth < 794 ? (windowWidth - 32) / 794 : 1;
+  // 869px = 230mm (largura real da folha em tela; ver .a4-page em globals.css)
+  const scale = windowWidth < 869 ? (windowWidth - 32) / 869 : 1;
 
   const tiposDisponiveis = [
     'Motos e Veiculos',
@@ -499,7 +500,7 @@ export default function CadastroInstalador() {
       )}
 
       {/* COLUNA ESQUERDA: FORMULÁRIO */}
-      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col h-auto lg:max-h-screen lg:self-start lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[47%] xl:w-[40%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
+      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col h-auto lg:max-h-screen lg:self-start lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[54%] xl:w-[46%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
         {/* CABEÇALHO DA BARRA LATERAL */}
         <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
@@ -988,14 +989,14 @@ export default function CadastroInstalador() {
 
       {/* COLUNA DIREITA: DOCUMENTO DE VISUALIZAÇÃO A4 (Tempo real) */}
       <section
-        className={`flex-1 overflow-y-auto bg-zinc-200 pt-0 pb-4 sm:pb-6 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}
+        className={`flex-1 overflow-y-auto bg-zinc-200 pt-0 pb-4 sm:pb-6 px-4 lg:pl-2 lg:pr-6 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}
       >
         <div
           className="a4-wrapper"
           style={{
             transform: `scale(${scale})`,
             transformOrigin: 'top center',
-            height: windowWidth < 794 ? `${1123 * scale}px` : 'auto'
+            height: windowWidth < 869 ? `${1198 * scale}px` : 'auto'
           }}
         >
           <div id="contract-pdf" className="a4-page text-brand-black relative">

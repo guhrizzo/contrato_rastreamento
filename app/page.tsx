@@ -180,7 +180,7 @@ export default function Home() {
   // States para responsividade no celular
   const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1024);
-  const [contractHeight, setContractHeight] = useState<number>(1123);
+  const [contractHeight, setContractHeight] = useState<number>(1198);
   const contractRef = useRef<HTMLDivElement | null>(null);
 
   // Painel do formulário retrátil (desktop): permite ver o contrato em tela cheia
@@ -218,7 +218,8 @@ export default function Home() {
     return () => resizeObserver.disconnect();
   }, []);
 
-  const scale = windowWidth < 794 ? (windowWidth - 32) / 794 : 1;
+  // 869px = 230mm (largura real da folha em tela; ver .a4-page em globals.css)
+  const scale = windowWidth < 869 ? (windowWidth - 32) / 869 : 1;
 
   // States para envio de email
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -538,6 +539,10 @@ export default function Home() {
     clone.style.width = '794px';
     clone.style.height = 'auto';
     clone.style.transform = 'none';
+    // A folha na tela é maior que a A4 real (ver globals.css .a4-page);
+    // aqui forçamos o padding original de volta para o PDF exportado
+    // continuar em A4 real (210x297mm), sem a margem extra da tela.
+    clone.style.padding = '20mm';
     document.body.appendChild(clone);
 
     try {
@@ -772,7 +777,7 @@ export default function Home() {
       </AnimatePresence>
 
       {/* PAINEL DE CONTROLE */}
-      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[47%] xl:w-[40%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
+      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[54%] xl:w-[46%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
         {/* CABEÇALHO */}
         <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow shrink-0">
@@ -1465,18 +1470,18 @@ export default function Home() {
 
       {/* CONTÊINER DO CONTRATO */}
       <main
-        className={`flex-1 pt-0 px-4 pb-4 md:px-6 md:pb-6 lg:px-6 lg:pb-6 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${mobileTab === "preview" ? "flex" : "hidden lg:flex"
+        className={`flex-1 pt-0 px-4 pb-4 md:px-6 md:pb-6 lg:pl-2 lg:pr-6 lg:pb-6 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${mobileTab === "preview" ? "flex" : "hidden lg:flex"
           }`}
         style={{ userSelect: "none" }}
       >
         <div
           className="a4-wrapper"
-          style={{ height: windowWidth < 794 ? `${contractHeight * scale}px` : "auto" }}
+          style={{ height: windowWidth < 869 ? `${contractHeight * scale}px` : "auto" }}
         >
           <div
             className="print-container w-full max-w-[210mm] transition-transform duration-200"
             style={{
-              transform: windowWidth < 794 ? `scale(${scale})` : "none",
+              transform: windowWidth < 869 ? `scale(${scale})` : "none",
               transformOrigin: "top center",
             }}
           >

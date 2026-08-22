@@ -58,12 +58,17 @@ img {
   pointer-events: none;
 }
 
-/* Simulação da folha A4 na tela */
+/* Simulação da folha A4 na tela
+   Obs: aumentamos a folha (largura/altura/margem) mantendo a área de
+   conteúdo idêntica à de uma A4 real (170mm x 257mm) — cresce só a
+   "parte branca" ao redor, o texto não muda de tamanho nem reflui.
+   A exportação de PDF (html2canvas) força os valores originais de volta
+   via inline style no clone, então o PDF final continua A4 real. */
 .a4-page {
   background-color: #ffffff;
-  width: 210mm;
-  min-height: 297mm;
-  padding: 20mm;
+  width: 230mm;
+  min-height: 317mm;
+  padding: 30mm;
   margin: 0 auto;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 1px solid #e4e4e7;
