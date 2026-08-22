@@ -41,6 +41,7 @@ interface FormState {
   email: string;
   phone: string;
   cursoTecnico: boolean;
+  nomeCursoTecnico: string;
   certificadoInstalacao: boolean;
   tiposInstalacao: string[];
   precosHabilidades: HabilidadePreco[];
@@ -75,6 +76,7 @@ export default function CadastroInstalador() {
     email: '',
     phone: '',
     cursoTecnico: false,
+    nomeCursoTecnico: '',
     certificadoInstalacao: false,
     tiposInstalacao: [],
     precosHabilidades: [],
@@ -270,6 +272,7 @@ export default function CadastroInstalador() {
       formData.email.trim() !== '' &&
       formData.phone.trim() !== '' &&
       formData.tiposInstalacao.length > 0 &&
+      (!formData.cursoTecnico || formData.nomeCursoTecnico.trim() !== '') &&
       formData.formaPagamento !== '' &&
       formData.autorizacao === true &&
       signatureImage !== null
@@ -781,6 +784,22 @@ export default function CadastroInstalador() {
                   </div>
                 </label>
 
+                {formData.cursoTecnico && (
+                  <div className="flex flex-col pl-3 animate-fadeIn">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">
+                      Qual curso técnico? <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="nomeCursoTecnico"
+                      value={formData.nomeCursoTecnico}
+                      onChange={handleInputChange}
+                      className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
+                      placeholder="Ex: Técnico em Eletrônica, Elétrica Automotiva..."
+                    />
+                  </div>
+                )}
+
                 <label className="flex items-start gap-3 p-3 bg-zinc-50 border border-zinc-200 rounded-md cursor-pointer hover:bg-zinc-100 transition duration-150">
                   <input
                     type="checkbox"
@@ -1211,7 +1230,9 @@ export default function CadastroInstalador() {
                  <tbody>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '40%', textTransform: 'uppercase', fontSize: '11px' }}>Curso Técnico na Área:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{formData.cursoTecnico ? 'SIM [x] / NÃO [ ]' : 'SIM [ ] / NÃO [x]'}</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>
+                       {formData.cursoTecnico ? `SIM [x] / NÃO [ ] — ${formData.nomeCursoTecnico || 'curso não informado'}` : 'SIM [ ] / NÃO [x]'}
+                     </td>
                    </tr>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Certificado em Rastreadores:</td>

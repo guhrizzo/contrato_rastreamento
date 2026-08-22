@@ -14,6 +14,7 @@ export async function POST(request: Request) {
       email,
       phone,
       cursoTecnico,
+      nomeCursoTecnico,
       certificadoInstalacao,
       tiposInstalacao,
       precosHabilidades,
@@ -94,7 +95,7 @@ export async function POST(request: Request) {
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
             <tr>
               <td style="padding: 6px 0; font-weight: 600; width: 220px; color: #71717a;">Possui Curso Técnico:</td>
-              <td style="padding: 6px 0; color: #09090b;">${cursoTecnico ? 'Sim' : 'Não'}</td>
+              <td style="padding: 6px 0; color: #09090b;">${cursoTecnico ? `Sim — ${nomeCursoTecnico || 'não informado'}` : 'Não'}</td>
             </tr>
             <tr>
               <td style="padding: 6px 0; font-weight: 600; color: #71717a;">Possui Certificado de Rastreadores:</td>
