@@ -52,6 +52,20 @@ interface FormState {
   autorizacao: boolean;
 }
 
+// Estilos reutilizados pelas cláusulas do contrato (documento A4 à direita)
+const clauseSectionStyle: React.CSSProperties = { marginBottom: '18px' };
+const clauseHeaderStyle: React.CSSProperties = {
+  fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', backgroundColor: '#09090b',
+  color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em',
+};
+const clauseSubHeaderStyle: React.CSSProperties = {
+  fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#09090b',
+  marginBottom: '6px', marginTop: '10px', letterSpacing: '0.03em',
+};
+const clauseBodyStyle: React.CSSProperties = { fontSize: '10.5px', color: '#3f3f46', lineHeight: 1.55, textAlign: 'justify' };
+const clauseParaStyle: React.CSSProperties = { margin: '0 0 8px 0' };
+const clauseListStyle: React.CSSProperties = { margin: '0 0 8px 0', paddingLeft: '18px' };
+
 export default function CadastroInstalador() {
   const [formData, setFormData] = useState<FormState>({
     nomeCompleto: '',
@@ -937,7 +951,7 @@ export default function CadastroInstalador() {
 
               <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-md space-y-3">
                 <p className="text-[11px] text-zinc-600 leading-normal">
-                  Declaro que as informações fornecidas neste formulário são verdadeiras e completas, e autorizo a verificação dos dados aqui informados.
+                  Declaro que as informações fornecidas neste formulário são verdadeiras e completas, autorizo a verificação dos dados aqui informados e concordo com o tratamento dos meus dados pessoais pela GRUPO PROTECT LTDA nos termos da Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018), conforme descrito no contrato.
                 </p>
                 <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
@@ -946,7 +960,7 @@ export default function CadastroInstalador() {
                     onChange={() => handleCheckboxChange('autorizacao')}
                     className="h-5 w-5 accent-brand-yellow rounded text-brand-black focus:ring-brand-black"
                   />
-                  <span className="text-xs font-bold text-zinc-800">Li e concordo com os termos <span className="text-rose-500">*</span></span>
+                  <span className="text-xs font-bold text-zinc-800">Li e concordo com os termos e com o tratamento de dados (LGPD) <span className="text-rose-500">*</span></span>
                 </label>
               </div>
 
@@ -1021,15 +1035,47 @@ export default function CadastroInstalador() {
                </div>
              </div>
 
-             <h3 style={{ textAlign: 'center', fontWeight: '900', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em', border: '2px solid #09090b', padding: '8px', marginBottom: '18px', backgroundColor: '#f4f4f5', color: '#09090b', margin: '0 0 18px 0' }}>
-               FICHA DE REGISTRO E QUALIFICAÇÃO DE INSTALADOR
+             <h3 style={{ textAlign: 'center', fontWeight: '900', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em', border: '2px solid #09090b', padding: '8px', marginBottom: '4px', backgroundColor: '#f4f4f5', color: '#09090b', margin: '0 0 4px 0' }}>
+               Ficha Cadastral e Contrato de Prestação de Serviços de Instalação
              </h3>
+             <p style={{ textAlign: 'center', fontSize: '9.5px', color: '#71717a', fontWeight: '700', letterSpacing: '0.03em', margin: '0 0 18px 0' }}>
+               CONTRATANTE: GRUPO PROTECT LTDA &nbsp;·&nbsp; CONTRATADO: INSTALADOR / PRESTADOR DE SERVIÇOS
+             </p>
 
-             {/* SEÇÃO 1: DADOS PESSOAIS */}
-             <div style={{ marginBottom: '18px' }}>
-               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                 1. Identificação do Profissional
-               </h4>
+             {/* SEÇÃO 1: IDENTIFICAÇÃO DAS PARTES */}
+             <div style={clauseSectionStyle}>
+               <h4 style={clauseHeaderStyle}>1. Identificação das Partes</h4>
+
+               <p style={clauseSubHeaderStyle}>1.1. Contratante</p>
+               <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', marginBottom: '10px' }}>
+                 <tbody>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Razão Social:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>GRUPO PROTECT LTDA</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>CNPJ:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>42.818.864/0001-65</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Endereço:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>Rua General Andrade Neves, 622 – Bairro Grajaú – Belo Horizonte – MG – CEP 30431-128</td>
+                   </tr>
+                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Telefone:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>+55 (31) 3371-8600</td>
+                   </tr>
+                   <tr>
+                     <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>E-mail:</td>
+                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>info@protectrastreamento.com</td>
+                   </tr>
+                 </tbody>
+               </table>
+               <p style={{ ...clauseBodyStyle, margin: '0 0 10px 0' }}>
+                 Doravante denominada simplesmente <strong>CONTRATANTE</strong> ou <strong>GRUPO PROTECT LTDA</strong>.
+               </p>
+
+               <p style={clauseSubHeaderStyle}>1.2. Contratado – Instalador / Prestador de Serviços</p>
                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
                  <tbody>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
@@ -1047,18 +1093,28 @@ export default function CadastroInstalador() {
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>E-mail:</td>
                      <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.email || '________________________________________'}</td>
                    </tr>
-                   <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
+                   <tr>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>WhatsApp:</td>
                      <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.phone || '________________________________________'}</td>
                    </tr>
                  </tbody>
                </table>
+               <p style={{ ...clauseBodyStyle, margin: '8px 0 0 0' }}>
+                 Doravante denominado simplesmente <strong>CONTRATADO</strong> ou <strong>INSTALADOR/PRESTADOR DE SERVIÇOS</strong>.
+               </p>
+
+               <p style={clauseSubHeaderStyle}>1.3. Da Identificação e Aceite das Partes</p>
+               <div style={clauseBodyStyle}>
+                 <p style={{ margin: 0 }}>
+                   A <strong>CONTRATANTE</strong> e o <strong>CONTRATADO</strong>, devidamente identificados neste instrumento, têm entre si justo e acordado o presente <strong>Contrato de Prestação de Serviços de Instalação</strong>, mediante as cláusulas e condições estabelecidas neste instrumento e em seus anexos.
+                 </p>
+               </div>
              </div>
 
-            {/* SEÇÃO 2: CERTIFICAÇÃO E HABILIDADES */}
-             <div style={{ marginBottom: '18px' }}>
-               <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                 2. Formação Técnica e Capacitação
+            {/* SEÇÃO 2: QUALIFICAÇÃO E EXPERIÊNCIA */}
+             <div style={clauseSectionStyle}>
+               <h4 style={clauseHeaderStyle}>
+                 2. Qualificação e Experiência
                </h4>
                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
                  <tbody>
@@ -1124,12 +1180,20 @@ export default function CadastroInstalador() {
                </table>
              </div>
 
-              {/* SEÇÃO 4: ANEXOS E COMENTÁRIOS */}
-              <div style={{ marginBottom: '18px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                  4. Documentos e Informações Adicionais
-                </h4>
-                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+              {/* SEÇÃO 4: DOCUMENTOS E COMPROVAÇÕES */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>4. Documentos e Comprovações</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>O CONTRATADO deverá apresentar, quando aplicável:</p>
+                  <ul style={clauseListStyle}>
+                    <li>Documento de identificação;</li>
+                    <li>Comprovante de endereço;</li>
+                    <li>Comprovante de formação/certificação;</li>
+                    <li>CNPJ/CCMEI ou documentação empresarial;</li>
+                    <li>Outros documentos solicitados pela GRUPO PROTECT LTDA.</li>
+                  </ul>
+                </div>
+                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', marginTop: '4px' }}>
                   <tbody>
                     <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                       <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Anexo Enviado:</td>
@@ -1145,30 +1209,219 @@ export default function CadastroInstalador() {
                 </table>
               </div>
 
-              {/* SEÇÃO 5: INFORMAÇÕES SOBRE O PAGAMENTO */}
-              <div style={{ marginBottom: '18px' }}>
-                <h4 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', backgroundColor: '#09090b', color: '#ffffff', padding: '8px 8px', marginBottom: '12px', letterSpacing: '0.05em' }}>
-                  INFORMAÇÕES SOBRE O PAGAMENTO
-                </h4>
-                <div style={{ fontSize: '11px', color: '#3f3f46', lineHeight: '1.5', textAlign: 'justify' }}>
-                  <p style={{ margin: '0 0 8px 0' }}>
-                    1. O pagamento será efetuado via transferência bancária ou PIX exclusivamente para a conta vinculada ao mesmo CNPJ/CPF com o qual foi firmado o presente contrato, mediante expressa aprovação da Softruck.
+              {/* SEÇÃO 5: OBJETO DA PRESTAÇÃO DE SERVIÇOS */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>5. Objeto da Prestação de Serviços</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>5.1.</strong> O presente instrumento tem por objeto a prestação, pelo <strong>CONTRATADO</strong>, de serviços de instalação, retirada, substituição, manutenção e/ou configuração de rastreadores, acessórios, sensores e demais equipamentos relacionados aos serviços de rastreamento, telemetria e monitoramento disponibilizados pela <strong>GRUPO PROTECT LTDA</strong>, conforme cada ordem de serviço.
                   </p>
-                  <p style={{ margin: '0 0 8px 0' }}>
-                    2. Preencha por qual modo deseja ou espera receber os pagamentos dos serviços realizados, sendo eles:
+                  <p style={{ margin: 0 }}>
+                    <strong>5.2.</strong> Os serviços serão realizados de acordo com as especificações técnicas, procedimentos e orientações fornecidos pela CONTRATANTE.
+                  </p>
+                </div>
+              </div>
+
+              {/* SEÇÃO 6: AUTONOMIA DA PRESTAÇÃO DE SERVIÇOS */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>6. Autonomia da Prestação de Serviços</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>6.1.</strong> O CONTRATADO declara atuar com autonomia técnica e operacional, sem exclusividade e sem subordinação jurídica, observados os padrões técnicos, procedimentos de segurança e requisitos de qualidade estabelecidos pela <strong>GRUPO PROTECT LTDA</strong>, desde que tais condições correspondam efetivamente à realidade da relação entre as partes.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>6.2.</strong> O presente instrumento não estabelece, por si só, relação de emprego entre as partes, permanecendo o CONTRATADO responsável pela organização e execução de suas atividades, observada a legislação aplicável.
+                  </p>
+                </div>
+              </div>
+
+              {/* SEÇÃO 7: RESPONSABILIDADES DO CONTRATADO */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>7. Responsabilidades do Contratado</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>São responsabilidades do <strong>CONTRATADO</strong>:</p>
+                  <ul style={clauseListStyle}>
+                    <li>a) Executar os serviços com zelo, qualidade, segurança e observância das especificações técnicas;</li>
+                    <li>b) Preservar a integridade do veículo, equipamento e demais bens do cliente;</li>
+                    <li>c) Comunicar imediatamente à GRUPO PROTECT LTDA qualquer ocorrência, dano, falha ou impossibilidade de execução do serviço;</li>
+                    <li>d) Utilizar adequadamente os equipamentos, ferramentas e materiais disponibilizados;</li>
+                    <li>e) Manter sigilo sobre informações de clientes, veículos, localização, equipamentos e sistemas;</li>
+                    <li>f) Não utilizar dados ou informações obtidos em razão dos serviços para finalidade própria ou de terceiros;</li>
+                    <li>g) Cumprir os procedimentos técnicos estabelecidos pela GRUPO PROTECT LTDA;</li>
+                    <li>h) Registrar corretamente a conclusão de cada serviço;</li>
+                    <li>i) Zelar pelos equipamentos, materiais, documentos e demais bens que eventualmente estejam sob sua responsabilidade;</li>
+                    <li>j) Responsabilizar-se pelos danos comprovadamente causados por ação ou omissão decorrente da execução inadequada dos serviços;</li>
+                    <li>k) Comunicar previamente qualquer impedimento que possa comprometer o cumprimento de uma ordem de serviço previamente aceita;</li>
+                    <li>l) Não realizar alterações, modificações ou procedimentos diferentes daqueles autorizados pela CONTRATANTE sem prévia autorização.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* SEÇÃO 8: RESPONSABILIDADES DA CONTRATANTE */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>8. Responsabilidades da Contratante</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>São responsabilidades da <strong>GRUPO PROTECT LTDA</strong>:</p>
+                  <ul style={clauseListStyle}>
+                    <li>a) Disponibilizar as informações necessárias para a execução dos serviços;</li>
+                    <li>b) Fornecer ou disponibilizar os equipamentos e materiais que forem de sua responsabilidade;</li>
+                    <li>c) Efetuar o pagamento dos serviços regularmente executados e aprovados, conforme as condições previamente acordadas;</li>
+                    <li>d) Informar os procedimentos técnicos e requisitos necessários à execução dos serviços;</li>
+                    <li>e) Disponibilizar, quando necessário, as informações referentes à ordem de serviço e ao atendimento a ser realizado;</li>
+                    <li>f) Informar ao CONTRATADO eventuais alterações relevantes nos procedimentos técnicos ou comerciais aplicáveis aos serviços.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* SEÇÃO 9: VALORES, ORDEM DE SERVIÇO E PAGAMENTO */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>9. Valores, Ordem de Serviço e Pagamento</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>9.1.</strong> Os valores referentes aos serviços de instalação, retirada, manutenção, substituição, configuração, acessórios, equipamentos e demais serviços eventualmente prestados pelo CONTRATADO serão aqueles previamente estabelecidos pela GRUPO PROTECT LTDA, conforme as habilidades e valores declarados na Seção 2 deste instrumento, que integram o presente instrumento para todos os fins.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.2.</strong> Os valores poderão ser atualizados pela GRUPO PROTECT LTDA sempre que houver alteração nos valores, serviços, acessórios, equipamentos ou condições comerciais, mediante comunicação ao CONTRATADO.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.3.</strong> Cada serviço deverá ser previamente autorizado pela GRUPO PROTECT LTDA, por meio de ordem de serviço, solicitação ou outro meio de autorização utilizado pela empresa.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.4.</strong> O pagamento dos serviços será realizado mediante a apresentação da respectiva Nota Fiscal de Prestação de Serviços pelo CONTRATADO, devidamente emitida de acordo com a legislação fiscal aplicável.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.5.</strong> A Nota Fiscal deverá corresponder aos serviços efetivamente realizados, autorizados e validados pela GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.6.</strong> O pagamento será realizado após a conferência e aprovação dos serviços e da respectiva Nota Fiscal, observados os valores e prazos previamente estabelecidos entre as partes.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.7.</strong> Serviços, acessórios ou atividades que não estejam previamente autorizados pela GRUPO PROTECT LTDA poderão não ser reconhecidos para fins de pagamento.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.8.</strong> O valor devido ao CONTRATADO corresponderá exclusivamente aos serviços efetivamente realizados, autorizados e validados pela GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>9.9.</strong> Eventuais tributos, encargos ou obrigações fiscais decorrentes da emissão da Nota Fiscal e da prestação dos serviços serão de responsabilidade do CONTRATADO, observada a legislação aplicável.
                   </p>
                    <div style={{ padding: '10px', border: '1px solid #d4d4d8', borderRadius: '4px', backgroundColor: '#f9fafb' }}>
-                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Forma selecionada: {formData.formaPagamento || 'Não selecionada'}</div>
-                     <div style={{ fontSize: '10px', marginTop: '4px' }}>{formData.comentarios || '__________________________________________________________________________'}</div>
+                     <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Forma de recebimento selecionada: {formData.formaPagamento || 'Não selecionada'}</div>
+                     <div style={{ fontSize: '10px', color: '#71717a' }}>O pagamento será efetuado via transferência bancária ou PIX exclusivamente para a conta vinculada ao mesmo CNPJ/CPF com o qual foi firmado o presente contrato, mediante expressa aprovação da GRUPO PROTECT LTDA.</div>
                    </div>
                 </div>
               </div>
 
-              {/* Declaração e Rodapé de Assinatura */}
+              {/* SEÇÃO 10: GARANTIA E RESPONSABILIDADE PELO SERVIÇO */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>10. Garantia e Responsabilidade pelo Serviço</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>10.1.</strong> O CONTRATADO responderá pela correção de falhas decorrentes de instalação inadequada, quando comprovadamente atribuíveis à execução do serviço.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>10.2.</strong> Quando constatada falha de instalação de sua responsabilidade, o CONTRATADO deverá realizar a correção necessária, observadas as condições estabelecidas pela GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>10.3.</strong> A responsabilidade do CONTRATADO não se aplica a defeitos preexistentes, falhas do equipamento, problemas elétricos ou eletrônicos do veículo, mau uso pelo cliente ou outras situações que não tenham relação com a execução do serviço.
+                  </p>
+                </div>
+              </div>
 
+              {/* SEÇÃO 11: CONFIDENCIALIDADE E PROTEÇÃO DE DADOS – LGPD */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>11. Confidencialidade e Proteção de Dados – Lei nº 13.709/2018 (LGPD)</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>11.1.</strong> O CONTRATADO deverá manter absoluto sigilo sobre todas as informações a que tiver acesso em razão dos serviços prestados à GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={clauseParaStyle}><strong>11.2.</strong> Incluem-se, entre outras:</p>
+                  <ul style={clauseListStyle}>
+                    <li>dados pessoais;</li>
+                    <li>dados de localização;</li>
+                    <li>informações de clientes;</li>
+                    <li>informações de veículos;</li>
+                    <li>informações de equipamentos;</li>
+                    <li>informações comerciais;</li>
+                    <li>informações técnicas;</li>
+                    <li>sistemas;</li>
+                    <li>senhas;</li>
+                    <li>credenciais de acesso.</li>
+                  </ul>
+                  <p style={clauseParaStyle}>
+                    <strong>11.3.</strong> O CONTRATADO compromete-se a utilizar essas informações exclusivamente para a execução dos serviços autorizados.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>11.4.</strong> É vedada a utilização, compartilhamento, reprodução ou divulgação dessas informações para finalidade própria ou de terceiros sem autorização da GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>11.5.</strong> Os dados pessoais deverão ser tratados em conformidade com a <strong>Lei nº 13.709, de 14 de agosto de 2018 – Lei Geral de Proteção de Dados Pessoais (LGPD)</strong>, observando-se os princípios, direitos e obrigações previstos na referida legislação.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>11.6.</strong> O CONTRATADO deverá adotar medidas de segurança técnicas e administrativas adequadas para impedir acesso não autorizado, perda, alteração, divulgação ou qualquer forma de tratamento inadequado ou ilícito dos dados pessoais aos quais tenha acesso em razão da prestação dos serviços.
+                  </p>
+                </div>
+              </div>
+
+              {/* SEÇÃO 12: RESCISÃO / CANCELAMENTO */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>12. Rescisão / Cancelamento</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>
+                    <strong>12.1.</strong> Qualquer das partes poderá solicitar o encerramento da relação de prestação de serviços, observadas as condições estabelecidas neste instrumento e na legislação aplicável.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.2.</strong> Quando o cancelamento ou encerramento da prestação de serviços for solicitado pelo CONTRATADO, este deverá formalizar sua solicitação por escrito, mediante envio de e-mail para: <strong style={{ textDecoration: 'underline' }}>info@protectrastreamento.com</strong>.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.3.</strong> A comunicação deverá informar expressamente a intenção do CONTRATADO de encerrar sua relação de prestação de serviços com a GRUPO PROTECT LTDA.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.4.</strong> O simples fato de o CONTRATADO deixar de atender, deixar de responder mensagens ou interromper a execução dos serviços não substitui a formalização do pedido de cancelamento por e-mail, sem prejuízo das consequências eventualmente aplicáveis à situação concreta.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.5.</strong> O cancelamento não prejudicará os serviços previamente autorizados e ainda pendentes de conclusão, bem como eventuais valores, obrigações ou responsabilidades decorrentes de serviços já realizados.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.6.</strong> A GRUPO PROTECT LTDA poderá solicitar a devolução de equipamentos, materiais, documentos, acessos ou quaisquer outros bens pertencentes à empresa que estejam em posse do CONTRATADO.
+                  </p>
+                  <p style={clauseParaStyle}>
+                    <strong>12.7.</strong> O CONTRATADO deverá devolver os equipamentos, materiais e demais bens da GRUPO PROTECT LTDA nas condições e no prazo determinados pela CONTRATANTE.
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    <strong>12.8.</strong> Eventuais penalidades, perdas e danos ou outras consequências decorrentes do encerramento da prestação de serviços serão aplicadas quando previstas neste instrumento ou quando cabíveis nos termos da legislação vigente.
+                  </p>
+                </div>
+              </div>
+
+              {/* SEÇÃO 13: DECLARAÇÕES E ACEITE DO CONTRATADO */}
+              <div style={clauseSectionStyle}>
+                <h4 style={clauseHeaderStyle}>13. Declarações e Aceite do Contratado</h4>
+                <div style={clauseBodyStyle}>
+                  <p style={clauseParaStyle}>O CONTRATADO declara que:</p>
+                  <ul style={clauseListStyle}>
+                    <li>As informações fornecidas neste cadastro são verdadeiras e completas.</li>
+                    <li>Possui capacidade técnica compatível com os serviços para os quais está se cadastrando.</li>
+                    <li>Compromete-se a comunicar qualquer alteração relevante em seus dados cadastrais.</li>
+                    <li>Leu e compreendeu todas as condições deste instrumento.</li>
+                    <li>Concorda com as condições estabelecidas neste instrumento.</li>
+                    <li>Autoriza a GRUPO PROTECT LTDA a verificar as informações e documentos apresentados para fins de cadastro, qualificação e homologação.</li>
+                    <li>Compromete-se a manter sigilo sobre informações, dados e documentos aos quais tiver acesso em razão da prestação dos serviços.</li>
+                    <li>Compromete-se a observar as disposições da Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais (LGPD) no tratamento de dados pessoais aos quais tiver acesso em razão de suas atividades.</li>
+                  </ul>
+                  <div style={{ padding: '10px', border: '1px solid #d4d4d8', borderRadius: '4px', backgroundColor: formData.autorizacao ? '#f0fdf4' : '#f9fafb', marginTop: '4px' }}>
+                    <div style={{ fontWeight: 'bold', color: formData.autorizacao ? '#166534' : '#71717a' }}>
+                      {formData.autorizacao ? '☑ ' : '☐ '}
+                      Li e concordo com os termos deste instrumento e com o tratamento dos meus dados pessoais nos termos da LGPD.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEÇÃO 14: ACEITE E ASSINATURAS */}
              <div style={{ borderTop: '2px solid #09090b', paddingTop: '16px' }}>
+               <h4 style={clauseHeaderStyle}>14. Aceite e Assinaturas</h4>
                <p style={{ fontSize: '10px', color: '#52525b', lineHeight: '1.5', textAlign: 'justify', marginBottom: '20px' }}>
-                 Declaro para os devidos fins de direito que todas as informações prestadas nesta ficha de qualificação são verdadeiras e completas. Fica a Protect Rastreamento autorizada a realizar a validação e auditoria dos referidos dados e documentos junto aos órgãos competentes ou às empresas indicadas como referências profissionais para a homologação do meu cadastro operacional.
+                 As partes declaram que leram, compreenderam e concordam com as condições estabelecidas neste instrumento, manifestando sua livre vontade em relação à prestação dos serviços.
                </p>
 
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '20px' }}>
@@ -1184,6 +1437,15 @@ export default function CadastroInstalador() {
                      {new Date().toLocaleDateString('pt-BR')}
                    </span>
                  </div>
+               </div>
+
+               <div style={{ marginTop: '24px', paddingTop: '12px', borderTop: '1px solid #e4e4e7', fontSize: '9.5px', color: '#71717a', lineHeight: '1.6' }}>
+                 <strong style={{ color: '#09090b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Controle do Documento</strong>
+                 <div style={{ marginTop: '4px' }}>
+                   Ficha nº {fichaNumero || 'pendente'} &nbsp;·&nbsp; Data de emissão: {new Date().toLocaleDateString('pt-BR')}
+                 </div>
+                 <div>Contratante: GRUPO PROTECT LTDA &nbsp;·&nbsp; Nome comercial: ProtectRastreamento.com</div>
+                 <div>E-mail oficial para cancelamento: info@protectrastreamento.com</div>
                </div>
              </div>
 
