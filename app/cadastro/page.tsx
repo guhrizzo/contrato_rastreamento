@@ -1190,22 +1190,22 @@ export default function CadastroInstalador() {
                  <tbody>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Nome Completo:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.nomeCompleto || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.nomeCompleto ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.nomeCompleto ? 'normal' : 'italic' }}>{formData.nomeCompleto || 'Não informado'}</td>
                    </tr>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>CPF / RG:</td>
                      <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>
-                       {formData.cpf ? `CPF: ${formData.cpf}` : 'CPF: _________________'} &nbsp;|&nbsp;
-                       {formData.rg ? `RG: ${formData.rg}` : 'RG: _________________'}
+                       <span style={!formData.cpf ? { color: '#a1a1aa', fontStyle: 'italic' } : undefined}>{formData.cpf ? `CPF: ${formData.cpf}` : 'CPF não informado'}</span> &nbsp;|&nbsp;
+                       <span style={!formData.rg ? { color: '#a1a1aa', fontStyle: 'italic' } : undefined}>{formData.rg ? `RG: ${formData.rg}` : 'RG não informado'}</span>
                      </td>
                    </tr>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>E-mail:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.email || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.email ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.email ? 'normal' : 'italic' }}>{formData.email || 'Não informado'}</td>
                    </tr>
                    <tr>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>WhatsApp:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.phone || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.phone ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.phone ? 'normal' : 'italic' }}>{formData.phone || 'Não informado'}</td>
                    </tr>
                  </tbody>
                </table>
@@ -1278,15 +1278,15 @@ export default function CadastroInstalador() {
                  <tbody>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>CNPJ Parceiro:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.cnpj || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.cnpj ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.cnpj ? 'normal' : 'italic' }}>{formData.cnpj || 'Não informado'}</td>
                    </tr>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Nome Contato:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.nomeContato || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.nomeContato ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.nomeContato ? 'normal' : 'italic' }}>{formData.nomeContato || 'Não informado'}</td>
                    </tr>
                    <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px' }}>Telefone:</td>
-                     <td style={{ padding: '8px', color: '#09090b', fontWeight: '500' }}>{formData.telefoneEmpresa || '________________________________________'}</td>
+                     <td style={{ padding: '8px', color: formData.telefoneEmpresa ? '#09090b' : '#a1a1aa', fontWeight: '500', fontStyle: formData.telefoneEmpresa ? 'normal' : 'italic' }}>{formData.telefoneEmpresa || 'Não informado'}</td>
                    </tr>
                  </tbody>
                </table>
@@ -1538,28 +1538,50 @@ export default function CadastroInstalador() {
                  As partes declaram que leram, compreenderam e concordam com as condições estabelecidas neste instrumento, manifestando sua livre vontade em relação à prestação dos serviços.
                </p>
 
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '20px' }}>
-                 <div style={{ flex: 1, textAlign: 'center' }}>
-                   <div style={{ height: '48px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'center', fontSize: '9pt', marginTop: '20px' }}>
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                   <div style={{ height: '48px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '2px solid #3f3f46', marginBottom: '6px' }} />
+                   <p style={{ fontWeight: 700, color: '#18181b', fontSize: '8.5pt', margin: 0 }}>GRUPO PROTECT LTDA</p>
+                   <p style={{ fontSize: '7pt', color: '#71717a', fontFamily: 'monospace', marginTop: '2px' }}>CNPJ: 42.818.864/0001-65</p>
+                   <span style={{ marginTop: '4px', fontSize: '6.5pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a1a1aa', backgroundColor: '#f4f4f5', padding: '2px 8px', borderRadius: '4px' }}>Contratante</span>
+                 </div>
+
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                   <div style={{ height: '48px', width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', borderBottom: '2px solid #3f3f46', marginBottom: '6px' }}>
                      {signatureImage ? (
                        // eslint-disable-next-line @next/next/no-img-element
                        <img src={signatureImage} alt="Assinatura do Instalador" style={{ maxHeight: '46px', maxWidth: '100%', objectFit: 'contain' }} />
                      ) : (
-                       <span style={{ fontSize: '9px', color: '#a1a1aa', fontStyle: 'italic' }}>Assinatura não capturada</span>
+                       <span style={{ fontSize: '7pt', color: '#a1a1aa', fontStyle: 'italic' }}>Assinatura do Instalador</span>
                      )}
                    </div>
-                   <div style={{ borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
-                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Assinatura do Instalador</span>
-                     <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block', height: '20px' }}>
-                       {formData.nomeCompleto || '___________________________'}
-                     </span>
-                   </div>
+                   <p style={{ fontWeight: 700, color: formData.nomeCompleto ? '#18181b' : '#a1a1aa', fontSize: '8.5pt', margin: 0, fontStyle: formData.nomeCompleto ? 'normal' : 'italic' }}>
+                     {formData.nomeCompleto || 'Não informado'}
+                   </p>
+                   <p style={{ fontSize: '7pt', color: '#71717a', fontFamily: 'monospace', marginTop: '2px' }}>
+                     {formData.cpf ? `CPF: ${formData.cpf}` : 'CPF do Instalador'}
+                   </p>
+                   <span style={{ marginTop: '4px', fontSize: '6.5pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a1a1aa', backgroundColor: '#f4f4f5', padding: '2px 8px', borderRadius: '4px' }}>Contratado</span>
                  </div>
-                 <div style={{ width: '33%', textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
-                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Data do Cadastro</span>
-                   <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block' }}>
-                     {new Date().toLocaleDateString('pt-BR')}
-                   </span>
+               </div>
+
+               {/* Testemunhas */}
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '24px', marginBottom: '16px' }}>
+                 <div style={{ flex: 1, height: '1px', backgroundColor: '#e4e4e7' }} />
+                 <span style={{ fontSize: '7pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a1a1aa', padding: '0 8px' }}>Testemunhas</span>
+                 <div style={{ flex: 1, height: '1px', backgroundColor: '#e4e4e7' }} />
+               </div>
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'center', fontSize: '9pt' }}>
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                   {/* eslint-disable-next-line @next/next/no-img-element */}
+                   <img src="/assinatura2.png" alt="Assinatura" style={{ height: '56px', width: 'auto', objectFit: 'contain', marginBottom: '4px' }} />
+                   <p style={{ fontWeight: 600, color: '#27272a', fontSize: '8pt', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Antonio C. Costa Junior</p>
+                 </div>
+                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                   {/* eslint-disable-next-line @next/next/no-img-element */}
+                   <img src="/assinatura1.png" alt="Assinatura" style={{ height: '56px', width: 'auto', objectFit: 'contain', marginBottom: '4px' }} />
+                   <p style={{ fontWeight: 600, color: '#27272a', fontSize: '8pt', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Emerson N. do Carmo</p>
                  </div>
                </div>
 
