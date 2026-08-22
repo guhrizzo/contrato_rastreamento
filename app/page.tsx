@@ -428,11 +428,12 @@ export default function Home() {
         if (numResponse.ok && typeof numData.contractNumber === "number") {
           reservedContractNumber = String(numData.contractNumber);
           setData(prev => ({ ...prev, contractNumber: reservedContractNumber as string }));
-          // Espera dois frames para garantir que o React já re-renderizou o
-          // contrato (#contract-pdf) com o número novo antes do html2canvas
-          // tirar o "print" dele.
-          await new Promise(requestAnimationFrame);
-          await new Promise(requestAnimationFrame);
+          // Espera o React re-renderizar o contrato (#contract-pdf) com o
+          // número novo antes do html2canvas tirar o "print" dele.
+          // Usa setTimeout (não requestAnimationFrame) porque rAF pode
+          // nunca disparar se a aba estiver em segundo plano no momento do
+          // envio, travando o fluxo indefinidamente.
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
       } catch (numErr) {
         console.error("Erro ao reservar número do contrato:", numErr);
