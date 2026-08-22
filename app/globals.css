@@ -178,11 +178,15 @@ img {
     border-color: #000000 !important;
   }
 
-  /* Imagens */
+  /* Imagens
+     Obs: NÃO force height:auto aqui. Isso anula a altura fixa das logos e
+     assinaturas (ex.: h-8, h-14, height:40px inline) e faz a imagem
+     renderizar no tamanho/proporção natural do arquivo — o logo, por
+     exemplo, é um arquivo retrato (1080x1680px), então virava um
+     bloco gigante ocupando a primeira página inteira ao imprimir. */
   img {
     pointer-events: auto !important;
     max-width: 100% !important;
-    height: auto !important;
   }
 }
 
