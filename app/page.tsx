@@ -1677,6 +1677,7 @@ export default function Home() {
                   <strong>CONTRATANTE:</strong><br />
                   Nome: <strong>{data.clientName || "___________________________________________"}</strong><br />
                   CPF/CNPJ: <strong>{data.clientDoc || "_____________________"}</strong><br />
+                  RG/CNH: <strong>{data.clientRg || "_____________________"}</strong><br />
                   Endereço: <strong>{data.clientAddress || "_________________________________"}, nº {data.clientNumber || "___"} - {data.clientBairro || "_________"} - {data.clientCity || "_______"}/{data.clientState || "__"} - CEP {data.clientCep || "________"}</strong><br />
                   Telefone: <strong>{data.clientPhone || "_________________"}</strong><br />
                   E-mail: <strong>{data.clientEmail || "_________________________________"}</strong>
