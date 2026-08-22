@@ -24,6 +24,9 @@ interface ContractData {
   selectedPlan: string;
   serviceType: "comodato" | "venda";
   customPlanPrice: string;
+  // Preenchidos apenas quando serviceType === "venda"
+  equipmentValue: string;
+  equipmentPaymentMethod: string;
   dueDate: string;
   // Armazena no formato YYYY-MM-DD (compatível com input type="date")
   contractDate: string;
@@ -167,6 +170,8 @@ export default function Home() {
     selectedPlan: "basico_4g_moto",
     serviceType: "comodato",
     customPlanPrice: "",
+    equipmentValue: "",
+    equipmentPaymentMethod: "",
     dueDate: "05",
     // Inicia vazio; o useEffect preenche com hoje em YYYY-MM-DD
     contractDate: "",
@@ -270,6 +275,7 @@ export default function Home() {
       data.clientCep.trim() !== "" &&
       data.selectedPlan.trim() !== "" &&
       isCustomPriceValid &&
+      (data.serviceType !== "venda" || data.equipmentValue.trim() !== "") &&
       data.contractDate.trim() !== "" &&
       signatureImage !== null
     );
@@ -360,7 +366,7 @@ export default function Home() {
     // BUG FIX: clientNumber aceita letras (ex: "S/N", "12A") — removido do filtro numérico
     if (name === "clientDoc" || name === "clientPhone" || name === "clientCep" || name === "clientRg") {
       filteredValue = value.replace(/[^\d()\-.\s]/g, "");
-    } else if (name === "customPlanPrice") {
+    } else if (name === "customPlanPrice" || name === "equipmentValue") {
       filteredValue = value.replace(/[^\d,]/g, "");
     }
 
@@ -660,6 +666,14 @@ export default function Home() {
     if (!monthlyPrice) return "R$ 0,00";
     const withdrawalValue = monthlyPrice * 9;
     return `R$ ${formatPlanPrice(withdrawalValue)}`;
+  };
+
+  // Valor do equipamento na Cláusula 4 (Venda) — formatado a partir do
+  // que foi digitado no campo "Valor do Equipamento" da aba Plano.
+  const getEquipmentValueText = (): string => {
+    const value = parsePlanPrice(data.equipmentValue);
+    if (value === null) return "______________";
+    return `${formatPlanPrice(value)} (${numeroParaExtenso(value)})`;
   };
 
   const handlePlanSelect = (planId: string) => {
@@ -1181,6 +1195,45 @@ export default function Home() {
                 </div>
               </div>
 
+              {data.serviceType === "venda" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 p-3.5 bg-amber-50/50 border border-brand-yellow-dark/40 rounded-lg">
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                      Valor do Equipamento <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500">R$</span>
+                      <input
+                        type="text"
+                        name="equipmentValue"
+                        value={data.equipmentValue}
+                        onChange={handleChange}
+                        inputMode="decimal"
+                        placeholder="0,00"
+                        className="w-full pl-10 pr-3 py-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                      />
+                    </div>
+                    <p className="text-[11px] text-zinc-500 mt-1">Valor cobrado pelo equipamento vendido.</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
+                      <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                      Forma de Pagamento do Equipamento
+                    </label>
+                    <input
+                      type="text"
+                      name="equipmentPaymentMethod"
+                      value={data.equipmentPaymentMethod}
+                      onChange={handleChange}
+                      placeholder="Ex: À vista, PIX, 3x no cartão..."
+                      className="w-full p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                    />
+                    <p className="text-[11px] text-zinc-500 mt-1">Como o cliente vai pagar o equipamento (separado da mensalidade do plano).</p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-5">
                 <div className={`flex flex-col relative ${isPlanDropdownOpen ? "z-50" : ""}`}>
                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
@@ -1650,7 +1703,7 @@ export default function Home() {
                           </p>
                           <p className="mt-1 text-[8.5pt]">
                             <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})<br />
-                            <strong>Valor do equipamento:</strong> R$ ______________ &nbsp; <strong>Forma de pagamento:</strong> ______________________
+                            <strong>Valor do equipamento:</strong> R$ {getEquipmentValueText()} &nbsp; <strong>Forma de pagamento:</strong> {data.equipmentPaymentMethod || "______________________"}
                           </p>
                         </>
                       ),
