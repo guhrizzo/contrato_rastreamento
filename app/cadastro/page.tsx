@@ -78,7 +78,6 @@ export default function CadastroInstalador() {
     tipo: string;
   } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'client' | 'skills' | 'professional' | 'finish'>('client');
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -450,13 +449,13 @@ export default function CadastroInstalador() {
             key="reopen-panel"
             onClick={() => setPanelOpen(true)}
             title="Mostrar formulário de cadastro"
-            initial={{ opacity: 0, x: 8 }}
+            initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 8 }}
+            exit={{ opacity: 0, x: -8 }}
             transition={{ duration: 0.2 }}
-            className="hidden lg:flex fixed top-4 right-4 z-40 items-center justify-center w-10 h-10 rounded-full bg-brand-black hover:bg-zinc-800 border-2 border-brand-yellow text-brand-yellow shadow-lg transition-colors cursor-pointer"
+            className="hidden lg:flex fixed top-4 left-4 z-40 items-center justify-center w-10 h-10 rounded-full bg-brand-black hover:bg-zinc-800 border-2 border-brand-yellow text-brand-yellow shadow-lg transition-colors cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -500,164 +499,35 @@ export default function CadastroInstalador() {
       )}
 
       {/* COLUNA ESQUERDA: FORMULÁRIO */}
-      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out lg:order-2 ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[45%] xl:w-[38%] lg:border-l lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-l-0 lg:pointer-events-none'}`}>
+      <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col h-auto lg:max-h-screen lg:self-start lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[47%] xl:w-[40%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
-        {/* CABEÇALHO DA BARRA LATERAL */}
-        <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow">
-          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
-              <div className="min-w-0">
-                <h1 className="font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wider leading-tight text-white">
-                  Protect<span className="text-brand-yellow">Rastreamento.com.br</span>
-                </h1>
-                <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider sm:tracking-widest uppercase truncate">
-                  Cadastro de Instalador
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {isFormComplete() ? (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-950/80 border border-green-800 text-green-300 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                  <CheckCircle2 className="w-3.5 h-3.5 animate-pulse" />
-                  Pronto
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/80 border border-amber-800 text-brand-yellow rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Incompleto
-                </div>
-              )}
-              <a
-                href="https://protectrastreamento.com.br/"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Voltar ao site público"
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors"
-              >
-                <Home className="w-3.5 h-3.5" />
-                Voltar ao site
-              </a>
-              <button
-                onClick={() => setPanelOpen(false)}
-                title="Ocultar formulário e ver a ficha em tela cheia"
-                className="hidden lg:flex items-center justify-center w-7 h-7 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors cursor-pointer"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 w-full">
-            <button
-              onClick={handlePrint}
-              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
-              title={
-                !isFormComplete()
-                  ? "Preencha todos os campos antes de imprimir"
-                  : !emailSent
-                  ? "Envie o cadastro primeiro para liberar a impressão"
-                  : "Imprimir contrato"
-              }
-              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isGeneratingPDF ? (
-                <>
-                  <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-                  Preparando...
-                </>
-              ) : (
-                <>
-                  <Printer className="w-4 h-4 shrink-0" />
-                  Imprimir
-                </>
-              )}
-            </button>
-            <button
-              onClick={handleSavePDF}
-              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
-              title={
-                !isFormComplete()
-                  ? "Preencha todos os campos antes de salvar PDF"
-                  : !emailSent
-                  ? "Envie o cadastro primeiro para liberar o PDF"
-                  : "Salvar contrato em PDF"
-              }
-              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isGeneratingPDF ? (
-                <>
-                  <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  <FileDown className="w-4 h-4 shrink-0" />
-                  Salvar PDF
-                </>
-              )}
-            </button>
-          </div>
-
-          {!emailSent && (
-            <div className="mt-1 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[10px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
-              <AlertTriangle className="w-3.5 h-3.5 text-brand-yellow shrink-0 mt-0.5" />
-              <span>
-                A impressão e download da ficha só serão liberados após você preencher todos os dados obrigatórios e clicar em <strong className="text-brand-yellow font-bold">Enviar Cadastro</strong> na aba "Finalizar". {/* The print and PDF buttons are now enabled after form completion. */}
-              </span>
-            </div>
-          )}
-        </header>
-
-        {/* NAVEGAÇÃO DE ABAS */}
-        <nav className="flex bg-zinc-100 border-b border-zinc-200">
-          <button
-            onClick={() => setActiveTab('client')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'client'
-                ? 'bg-white border-brand-black text-brand-black'
-                : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-              }`}
+        {/* BARRA SUPERIOR (topo do painel, alinhada com o topo da ficha) */}
+        <nav className="flex items-center justify-between gap-1.5 bg-zinc-100 border-b border-zinc-200 pl-3 pr-1.5 h-11 shrink-0">
+          <a
+            href="https://protectrastreamento.com.br/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Voltar ao site"
+            className="flex items-center gap-1.5 px-2.5 shrink-0 h-7 text-[11px] font-bold uppercase tracking-wider text-zinc-500 hover:text-brand-black hover:bg-zinc-200 rounded-full transition-colors"
           >
-            <User className="w-4 h-4" /> Pessoal
-          </button>
+            <Home className="w-3.5 h-3.5" />
+            Voltar ao site
+          </a>
 
           <button
-            onClick={() => setActiveTab('skills')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'skills'
-                ? 'bg-white border-brand-black text-brand-black'
-                : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-              }`}
+            onClick={() => setPanelOpen(false)}
+            title="Ocultar formulário e ver a ficha em tela cheia"
+            className="hidden lg:flex items-center justify-center w-7 h-7 shrink-0 text-zinc-400 hover:text-brand-black hover:bg-zinc-200 rounded-full transition-colors cursor-pointer"
           >
-            <Briefcase className="w-4 h-4" /> Habilidades
-          </button>
-
-          <button
-            onClick={() => setActiveTab('professional')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'professional'
-                ? 'bg-white border-brand-black text-brand-black'
-                : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-              }`}
-          >
-            <Building2 className="w-4 h-4" /> Profissional
-          </button>
-
-          <button
-            onClick={() => setActiveTab('finish')}
-            className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1.5 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === 'finish'
-                ? 'bg-white border-brand-black text-brand-black'
-                : 'border-transparent text-zinc-500 hover:text-brand-black hover:bg-zinc-50'
-              }`}
-          >
-            <ShieldCheck className="w-4 h-4" /> Finalizar
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
         </nav>
 
-        {/* CONTEÚDO DAS ABAS */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col">
+        {/* CONTEÚDO DO FORMULÁRIO (uma única aba contínua) */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col space-y-8">
 
-          {/* TAB: PESSOAL */}
-          {activeTab === 'client' && (
-            <div className="space-y-5 my-auto">
+          {/* SEÇÃO: PESSOAL */}
+          <div className="space-y-5">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Dados do Instalador
@@ -737,11 +607,9 @@ export default function CadastroInstalador() {
                 </div>
               </div>
             </div>
-          )}
 
-          {/* TAB: HABILIDADES */}
-          {activeTab === 'skills' && (
-            <div className="space-y-5 my-auto">
+          {/* SEÇÃO: HABILIDADES */}
+          <div className="space-y-5">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Experiência e Formação
@@ -848,11 +716,9 @@ export default function CadastroInstalador() {
                 </div>
               )}
             </div>
-          )}
 
-          {/* TAB: PROFISSIONAL */}
-          {activeTab === 'professional' && (
-            <div className="space-y-5 my-auto">
+          {/* SEÇÃO: PROFISSIONAL */}
+          <div className="space-y-5">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Histórico e Anexos
@@ -925,11 +791,9 @@ export default function CadastroInstalador() {
                 </label>
               </div>
             </div>
-          )}
 
-          {/* TAB: FINALIZAR */}
-          {activeTab === 'finish' && (
-            <div className="space-y-5 my-auto">
+          {/* SEÇÃO: FINALIZAR */}
+          <div className="space-y-5">
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide">
                   Autorização e Envio
@@ -1031,14 +895,91 @@ export default function CadastroInstalador() {
                   </>
                 )}
               </button>
+
+              {/* Impressão e PDF, liberados após o envio do cadastro */}
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-200">
+                <button
+                  onClick={handlePrint}
+                  disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+                  title={
+                    !isFormComplete()
+                      ? "Preencha todos os campos antes de imprimir"
+                      : !emailSent
+                        ? "Envie o cadastro primeiro para liberar a impressão"
+                        : "Imprimir contrato"
+                  }
+                  className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-black hover:bg-zinc-800 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                      Preparando...
+                    </>
+                  ) : (
+                    <>
+                      <Printer className="w-4 h-4 shrink-0" />
+                      Imprimir
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleSavePDF}
+                  disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+                  title={
+                    !isFormComplete()
+                      ? "Preencha todos os campos antes de salvar PDF"
+                      : !emailSent
+                        ? "Envie o cadastro primeiro para liberar o PDF"
+                        : "Salvar contrato em PDF"
+                  }
+                  className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-white hover:bg-zinc-100 text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-300 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="w-4 h-4 shrink-0" />
+                      Salvar PDF
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {!emailSent && (
+                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-md text-[11px] text-amber-800 font-semibold leading-normal flex gap-2.5 items-start">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <span>
+                    A impressão e download da ficha só serão liberados após você preencher todos os dados obrigatórios e clicar em <strong>Enviar Cadastro</strong> acima.
+                  </span>
+                </div>
+              )}
             </div>
-          )}
 
         </div>
+
+        {/* FOOTER */}
+        <footer className="p-3 sm:p-4 bg-zinc-50 border-t border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-zinc-500 shrink-0">
+          <a
+            href="https://protectrastreamento.com.br/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Voltar ao site público"
+            className="flex items-center gap-1 hover:text-brand-black"
+          >
+            <Home className="w-3.5 h-3.5" />
+            Voltar ao site
+          </a>
+          <span className="font-semibold text-brand-black">Cadastro R+ v1.0</span>
+        </footer>
       </aside>
 
       {/* COLUNA DIREITA: DOCUMENTO DE VISUALIZAÇÃO A4 (Tempo real) */}
-      <section className={`flex-1 overflow-y-auto bg-zinc-200 py-4 sm:py-10 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 lg:order-1 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
+      <section
+        className={`flex-1 overflow-y-auto bg-zinc-200 py-4 sm:py-6 px-4 justify-center items-start lg:h-screen lg:sticky lg:top-0 ${mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}
+      >
         <div
           className="a4-wrapper"
           style={{
