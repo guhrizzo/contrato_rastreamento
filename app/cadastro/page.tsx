@@ -87,11 +87,12 @@ export default function CadastroInstalador() {
     autorizacao: false,
   });
 
-  const [documentoFile, setDocumentoFile] = useState<{
+  const MAX_DOCUMENTOS = 3;
+  const [documentos, setDocumentos] = useState<{
     base64: string;
     nome: string;
     tipo: string;
-  } | null>(null);
+  }[]>([]);
 
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -223,24 +224,42 @@ export default function CadastroInstalador() {
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (file.size > 8 * 1024 * 1024) {
-      alert('O arquivo excede o tamanho máximo permitido de 8MB.');
+    const vagas = MAX_DOCUMENTOS - documentos.length;
+    if (vagas <= 0) {
+      alert(`Você já anexou o máximo de ${MAX_DOCUMENTOS} documentos. Remova um para adicionar outro.`);
       e.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setDocumentoFile({
-        base64: reader.result as string,
-        nome: file.name,
-        tipo: file.type
-      });
-    };
-    reader.readAsDataURL(file);
+    const aceitos = files.slice(0, vagas);
+    if (files.length > vagas) {
+      alert(`Só é possível anexar até ${MAX_DOCUMENTOS} documentos. Apenas os ${vagas} primeiros arquivos selecionados foram adicionados.`);
+    }
+
+    aceitos.forEach((file) => {
+      if (file.size > 8 * 1024 * 1024) {
+        alert(`O arquivo "${file.name}" excede o tamanho máximo permitido de 8MB.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDocumentos((prev) => {
+          if (prev.length >= MAX_DOCUMENTOS) return prev;
+          return [...prev, { base64: reader.result as string, nome: file.name, tipo: file.type }];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
+
+  const handleRemoveDocumento = (index: number) => {
+    setDocumentos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const isFormComplete = (): boolean => {
@@ -433,9 +452,7 @@ export default function CadastroInstalador() {
     try {
       const payload = {
         ...formData,
-        documentoBase64: documentoFile?.base64 || null,
-        documentoNome: documentoFile?.nome || null,
-        documentoTipo: documentoFile?.tipo || null,
+        documentos,
         assinaturaBase64: signatureImage || null,
       };
 
@@ -903,25 +920,55 @@ export default function CadastroInstalador() {
               </div>
 
               <div className="border-t border-zinc-200 pt-4">
-                <label className="text-xs font-bold text-zinc-700 uppercase mb-2 block">
-                  Documentação de Apoio
-                </label>
-                <label className="bg-zinc-50 border border-dashed border-zinc-300 rounded-lg p-5 text-center flex flex-col items-center cursor-pointer hover:bg-zinc-100 transition">
-                  <Upload className="w-8 h-8 text-zinc-400 mb-2" />
-                  <span className="text-xs font-bold text-zinc-800">
-                    {documentoFile ? documentoFile.nome : 'Selecione certificados ou currículo'}
-                  </span>
-                  <span className="text-[10px] text-zinc-500 mt-1 mb-3 block">PDF ou Imagem (Máx: 8MB)</span>
-                  <span className="bg-white border border-zinc-300 hover:bg-zinc-200 text-zinc-800 px-4 py-2.5 min-h-[44px] rounded-md text-xs font-semibold shadow-sm transition flex items-center">
-                    Upload de Documento
-                  </span>
-                  <input
-                    type="file"
-                    accept=".pdf, image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-zinc-700 uppercase block">
+                    Documentação de Apoio
+                  </label>
+                  <span className="text-[10px] font-semibold text-zinc-400">{documentos.length}/{MAX_DOCUMENTOS}</span>
+                </div>
+
+                {documentos.length > 0 && (
+                  <div className="space-y-2 mb-3">
+                    {documentos.map((doc, index) => (
+                      <div key={`${doc.nome}-${index}`} className="flex items-center justify-between gap-2 bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="w-4 h-4 text-zinc-400 shrink-0" />
+                          <span className="text-xs font-semibold text-zinc-800 truncate">{doc.nome}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDocumento(index)}
+                          className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition shrink-0 cursor-pointer"
+                          aria-label={`Remover ${doc.nome}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {documentos.length < MAX_DOCUMENTOS && (
+                  <label className="bg-zinc-50 border border-dashed border-zinc-300 rounded-lg p-5 text-center flex flex-col items-center cursor-pointer hover:bg-zinc-100 transition">
+                    <Upload className="w-8 h-8 text-zinc-400 mb-2" />
+                    <span className="text-xs font-bold text-zinc-800">
+                      Selecione certificados ou currículo
+                    </span>
+                    <span className="text-[10px] text-zinc-500 mt-1 mb-3 block">
+                      PDF ou Imagem (Máx: 8MB cada) &middot; até {MAX_DOCUMENTOS} documentos
+                    </span>
+                    <span className="bg-white border border-zinc-300 hover:bg-zinc-200 text-zinc-800 px-4 py-2.5 min-h-[44px] rounded-md text-xs font-semibold shadow-sm transition flex items-center">
+                      Upload de Documento
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf, image/*"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
             </div>
 
@@ -1240,8 +1287,10 @@ export default function CadastroInstalador() {
                 <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse', marginTop: '4px' }}>
                   <tbody>
                     <tr style={{ borderBottom: '1px solid #e4e4e7' }}>
-                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px' }}>Anexo Enviado:</td>
-                      <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>{documentoFile ? `SIM (${documentoFile.nome})` : 'NÃO ANEXADO'}</td>
+                      <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', width: '25%', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Anexos Enviados:</td>
+                      <td style={{ padding: '8px', color: '#09090b', fontWeight: 'bold', fontSize: '12px' }}>
+                        {documentos.length > 0 ? documentos.map(d => d.nome).join(', ') : 'NENHUM ANEXO'}
+                      </td>
                     </tr>
                     <tr>
                       <td style={{ padding: '8px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', fontSize: '11px', verticalAlign: 'top' }}>Comentários:</td>

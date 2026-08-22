@@ -24,9 +24,7 @@ export async function POST(request: Request) {
       comentarios,
       formaPagamento,
       autorizacao,
-      documentoBase64,
-      documentoNome,
-      documentoTipo,
+      documentos,
     } = body;
 
     // Validações de campos obrigatórios
@@ -34,18 +32,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 });
     }
 
-    // Preparar os anexos
+    // Preparar os anexos (até 3 documentos)
+    const MAX_DOCUMENTOS = 3;
     const attachments = [];
-    if (documentoBase64 && documentoNome) {
-      // Remove o prefixo data:image/...;base64, se houver
-      const cleanBase64 = documentoBase64.includes(';base64,')
-        ? documentoBase64.split(';base64,')[1]
-        : documentoBase64;
+    if (Array.isArray(documentos)) {
+      for (const doc of documentos.slice(0, MAX_DOCUMENTOS)) {
+        if (!doc?.base64 || !doc?.nome) continue;
+        // Remove o prefixo data:image/...;base64, se houver
+        const cleanBase64 = doc.base64.includes(';base64,')
+          ? doc.base64.split(';base64,')[1]
+          : doc.base64;
 
-      attachments.push({
-        filename: documentoNome,
-        content: Buffer.from(cleanBase64, 'base64'),
-      });
+        attachments.push({
+          filename: doc.nome,
+          content: Buffer.from(cleanBase64, 'base64'),
+        });
+      }
     }
 
     // Obter o número da ficha
