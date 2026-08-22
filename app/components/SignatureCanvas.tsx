@@ -5,9 +5,10 @@ import React, { useRef, useState, useEffect } from "react";
 interface SignatureCanvasProps {
   onSave: (signatureDataUrl: string) => void;
   onClear: () => void;
+  label?: string;
 }
 
-export default function SignatureCanvas({ onSave, onClear }: SignatureCanvasProps) {
+export default function SignatureCanvas({ onSave, onClear, label = "Assinatura do Contratante" }: SignatureCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
@@ -171,7 +172,7 @@ export default function SignatureCanvas({ onSave, onClear }: SignatureCanvasProp
     <div className="flex flex-col w-full">
       <div className="flex items-center justify-between mb-2">
         <label className="text-sm font-semibold text-brand-black uppercase tracking-wider">
-          Assinatura do Contratante
+          {label}
         </label>
         <span className="text-xs text-brand-gray">Use o mouse ou o dedo</span>
       </div>

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import SignatureCanvas from '../components/SignatureCanvas';
 import {
   User,
   FileText,
@@ -99,6 +100,7 @@ export default function CadastroInstalador() {
   const [emailSent, setEmailSent] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [fichaNumero, setFichaNumero] = useState<number | null>(null);
+  const [signatureImage, setSignatureImage] = useState<string | null>(null);
 
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
@@ -250,8 +252,17 @@ export default function CadastroInstalador() {
       formData.phone.trim() !== '' &&
       formData.tiposInstalacao.length > 0 &&
       formData.formaPagamento !== '' &&
-      formData.autorizacao === true
+      formData.autorizacao === true &&
+      signatureImage !== null
     );
+  };
+
+  const handleSignatureSave = (signatureBase64: string) => {
+    setSignatureImage(signatureBase64);
+  };
+
+  const handleSignatureClear = () => {
+    setSignatureImage(null);
   };
 
   const generateDocumentPdf = async () => {
@@ -295,17 +306,8 @@ export default function CadastroInstalador() {
 
       const pdfWidth = 210;
       const pdfHeight = 297;
-      const margin = 5;
-      const availableWidth = pdfWidth - margin * 2;
-      const availableHeight = pdfHeight - margin * 2;
-
-      let imgWidthMm = availableWidth;
-      let imgHeightMm = (canvas.height * imgWidthMm) / canvas.width;
-
-      if (imgHeightMm > availableHeight) {
-        imgHeightMm = availableHeight;
-        imgWidthMm = (canvas.width * imgHeightMm) / canvas.height;
-      }
+      const canvasWidthMm = pdfWidth;
+      const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
 
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -313,9 +315,39 @@ export default function CadastroInstalador() {
         format: "a4",
       });
 
-      const marginLeft = (pdfWidth - imgWidthMm) / 2;
-      const marginTop = (pdfHeight - imgHeightMm) / 2;
-      pdf.addImage(imgData, "JPEG", marginLeft, marginTop, imgWidthMm, imgHeightMm);
+      // O documento agora tem várias seções e pode ser bem mais alto que
+      // uma única folha A4. Antes isso forçava tudo (texto, tabelas etc.)
+      // a encolher para caber numa página só, ficando minúsculo. Aqui,
+      // igual ao PDF da página "/", fatiamos o canvas em blocos do
+      // tamanho de uma A4 e criamos uma página nova para cada bloco.
+      if (canvasHeightMm <= pdfHeight) {
+        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidthMm, canvasHeightMm);
+      } else {
+        const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
+        let currentPage = 1;
+        let currentYPosition = 0;
+
+        while (currentYPosition < canvas.height) {
+          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = heightToCrop;
+
+          const tempCtx = tempCanvas.getContext('2d');
+          if (tempCtx) {
+            tempCtx.drawImage(canvas, 0, currentYPosition, canvas.width, heightToCrop, 0, 0, canvas.width, heightToCrop);
+          }
+
+          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
+          if (currentPage > 1) pdf.addPage();
+
+          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
+          pdf.addImage(croppedImgData, "JPEG", 0, 0, canvasWidthMm, heightInMm);
+
+          currentYPosition += heightToCrop;
+          currentPage++;
+        }
+      }
 
       return pdf;
     } finally {
@@ -404,6 +436,7 @@ export default function CadastroInstalador() {
         documentoBase64: documentoFile?.base64 || null,
         documentoNome: documentoFile?.nome || null,
         documentoTipo: documentoFile?.tipo || null,
+        assinaturaBase64: signatureImage || null,
       };
 
       const response = await fetch('/api/send-installer', {
@@ -949,6 +982,17 @@ export default function CadastroInstalador() {
                 </span>
               </div>
 
+              <div>
+                <SignatureCanvas
+                  label="Assinatura do Instalador"
+                  onSave={handleSignatureSave}
+                  onClear={handleSignatureClear}
+                />
+                {!signatureImage && (
+                  <p className="text-[11px] text-rose-500 font-semibold mt-1.5">Assine no campo acima para poder enviar o cadastro.</p>
+                )}
+              </div>
+
               <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-md space-y-3">
                 <p className="text-[11px] text-zinc-600 leading-normal">
                   Declaro que as informações fornecidas neste formulário são verdadeiras e completas, autorizo a verificação dos dados aqui informados e concordo com o tratamento dos meus dados pessoais pela GRUPO PROTECT LTDA nos termos da Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018), conforme descrito no contrato.
@@ -1425,11 +1469,21 @@ export default function CadastroInstalador() {
                </p>
 
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '40px', marginTop: '20px' }}>
-                 <div style={{ flex: 1, textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
-                   <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Assinatura do Instalador</span>
-                   <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block', height: '20px' }}>
-                     {formData.nomeCompleto || '___________________________'}
-                   </span>
+                 <div style={{ flex: 1, textAlign: 'center' }}>
+                   <div style={{ height: '48px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                     {signatureImage ? (
+                       // eslint-disable-next-line @next/next/no-img-element
+                       <img src={signatureImage} alt="Assinatura do Instalador" style={{ maxHeight: '46px', maxWidth: '100%', objectFit: 'contain' }} />
+                     ) : (
+                       <span style={{ fontSize: '9px', color: '#a1a1aa', fontStyle: 'italic' }}>Assinatura não capturada</span>
+                     )}
+                   </div>
+                   <div style={{ borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
+                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Assinatura do Instalador</span>
+                     <span style={{ fontSize: '12px', color: '#09090b', fontWeight: '600', marginTop: '4px', display: 'block', height: '20px' }}>
+                       {formData.nomeCompleto || '___________________________'}
+                     </span>
+                   </div>
                  </div>
                  <div style={{ width: '33%', textAlign: 'center', borderTop: '1px solid #a1a1aa', paddingTop: '8px' }}>
                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#71717a', textTransform: 'uppercase', display: 'block' }}>Data do Cadastro</span>
