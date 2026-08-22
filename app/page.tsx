@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon } from "lucide-react";
+import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon, Repeat, ShoppingCart } from "lucide-react";
 
 interface ContractData {
   // Contratante
@@ -22,6 +22,7 @@ interface ContractData {
 
   // Rastreamento/Serviço
   selectedPlan: string;
+  serviceType: "comodato" | "venda";
   customPlanPrice: string;
   dueDate: string;
   // Armazena no formato YYYY-MM-DD (compatível com input type="date")
@@ -164,6 +165,7 @@ export default function Home() {
     clientState: "",
     clientCep: "",
     selectedPlan: "basico_4g_moto",
+    serviceType: "comodato",
     customPlanPrice: "",
     dueDate: "05",
     // Inicia vazio; o useEffect preenche com hoje em YYYY-MM-DD
@@ -366,6 +368,10 @@ export default function Home() {
       ...prev,
       [name]: filteredValue,
     }));
+  };
+
+  const handleServiceTypeChange = (serviceType: ContractData["serviceType"]) => {
+    setData((prev) => ({ ...prev, serviceType }));
   };
 
   const handleSignatureSave = (signatureBase64: string) => {
@@ -1142,6 +1148,39 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">Selecione o plano de rastreamento e vencimentos</p>
               </div>
 
+              <div className="flex flex-col mb-1">
+                <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
+                  <Repeat className="w-3.5 h-3.5 shrink-0" />
+                  Tipo de Serviço do Equipamento
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleServiceTypeChange("comodato")}
+                    className={`flex flex-col items-center gap-1.5 p-3.5 border rounded-lg text-center transition-all duration-150 cursor-pointer ${data.serviceType === "comodato"
+                        ? "bg-amber-50/70 border-brand-yellow-dark shadow-2xs"
+                        : "bg-zinc-50 border-zinc-200 hover:bg-zinc-100"
+                      }`}
+                  >
+                    <Repeat className={`w-4 h-4 ${data.serviceType === "comodato" ? "text-brand-black" : "text-zinc-400"}`} />
+                    <span className={`text-xs font-bold ${data.serviceType === "comodato" ? "text-zinc-950" : "text-zinc-700"}`}>1. Comodato</span>
+                    <span className="text-[10px] text-zinc-500 leading-tight">Equipamento da CONTRATADA, devolvido ao final</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleServiceTypeChange("venda")}
+                    className={`flex flex-col items-center gap-1.5 p-3.5 border rounded-lg text-center transition-all duration-150 cursor-pointer ${data.serviceType === "venda"
+                        ? "bg-amber-50/70 border-brand-yellow-dark shadow-2xs"
+                        : "bg-zinc-50 border-zinc-200 hover:bg-zinc-100"
+                      }`}
+                  >
+                    <ShoppingCart className={`w-4 h-4 ${data.serviceType === "venda" ? "text-brand-black" : "text-zinc-400"}`} />
+                    <span className={`text-xs font-bold ${data.serviceType === "venda" ? "text-zinc-950" : "text-zinc-700"}`}>2. Venda do Equipamento</span>
+                    <span className="text-[10px] text-zinc-500 leading-tight">Equipamento passa a ser do CONTRATANTE</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-5">
                 <div className={`flex flex-col relative ${isPlanDropdownOpen ? "z-50" : ""}`}>
                   <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
@@ -1357,7 +1396,7 @@ export default function Home() {
                   </li>
                   <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
                     <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
-                    <span>Equipamento em comodato (sem custo adicional)</span>
+                    <span>{data.serviceType === "comodato" ? "Equipamento em comodato (sem custo adicional)" : "Equipamento adquirido pelo cliente (venda)"}</span>
                   </li>
                   <li className="flex items-start gap-2.5 text-xs text-zinc-700 leading-relaxed">
                     <CheckCircle className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
@@ -1386,7 +1425,11 @@ export default function Home() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
-                    <span>O equipamento rastreador é cedido em <strong>regime de comodato</strong>, devendo ser devolvido ao final do contrato.</span>
+                    <span>
+                      {data.serviceType === "comodato"
+                        ? <>O equipamento rastreador é cedido em <strong>regime de comodato</strong>, devendo ser devolvido ao final do contrato.</>
+                        : <>O equipamento rastreador é <strong>vendido ao cliente</strong> e passa a ser de sua propriedade após a quitação.</>}
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
@@ -1537,128 +1580,165 @@ export default function Home() {
                   As partes resolvem firmar o presente Contrato de Prestação de Serviços de Rastreamento Veicular, mediante as seguintes cláusulas:
                 </p>
 
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 1 – OBJETO
-                  </h4>
-                  <p>
-                    O presente contrato tem como objeto a prestação de serviços de rastreamento, monitoramento e localização veicular, por meio de tecnologia GPS/GSM ou similar, disponibilizada pela CONTRATADA.
-                  </p>
-                  <p className="mt-1 font-semibold text-[8.5pt]">O serviço inclui:</p>
-                  <ul className="list-disc list-inside ml-2 space-y-0.5 text-[8.5pt]">
-                    <li>Monitoramento da localização do veículo</li>
-                    <li>Acesso à plataforma de rastreamento</li>
-                    <li>Suporte técnico</li>
-                    <li>Localização do veículo quando solicitado.</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 2 – NATUREZA DO SERVIÇO
-                  </h4>
-                  <p>
-                    A CONTRATADA não é seguradora. O serviço prestado consiste exclusivamente em rastreamento e monitoramento do veículo, não havendo garantia de:
-                  </p>
-                  <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5 text-[8.5pt]">
-                    <li>Recuperação do veículo em caso de furto ou roubo</li>
-                    <li>Prevenção de crimes</li>
-                    <li>Funcionamento contínuo em locais sem cobertura de sinal.</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 3 – LIMITAÇÃO DE RESPONSABILIDADE
-                  </h4>
-                  <p>
-                    A CONTRATADA não será responsável por perdas ou danos, incluindo: roubo ou furto do veículo, danos materiais, lucros cessantes, interrupções de sinal, falhas de rede GSM/GPS, e bloqueio de sinal por terceiros. A CONTRATADA compromete-se apenas a empregar os recursos tecnológicos disponíveis para auxiliar na localização do veículo.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 4 – EQUIPAMENTO EM COMODATO
-                  </h4>
-                  <p>
-                    O equipamento rastreador instalado no veículo permanece como propriedade exclusiva da CONTRATADA, sendo cedido ao CONTRATANTE em regime de comodato. O CONTRATANTE compromete-se a não violar ou remover o equipamento, não permitir que terceiros manipulem o dispositivo, e comunicar imediatamente qualquer problema. Em caso de dano, perda ou retirada indevida, o CONTRATANTE deverá pagar o valor do equipamento.
-                  </p>
-                  <p className="mt-1 text-[8.5pt]">
-                    <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 5 – PAGAMENTO
-                  </h4>
-                  <p>
-                    O CONTRATANTE pagará à CONTRATADA o valor fixado de acordo com o plano de serviço selecionado:
-                  </p>
-                  <p className="mt-1 font-bold text-[9.5pt]">
-                    Valor do plano: {getDisplayPriceText()} ({getPriceExtenso()})
-                  </p>
-                  <p>
-                    Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
-                  </p>
-                  <p className="mt-1">
-                    O não pagamento poderá resultar em: suspensão do serviço, cancelamento do contrato, e cobrança judicial ou extrajudicial.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 6 – INADIMPLÊNCIA
-                  </h4>
-                  <p>
-                    O atraso no pagamento implicará em multa de 10%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 7 – PRAZO DE CONTRATO
-                  </h4>
-                  <p>
-                    O presente contrato possui prazo mínimo de 12 meses. Após esse período, passa a vigorar por prazo indeterminado.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 8 – CANCELAMENTO
-                  </h4>
-                  <p>
-                    Em caso de cancelamento antes do prazo mínimo, será cobrada multa correspondente a 30% do valor restante do contrato. Também deverá ocorrer a devolução do equipamento rastreador.
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 9 – RETIRADA DO EQUIPAMENTO
-                  </h4>
-                  <p>
-                    Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor de <strong>{getEquipamentoValorRetirada()}</strong> (valor do plano vezes 9).
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 10 – PRIVACIDADE E LGPD
-                  </h4>
-                  <p>
-                    Os dados coletados pelo sistema de rastreamento serão utilizados exclusivamente para prestação do serviço, segurança do cliente, e atendimento e suporte. A CONTRATADA compromete-se a cumprir a Lei Geral de Proteção de Dados – LGPD (Lei 13.709/2018).
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                    CLÁUSULA 11 – FORO
-                  </h4>
-                  <p>
-                    Fica eleito o foro da comarca de <strong>Belo Horizonte – MG</strong> para dirimir quaisquer dúvidas decorrentes deste contrato.
-                  </p>
-                </div>
+                {/* Cláusulas geradas dinamicamente: a Cláusula 4 (propriedade do
+                    equipamento) muda de texto conforme Comodato/Venda, e a
+                    Cláusula de retirada do equipamento só existe no Comodato
+                    (na Venda o equipamento não é devolvido). A numeração é
+                    calculada automaticamente pela posição no array, então
+                    incluir/remover cláusulas nunca deixa buracos na contagem. */}
+                {[
+                  {
+                    title: "OBJETO",
+                    body: (
+                      <>
+                        <p>
+                          O presente contrato tem como objeto a prestação de serviços de rastreamento, monitoramento e localização veicular, por meio de tecnologia GPS/GSM ou similar, disponibilizada pela CONTRATADA.
+                        </p>
+                        <p className="mt-1 font-semibold text-[8.5pt]">O serviço inclui:</p>
+                        <ul className="list-disc list-inside ml-2 space-y-0.5 text-[8.5pt]">
+                          <li>Monitoramento da localização do veículo</li>
+                          <li>Acesso à plataforma de rastreamento</li>
+                          <li>Suporte técnico</li>
+                          <li>Localização do veículo quando solicitado.</li>
+                        </ul>
+                      </>
+                    ),
+                  },
+                  {
+                    title: "NATUREZA DO SERVIÇO",
+                    body: (
+                      <>
+                        <p>
+                          A CONTRATADA não é seguradora. O serviço prestado consiste exclusivamente em rastreamento e monitoramento do veículo, não havendo garantia de:
+                        </p>
+                        <ul className="list-disc list-inside ml-2 mt-1 space-y-0.5 text-[8.5pt]">
+                          <li>Recuperação do veículo em caso de furto ou roubo</li>
+                          <li>Prevenção de crimes</li>
+                          <li>Funcionamento contínuo em locais sem cobertura de sinal.</li>
+                        </ul>
+                      </>
+                    ),
+                  },
+                  {
+                    title: "LIMITAÇÃO DE RESPONSABILIDADE",
+                    body: (
+                      <p>
+                        A CONTRATADA não será responsável por perdas ou danos, incluindo: roubo ou furto do veículo, danos materiais, lucros cessantes, interrupções de sinal, falhas de rede GSM/GPS, e bloqueio de sinal por terceiros. A CONTRATADA compromete-se apenas a empregar os recursos tecnológicos disponíveis para auxiliar na localização do veículo.
+                      </p>
+                    ),
+                  },
+                  data.serviceType === "comodato"
+                    ? {
+                      title: "EQUIPAMENTO EM COMODATO",
+                      body: (
+                        <>
+                          <p>
+                            O equipamento rastreador instalado no veículo permanece como propriedade exclusiva da CONTRATADA, sendo cedido ao CONTRATANTE em regime de comodato. O CONTRATANTE compromete-se a não violar ou remover o equipamento, não permitir que terceiros manipulem o dispositivo, e comunicar imediatamente qualquer problema. Em caso de dano, perda ou retirada indevida, o CONTRATANTE deverá pagar o valor do equipamento.
+                          </p>
+                          <p className="mt-1 text-[8.5pt]">
+                            <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})
+                          </p>
+                        </>
+                      ),
+                    }
+                    : {
+                      title: "COMPRA E VENDA DO EQUIPAMENTO",
+                      body: (
+                        <>
+                          <p>
+                            O CONTRATANTE adquire da CONTRATADA o equipamento rastreador instalado no veículo. Após a quitação do respectivo valor, o equipamento passa a ser de propriedade exclusiva do CONTRATANTE. Por se tratar de venda, o equipamento não será devolvido em razão do simples cancelamento do serviço de rastreamento, ressalvadas as hipóteses legalmente aplicáveis.
+                          </p>
+                          <p className="mt-1 text-[8.5pt]">
+                            <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})<br />
+                            <strong>Valor do equipamento:</strong> R$ ______________ &nbsp; <strong>Forma de pagamento:</strong> ______________________
+                          </p>
+                        </>
+                      ),
+                    },
+                  {
+                    title: "PAGAMENTO",
+                    body: (
+                      <>
+                        <p>
+                          O CONTRATANTE pagará à CONTRATADA o valor fixado de acordo com o plano de serviço selecionado:
+                        </p>
+                        <p className="mt-1 font-bold text-[9.5pt]">
+                          Valor do plano: {getDisplayPriceText()} ({getPriceExtenso()})
+                        </p>
+                        <p>
+                          Data de vencimento: <strong>Todo dia {data.dueDate || "__"}</strong> de cada período subsequente.
+                        </p>
+                        <p className="mt-1">
+                          O não pagamento poderá resultar em: suspensão do serviço, cancelamento do contrato, e cobrança judicial ou extrajudicial.
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    title: "INADIMPLÊNCIA",
+                    body: (
+                      <p>
+                        O atraso no pagamento implicará em multa de 10%, juros de 1% ao mês e correção monetária. Após 15 dias de atraso, o serviço poderá ser suspenso.
+                      </p>
+                    ),
+                  },
+                  {
+                    title: "PRAZO DE CONTRATO",
+                    body: (
+                      <p>
+                        O presente contrato possui prazo mínimo de 12 meses. Após esse período, passa a vigorar por prazo indeterminado.
+                      </p>
+                    ),
+                  },
+                  {
+                    title: "CANCELAMENTO",
+                    body: (
+                      <p>
+                        Em caso de cancelamento antes do prazo mínimo, será cobrada multa correspondente a 30% do valor restante do contrato.{" "}
+                        {data.serviceType === "comodato"
+                          ? "Também deverá ocorrer a devolução do equipamento rastreador."
+                          : "Por se tratar de equipamento adquirido em definitivo pelo CONTRATANTE, não haverá devolução do equipamento."}
+                      </p>
+                    ),
+                  },
+                  // A cláusula de retirada só existe no Comodato — na Venda o
+                  // equipamento é do cliente e não precisa ser devolvido.
+                  ...(data.serviceType === "comodato"
+                    ? [
+                      {
+                        title: "RETIRADA DO EQUIPAMENTO",
+                        body: (
+                          <p>
+                            Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor de <strong>{getEquipamentoValorRetirada()}</strong> (valor do plano vezes 9).
+                          </p>
+                        ),
+                      },
+                    ]
+                    : []),
+                  {
+                    title: "PRIVACIDADE E LGPD",
+                    body: (
+                      <p>
+                        Os dados coletados pelo sistema de rastreamento serão utilizados exclusivamente para prestação do serviço, segurança do cliente, e atendimento e suporte. A CONTRATADA compromete-se a cumprir a Lei Geral de Proteção de Dados – LGPD (Lei 13.709/2018).
+                      </p>
+                    ),
+                  },
+                  {
+                    title: "FORO",
+                    body: (
+                      <p>
+                        Fica eleito o foro da comarca de <strong>Belo Horizonte – MG</strong> para dirimir quaisquer dúvidas decorrentes deste contrato.
+                      </p>
+                    ),
+                  },
+                ].map((clause, index) => (
+                  <div key={clause.title}>
+                    <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
+                      CLÁUSULA {index + 1} – {clause.title}
+                    </h4>
+                    {clause.body}
+                  </div>
+                ))}
 
               </div>
 
