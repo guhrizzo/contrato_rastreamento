@@ -26,6 +26,8 @@ export async function POST(request: Request) {
       formaPagamento,
       autorizacao,
       documentos,
+      contratoPdfBase64,
+      contratoPdfNome,
     } = body;
 
     // Validações de campos obrigatórios
@@ -49,6 +51,19 @@ export async function POST(request: Request) {
           content: Buffer.from(cleanBase64, 'base64'),
         });
       }
+    }
+
+    // Anexa o contrato completo (com todas as cláusulas) gerado no navegador —
+    // sem isso o e-mail só levava a tabela de dados, sem o instrumento assinado.
+    if (contratoPdfBase64 && contratoPdfNome) {
+      const cleanPdfBase64 = contratoPdfBase64.includes(';base64,')
+        ? contratoPdfBase64.split(';base64,')[1]
+        : contratoPdfBase64;
+
+      attachments.push({
+        filename: contratoPdfNome,
+        content: Buffer.from(cleanPdfBase64, 'base64'),
+      });
     }
 
     // Obter o número da ficha
@@ -165,6 +180,14 @@ export async function POST(request: Request) {
               ✓ O instalador declarou que todas as informações fornecidas são verdadeiras e completas e autorizou a verificação dos dados.
             </p>
           </div>
+
+          ${contratoPdfBase64 ? `
+            <div style="background-color: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 15px; margin-top: 10px;">
+              <p style="margin: 0; font-size: 13px; color: #09090b; font-weight: 500;">
+                📎 O contrato completo, com todas as cláusulas e as assinaturas coletadas, está anexado a este e-mail em PDF.
+              </p>
+            </div>
+          ` : ''}
         </div>
 
         <div style="padding: 20px; background-color: #09090b; border: 1px solid #27272a; border-top: 3px solid #facc15; border-radius: 0 0 12px 12px; text-align: center;">

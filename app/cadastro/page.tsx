@@ -463,11 +463,25 @@ export default function CadastroInstalador() {
     setErrorMsg('');
 
     try {
+      // Gera o PDF do contrato completo (com todas as cláusulas) para
+      // anexar ao e-mail — antes só os dados do formulário eram enviados,
+      // sem o instrumento assinado.
+      let contratoPdfBase64: string | null = null;
+      const contratoPdfNome = `Contrato_Instalador_${formData.nomeCompleto.trim().replace(/\s+/g, "_") || "Instalador"}.pdf`;
+      try {
+        const pdf = await generateDocumentPdf();
+        contratoPdfBase64 = pdf.output('datauristring');
+      } catch (pdfErr) {
+        console.error('Erro ao gerar PDF do contrato para o e-mail:', pdfErr);
+      }
+
       const payload = {
         ...formData,
         documentos,
         assinaturaBase64: signatureImage || null,
         assinaturaContratanteBase64: contratanteSignatureImage || null,
+        contratoPdfBase64,
+        contratoPdfNome,
       };
 
       const response = await fetch('/api/send-installer', {
