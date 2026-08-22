@@ -1304,6 +1304,15 @@ export default function ProductSelector() {
           }
         }
         @media (max-width: 768px) {
+          .psel-nav-wrap,
+          .psel-content {
+            padding-left: 16px;
+            padding-right: 16px;
+          }
+          .psel-grid {
+            padding: 14px;
+            gap: 12px;
+          }
           .psel-extra {
             max-height: 0;
             overflow: hidden;
@@ -1315,27 +1324,51 @@ export default function ProductSelector() {
           .psel-more {
             display: block;
           }
+          /* Em telas estreitas o layout lado a lado (imagem 50% + texto 50%)
+             não cabe: o corpo do card acaba estourando a largura do card
+             (que tem overflow: hidden) e corta texto/botões fora da tela.
+             Por isso empilha imagem em cima e conteúdo embaixo. */
           .psel-card {
-            flex-direction: row;
+            flex-direction: column;
             align-items: stretch;
           }
           .psel-img-wrap {
-            flex: 0 0 50%;
-            max-width: 50%;
-            border-right: 1px solid var(--line);
-            border-bottom: none;
-            padding: 10px;
-            aspect-ratio: auto;
+            flex: none;
+            max-width: 100%;
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--line);
+            padding: 14px;
           }
           .psel-card :global(img) {
             width: 100%;
-            height: 100%;
-            max-height: 320px;
+            height: auto;
+            max-height: 220px;
+          }
+          .psel-body {
+            padding: 16px;
+            min-width: 0;
+          }
+          .psel-actions {
+            flex-wrap: wrap;
           }
         }
         @media (max-width: 560px) {
           .psel-grid {
             grid-template-columns: 1fr;
+          }
+          .psel-head h2 {
+            font-size: 23px;
+          }
+          .psel-head p {
+            font-size: 14px;
+          }
+          .psel-stock-notice {
+            font-size: 12px;
+            padding: 8px 12px;
+          }
+          .psel-cat-head {
+            padding: 14px 16px;
           }
           .psel-bar {
             flex-direction: column;
@@ -1349,6 +1382,12 @@ export default function ProductSelector() {
           .psel-send {
             flex: 1;
             justify-content: center;
+          }
+          .psel-qty-control {
+            flex: 1;
+          }
+          .psel-qty-btn {
+            flex: 1;
           }
         }
       `}</style>
