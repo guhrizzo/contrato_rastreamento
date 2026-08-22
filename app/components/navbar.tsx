@@ -409,7 +409,7 @@ export default function Navbar() {
               <ul className="nb-sub" id="sub-parc">
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
-                <li><a href="https://protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
+                <li><a href="https://contrato.protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
               </ul>
             </li>
             <li>
