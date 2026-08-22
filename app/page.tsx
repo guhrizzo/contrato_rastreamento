@@ -1479,7 +1479,7 @@ export default function Home() {
           style={{ height: windowWidth < 869 ? `${contractHeight * scale}px` : "auto" }}
         >
           <div
-            className="print-container w-full max-w-[210mm] transition-transform duration-200"
+            className="print-container w-full max-w-[230mm] transition-transform duration-200"
             style={{
               transform: windowWidth < 869 ? `scale(${scale})` : "none",
               transformOrigin: "top center",
