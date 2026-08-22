@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
+import { sliceCanvasToPdfPages } from "@/lib/pdfUtils";
 import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon, Repeat, ShoppingCart } from "lucide-react";
 
 interface ContractData {
@@ -417,11 +418,34 @@ export default function Home() {
     setEmailSent(false);
 
     try {
-      const element = document.getElementById("contract-pdf");
-      if (!element) throw new Error("Contrato não encontrado");
+      // Reserva o número do contrato ANTES de gerar o PDF — antes disso o
+      // número só existia depois do e-mail já ter sido enviado, então o
+      // contrato podia sair sem o número real (Nº em branco).
+      let reservedContractNumber: string | null = null;
+      try {
+        const numResponse = await fetch("/api/reserve-contract-number", { method: "POST" });
+        const numData = await numResponse.json();
+        if (numResponse.ok && typeof numData.contractNumber === "number") {
+          reservedContractNumber = String(numData.contractNumber);
+          setData(prev => ({ ...prev, contractNumber: reservedContractNumber as string }));
+          // Espera dois frames para garantir que o React já re-renderizou o
+          // contrato (#contract-pdf) com o número novo antes do html2canvas
+          // tirar o "print" dele.
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        }
+      } catch (numErr) {
+        console.error("Erro ao reservar número do contrato:", numErr);
+      }
 
-      let htmlContent = element.innerHTML;
-      htmlContent = htmlContent.replace(/<img[^>]*>/g, "");
+      // Gera o PDF completo do contrato para anexar ao e-mail. Antes, o
+      // contrato inteiro era embutido como HTML no corpo do e-mail — isso
+      // costumava sair "cortado" porque o Gmail (e outros clientes) trunca
+      // mensagens cujo corpo HTML passa de ~102KB. Um PDF anexado não sofre
+      // esse limite.
+      const pdf = await generateContractPdf();
+      const contractPdfBase64 = pdf.output("datauristring");
+      const contractPdfNome = `Contrato_Rastreamento_${data.clientName.trim().replace(/\s+/g, "_") || "Cliente"}.pdf`;
 
       const response = await fetch("/api/send-contract", {
         method: "POST",
@@ -429,7 +453,9 @@ export default function Home() {
         body: JSON.stringify({
           clientEmail: data.clientEmail,
           clientName: data.clientName,
-          contractHtml: htmlContent,
+          contractPdfBase64,
+          contractPdfNome,
+          contractNumber: reservedContractNumber,
         }),
       });
 
@@ -547,11 +573,11 @@ export default function Home() {
     window.print();
   };
 
-  const handleSavePDF = async () => {
+  // Gera o PDF completo do contrato (todas as páginas), reaproveitado tanto
+  // pelo botão "Salvar PDF" quanto pelo anexo enviado por e-mail.
+  const generateContractPdf = async () => {
     const element = document.getElementById("contract-pdf");
-    if (!element || isGeneratingPDF || !isFormComplete() || !emailSent) return;
-
-    setIsGeneratingPDF(true);
+    if (!element) throw new Error("Elemento do contrato não encontrado");
 
     const clone = element.cloneNode(true) as HTMLElement;
     clone.style.position = 'absolute';
@@ -582,50 +608,32 @@ export default function Home() {
         windowHeight: clone.scrollHeight,
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const canvasWidthMm = pdfWidth;
-      const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
-
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-      if (canvasHeightMm <= pdfHeight) {
-        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidthMm, canvasHeightMm);
-      } else {
-        const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
-        let currentPage = 1;
-        let currentYPosition = 0;
+      // sliceCanvasToPdfPages fatia o canvas em páginas A4, ajustando cada
+      // corte pra linha em branco mais próxima do ideal, em vez de um corte
+      // cego de altura fixa — evita cortar texto/tabela ao meio entre uma
+      // página e a seguinte.
+      sliceCanvasToPdfPages(pdf, canvas, 210, 297);
 
-        while (currentYPosition < canvas.height) {
-          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = heightToCrop;
+      return pdf;
+    } finally {
+      document.body.removeChild(clone);
+    }
+  };
 
-          const tempCtx = tempCanvas.getContext('2d');
-          if (tempCtx) {
-            tempCtx.drawImage(canvas, 0, currentYPosition, canvas.width, heightToCrop, 0, 0, canvas.width, heightToCrop);
-          }
+  const handleSavePDF = async () => {
+    if (isGeneratingPDF || !isFormComplete() || !emailSent) return;
 
-          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
-          if (currentPage > 1) pdf.addPage();
-
-          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
-          pdf.addImage(croppedImgData, "JPEG", 0, 0, canvasWidthMm, heightInMm);
-
-          currentYPosition += heightToCrop;
-          currentPage++;
-        }
-      }
-
+    setIsGeneratingPDF(true);
+    try {
+      const pdf = await generateContractPdf();
       const fileName = `Contrato_Rastreamento_${data.clientName.trim().replace(/\s+/g, "_") || "Cliente"}.pdf`;
       pdf.save(fileName);
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Não foi possível gerar o PDF. Tente novamente.");
     } finally {
-      document.body.removeChild(clone);
       setIsGeneratingPDF(false);
     }
   };

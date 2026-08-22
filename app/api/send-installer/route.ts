@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       documentos,
       contratoPdfBase64,
       contratoPdfNome,
+      fichaNumero: reservedFichaNumero,
     } = body;
 
     // Validações de campos obrigatórios
@@ -66,8 +67,13 @@ export async function POST(request: Request) {
       });
     }
 
-    // Obter o número da ficha
-    const fichaNumero = await getNextTrackerNumber();
+    // O número da ficha normalmente já foi reservado pelo frontend (via
+    // /api/reserve-installer-number) ANTES de gerar o PDF anexado, para o
+    // documento sair com o número real em vez de "PENDENTE". Se por algum
+    // motivo não vier (ex.: chamada antiga), gera um novo aqui mesmo.
+    const fichaNumero = typeof reservedFichaNumero === 'number'
+      ? reservedFichaNumero
+      : await getNextTrackerNumber();
 
     // Criar o template HTML do e-mail com design premium e limpo
     const emailHtml = `

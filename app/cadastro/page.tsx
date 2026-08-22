@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import SignatureCanvas from '../components/SignatureCanvas';
+import { sliceCanvasToPdfPages } from '@/lib/pdfUtils';
 import {
   User,
   FileText,
@@ -334,52 +335,18 @@ export default function CadastroInstalador() {
         throw new Error("Canvas gerado vazio.");
       }
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const canvasWidthMm = pdfWidth;
-      const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;
-
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
-      // O documento agora tem várias seções e pode ser bem mais alto que
-      // uma única folha A4. Antes isso forçava tudo (texto, tabelas etc.)
-      // a encolher para caber numa página só, ficando minúsculo. Aqui,
-      // igual ao PDF da página "/", fatiamos o canvas em blocos do
-      // tamanho de uma A4 e criamos uma página nova para cada bloco.
-      if (canvasHeightMm <= pdfHeight) {
-        pdf.addImage(imgData, "JPEG", 0, 0, canvasWidthMm, canvasHeightMm);
-      } else {
-        const pageHeightInCanvas = (pdfHeight * canvas.width) / canvasWidthMm;
-        let currentPage = 1;
-        let currentYPosition = 0;
-
-        while (currentYPosition < canvas.height) {
-          const heightToCrop = Math.min(pageHeightInCanvas, canvas.height - currentYPosition);
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = heightToCrop;
-
-          const tempCtx = tempCanvas.getContext('2d');
-          if (tempCtx) {
-            tempCtx.drawImage(canvas, 0, currentYPosition, canvas.width, heightToCrop, 0, 0, canvas.width, heightToCrop);
-          }
-
-          const croppedImgData = tempCanvas.toDataURL("image/jpeg", 0.98);
-          if (currentPage > 1) pdf.addPage();
-
-          const heightInMm = (heightToCrop * canvasWidthMm) / canvas.width;
-          pdf.addImage(croppedImgData, "JPEG", 0, 0, canvasWidthMm, heightInMm);
-
-          currentYPosition += heightToCrop;
-          currentPage++;
-        }
-      }
+      // O documento tem várias seções e pode ser bem mais alto que uma
+      // única folha A4. sliceCanvasToPdfPages fatia em páginas A4,
+      // ajustando cada corte para a linha em branco mais próxima do ideal
+      // (em vez de um corte cego de altura fixa), pra não cortar texto ou
+      // linha de tabela ao meio entre uma página e a seguinte.
+      sliceCanvasToPdfPages(pdf, canvas, 210, 297);
 
       return pdf;
     } finally {
@@ -463,6 +430,26 @@ export default function CadastroInstalador() {
     setErrorMsg('');
 
     try {
+      // Reserva o número da ficha ANTES de gerar o PDF — antes disso o
+      // número só existia depois do e-mail já ter sido enviado, então o
+      // PDF anexado sempre saía com "FICHA Nº PENDENTE".
+      let reservedFichaNumero: number | null = null;
+      try {
+        const numResponse = await fetch('/api/reserve-installer-number', { method: 'POST' });
+        const numData = await numResponse.json();
+        if (numResponse.ok && typeof numData.fichaNumero === 'number') {
+          reservedFichaNumero = numData.fichaNumero;
+          setFichaNumero(numData.fichaNumero);
+          // Espera dois frames para garantir que o React já re-renderizou o
+          // documento (#contract-pdf) com o número novo antes do html2canvas
+          // tirar o "print" dele.
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+        }
+      } catch (numErr) {
+        console.error('Erro ao reservar número da ficha:', numErr);
+      }
+
       // Gera o PDF do contrato completo (com todas as cláusulas) para
       // anexar ao e-mail — antes só os dados do formulário eram enviados,
       // sem o instrumento assinado.
@@ -482,6 +469,7 @@ export default function CadastroInstalador() {
         assinaturaContratanteBase64: contratanteSignatureImage || null,
         contratoPdfBase64,
         contratoPdfNome,
+        fichaNumero: reservedFichaNumero,
       };
 
       const response = await fetch('/api/send-installer', {
