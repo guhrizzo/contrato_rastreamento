@@ -1060,6 +1060,7 @@ export default function ProductSelector() {
           padding: 20px;
           display: flex;
           flex-direction: column;
+          justify-content: center;
           gap: 12px;
           flex: 1;
         }
@@ -1146,8 +1147,6 @@ export default function ProductSelector() {
           align-items: center;
           justify-content: center;
           gap: 12px;
-          margin-top: auto;
-          padding-top: 14px;
         }
 
         .psel-qty-control {

@@ -513,52 +513,6 @@ export default function Home() {
           </>
         )}
       </button>
-
-      {/* Impressão e PDF, liberados após o envio por email */}
-      <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-200">
-        <button
-          onClick={handlePrint}
-          disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
-          title={
-            !isFormComplete()
-              ? "Preencha todos os campos e assine para habilitar"
-              : !emailSent
-                ? "Envie o contrato por e-mail primeiro para liberar a impressão"
-                : "Imprimir contrato"
-          }
-          className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-black hover:bg-zinc-800 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Printer className="w-4 h-4 shrink-0" />
-          Imprimir
-        </button>
-        <button
-          onClick={handleSavePDF}
-          disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
-          title={
-            !isFormComplete()
-              ? "Preencha todos os campos e assine para habilitar"
-              : !emailSent
-                ? "Envie o contrato por e-mail primeiro para liberar o PDF"
-                : "Salvar contrato em PDF"
-          }
-          className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-white hover:bg-zinc-100 text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-300 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isGeneratingPDF ? (
-            <>
-              <svg className="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Gerando...
-            </>
-          ) : (
-            <>
-              <FileDown className="w-4 h-4 shrink-0" />
-              Salvar PDF
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 
@@ -820,18 +774,108 @@ export default function Home() {
       {/* PAINEL DE CONTROLE */}
       <aside className={`w-full bg-white border-b lg:border-b-0 border-zinc-200 flex flex-col min-h-0 h-auto lg:h-screen lg:sticky lg:top-0 lg:min-w-0 no-print z-10 shadow-sm overflow-x-hidden transition-all duration-300 ease-in-out ${mobileTab === 'form' ? 'flex' : 'hidden'} ${panelOpen ? 'lg:flex lg:w-[47%] xl:w-[40%] lg:border-r lg:opacity-100' : 'lg:flex lg:w-0 lg:opacity-0 lg:border-r-0 lg:pointer-events-none'}`}>
 
-        {/* NAVEGAÇÃO DE ABAS (topo do painel, alinhado com o topo do contrato) */}
-        <nav className="flex items-stretch gap-1 bg-zinc-100 border-b border-zinc-200 shrink-0 pl-2 pr-1.5">
-          <a
-            href="https://protectrastreamento.com.br/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Voltar ao site"
-            className="flex items-center gap-1.5 px-2.5 my-auto shrink-0 h-7 text-[11px] font-bold uppercase tracking-wider text-zinc-500 hover:text-brand-black hover:bg-zinc-200 rounded-full transition-colors"
-          >
-            <HomeIcon className="w-3.5 h-3.5" />
-            Voltar ao site
-          </a>
+        {/* CABEÇALHO */}
+        <header className="p-4 sm:p-6 bg-brand-black text-white flex flex-col gap-4 border-b-4 border-brand-yellow shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
+              <div className="min-w-0">
+                <h1 className="font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wider leading-tight text-white">
+                  Protect<span className="text-brand-yellow"> Rastreamento</span>
+                </h1>
+                <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider sm:tracking-widest uppercase truncate">
+                  Painel Corporativo de Contratos
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {isFormComplete() ? (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-950/80 border border-green-800 text-green-300 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Pronto
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/80 border border-amber-800 text-brand-yellow rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Incompleto
+                </div>
+              )}
+              <a
+                href="https://protectrastreamento.com.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Voltar ao site público"
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors"
+              >
+                <HomeIcon className="w-3.5 h-3.5" />
+                Voltar ao site
+              </a>
+              <button
+                onClick={() => setPanelOpen(false)}
+                title="Ocultar formulário e ver o contrato em tela cheia"
+                className="hidden lg:flex items-center justify-center w-7 h-7 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 w-full">
+            <button
+              onClick={handlePrint}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete()
+                  ? "Preencha todos os campos e assine para habilitar"
+                  : !emailSent
+                    ? "Envie o contrato por e-mail primeiro para liberar a impressão"
+                    : "Imprimir contrato"
+              }
+              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black font-bold text-xs rounded-md shadow-md hover:shadow-lg transition-all duration-200 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Printer className="w-4 h-4 shrink-0" />
+              Imprimir
+            </button>
+            <button
+              onClick={handleSavePDF}
+              disabled={!isFormComplete() || isGeneratingPDF || !emailSent}
+              title={
+                !isFormComplete()
+                  ? "Preencha todos os campos e assine para habilitar"
+                  : !emailSent
+                    ? "Envie o contrato por e-mail primeiro para liberar o PDF"
+                    : "Salvar contrato em PDF"
+              }
+              className="flex items-center justify-center cursor-pointer gap-2 px-3 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-md shadow-md hover:shadow-lg border border-zinc-700 transition-all duration-200 uppercase disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isGeneratingPDF ? (
+                <>
+                  <svg className="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4 shrink-0" />
+                  Salvar PDF
+                </>
+              )}
+            </button>
+          </div>
+          {!emailSent && (
+            <div className="mt-3.5 p-2.5 bg-amber-500/10 border border-amber-500/25 rounded-md text-[11px] text-amber-300 font-semibold leading-normal flex gap-2.5 items-start">
+              <AlertTriangle className="w-3.5 h-3.5 text-brand-yellow shrink-0 mt-0.5" />
+              <span>
+                A impressão e download do PDF só serão liberados após você preencher todos os dados, assinar e clicar em <strong className="text-brand-yellow font-bold">Enviar por Email</strong> na aba "Assinar".
+              </span>
+            </div>
+          )}
+        </header>
+
+        {/* NAVEGAÇÃO DE ABAS */}
+        <nav className="flex bg-zinc-100 border-b border-zinc-200 shrink-0">
           <button
             onClick={() => setActiveTab("client")}
             className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 min-h-12 text-xs font-bold uppercase tracking-wider transition-all duration-200 border-b-2 cursor-pointer ${activeTab === "client"
@@ -860,14 +904,6 @@ export default function Home() {
               }`}
           >
             <PenTool className="w-4 h-4" /> Assinar
-          </button>
-
-          <button
-            onClick={() => setPanelOpen(false)}
-            title="Ocultar formulário e ver o contrato em tela cheia"
-            className="hidden lg:flex items-center justify-center w-7 h-7 my-auto shrink-0 text-zinc-400 hover:text-brand-black hover:bg-zinc-200 rounded-full transition-colors cursor-pointer"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
         </nav>
 
@@ -1420,28 +1456,16 @@ export default function Home() {
 
         {/* FOOTER */}
         <footer className="p-3 sm:p-4 bg-zinc-50 border-t border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-zinc-500 shrink-0">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <a
-              href="https://protectrastreamento.com.br/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Voltar ao site público"
-              className="flex items-center gap-1 hover:text-brand-black"
-            >
-              <HomeIcon className="w-3.5 h-3.5" />
-              Voltar ao site
-            </a>
-            <a href="https://www.instagram.com/xfassessoria/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-black">
-              Desenvolvido por X Family
-            </a>
-          </div>
+          <a href="https://www.instagram.com/xfassessoria/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-brand-black">
+            Desenvolvido por X Family
+          </a>
           <span className="font-semibold text-brand-black">Contrato R+ v1.0</span>
         </footer>
       </aside>
 
       {/* CONTÊINER DO CONTRATO */}
       <main
-        className={`flex-1 p-4 md:p-6 lg:p-6 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${mobileTab === "preview" ? "flex" : "hidden lg:flex"
+        className={`flex-1 pt-0 px-4 pb-4 md:px-6 md:pb-6 lg:px-6 lg:pb-6 overflow-y-auto flex justify-center bg-zinc-100 min-h-screen select-none ${mobileTab === "preview" ? "flex" : "hidden lg:flex"
           }`}
         style={{ userSelect: "none" }}
       >
