@@ -180,6 +180,7 @@ export default function Home() {
 
   const [activeTab, setActiveTab] = useState<"client" | "vehicle" | "plan" | "signature">("client");
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [contratadaSignatureImage, setContratadaSignatureImage] = useState<string | null>(null);
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPlanDropdownOpen, setIsPlanDropdownOpen] = useState(false);
@@ -277,7 +278,8 @@ export default function Home() {
       isCustomPriceValid &&
       (data.serviceType !== "venda" || data.equipmentValue.trim() !== "") &&
       data.contractDate.trim() !== "" &&
-      signatureImage !== null
+      signatureImage !== null &&
+      contratadaSignatureImage !== null
     );
   };
 
@@ -386,6 +388,14 @@ export default function Home() {
 
   const handleSignatureClear = () => {
     setSignatureImage(null);
+  };
+
+  const handleContratadaSignatureSave = (signatureBase64: string) => {
+    setContratadaSignatureImage(signatureBase64);
+  };
+
+  const handleContratadaSignatureClear = () => {
+    setContratadaSignatureImage(null);
   };
 
   // ============================================================
@@ -1221,14 +1231,22 @@ export default function Home() {
                       <DollarSign className="w-3.5 h-3.5 shrink-0" />
                       Forma de Pagamento do Equipamento
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="equipmentPaymentMethod"
                       value={data.equipmentPaymentMethod}
                       onChange={handleChange}
-                      placeholder="Ex: À vista, PIX, 3x no cartão..."
-                      className="w-full p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
-                    />
+                      className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150 cursor-pointer"
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="À vista">À vista</option>
+                      <option value="PIX">PIX</option>
+                      <option value="Dinheiro">Dinheiro</option>
+                      <option value="Cartão de Crédito">Cartão de Crédito</option>
+                      <option value="Cartão de Débito">Cartão de Débito</option>
+                      <option value="Boleto Bancário">Boleto Bancário</option>
+                      <option value="Transferência Bancária">Transferência Bancária</option>
+                      <option value="Parcelado">Parcelado</option>
+                    </select>
                     <p className="text-[11px] text-zinc-500 mt-1">Como o cliente vai pagar o equipamento (separado da mensalidade do plano).</p>
                   </div>
                 </div>
@@ -1610,7 +1628,9 @@ export default function Home() {
 
               {/* TÍTULO */}
               <h2 className="text-center font-extrabold text-xs uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
-                CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR Nº {data.contractNumber}
+                {data.serviceType === "comodato"
+                  ? "CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RASTREAMENTO VEICULAR COMODATO"
+                  : "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR COM VENDA DE DISPOSITIVO"} Nº {data.contractNumber}
               </h2>
 
               {/* CORPO */}
