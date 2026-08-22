@@ -1028,8 +1028,10 @@ export default function ProductSelector() {
           padding: 12px;
           position: relative;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
+          gap: 10px;
           border-right: 1px solid var(--line);
         }
         .psel-card :global(img) {
@@ -1040,10 +1042,6 @@ export default function ProductSelector() {
         }
 
         .psel-tag {
-          position: absolute;
-          top: 12px;
-          left: 50%;
-          transform: translateX(-50%);
           background: var(--gold);
           color: var(--ink);
           font-size: 10px;
@@ -1053,6 +1051,7 @@ export default function ProductSelector() {
           border-radius: 5px;
           text-transform: uppercase;
           z-index: 2;
+          flex-shrink: 0;
         }
         /* Corpo do card ocupa o restante da altura da linha; o botão
            "Ver mais" fica sempre colado no rodapé (margin-top: auto),
