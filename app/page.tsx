@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
-import { sliceCanvasToPdfPages } from "@/lib/pdfUtils";
+import { sliceCanvasToPdfPages, collectSafeBreakOffsets } from "@/lib/pdfUtils";
 import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon, Repeat, ShoppingCart } from "lucide-react";
 
 interface ContractData {
@@ -595,6 +595,11 @@ export default function Home() {
     document.body.appendChild(clone);
 
     try {
+      // Mede, ainda com o clone no DOM (layout já calculado), o topo de
+      // cada parágrafo/item/linha de tabela — pontos seguros pra quebrar
+      // página sem cortar um bloco de texto ao meio.
+      const safeBreakOffsetsCss = collectSafeBreakOffsets(clone);
+
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
 
@@ -612,10 +617,11 @@ export default function Home() {
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
       // sliceCanvasToPdfPages fatia o canvas em páginas A4, ajustando cada
-      // corte pra linha em branco mais próxima do ideal, em vez de um corte
-      // cego de altura fixa — evita cortar texto/tabela ao meio entre uma
-      // página e a seguinte.
-      sliceCanvasToPdfPages(pdf, canvas, 210, 297);
+      // corte pro topo de bloco (parágrafo/item/linha de tabela) mais
+      // próximo do ideal — nunca cortando texto ao meio.
+      const scaleFactor = canvas.width / 794;
+      const safeBreakOffsetsPx = safeBreakOffsetsCss.map((y) => y * scaleFactor);
+      sliceCanvasToPdfPages(pdf, canvas, 210, 297, safeBreakOffsetsPx);
 
       return pdf;
     } finally {

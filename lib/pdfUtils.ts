@@ -7,59 +7,58 @@
  * cláusula, parágrafo ou linha de tabela podia ficar com metade numa
  * página e metade na seguinte, saindo "cortado" no PDF final.
  *
- * A função abaixo escaneia pixels perto do corte "ideal" procurando uma
- * linha quase toda branca (um espaço em branco entre blocos de conteúdo) e
- * ajusta o corte pra cair ali, evitando cortar o meio de um texto/linha.
+ * Uma primeira tentativa de corrigir isso escaneava pixels do canvas
+ * procurando uma linha "quase branca" perto do corte ideal. Não funcionou
+ * de forma confiável: (1) o "quase branco" de uma folha inteira ainda tem
+ * ruído de antialiasing que engana um limiar por pixel; e (2) mesmo com um
+ * limiar por média, o espaço entre duas LINHAS dentro do mesmo parágrafo
+ * também é "quase branco" — cortar ali ainda parte o parágrafo ao meio,
+ * só que numa palavra diferente.
+ *
+ * A abordagem correta é olhar o DOM antes de rasterizar: o topo de cada
+ * parágrafo, item de lista, linha de tabela ou título é, por definição, um
+ * lugar seguro pra começar uma página nova (nunca corta o meio de um
+ * bloco). `collectSafeBreakOffsets` coleta essas posições em px CSS;
+ * `sliceCanvasToPdfPages` escolhe, pra cada corte "ideal", o offset seguro
+ * mais próximo dentro de uma janela de busca.
  */
 
 /**
- * Procura, a partir de idealY subindo até no máximo maxSearchPx, a linha
- * mais próxima que seja "quase toda branca" (fundo da página), para servir
- * de corte de página seguro. Se não achar nenhuma no intervalo, retorna o
- * próprio idealY (comportamento antigo, sem regressão).
+ * Coleta, em px CSS relativos ao topo de `root`, o topo de cada bloco de
+ * conteúdo (parágrafo, item de lista, linha de tabela, título, tabela,
+ * separador) — candidatos seguros pra quebrar página sem cortar texto ao
+ * meio. Precisa ser chamado enquanto `root` ainda está no DOM (mesmo que
+ * fora da tela), com layout já calculado.
  */
-function findSafeBreakRow(canvas: HTMLCanvasElement, idealY: number, maxSearchPx: number): number {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return Math.floor(idealY);
+export function collectSafeBreakOffsets(root: HTMLElement): number[] {
+  const rootTop = root.getBoundingClientRect().top;
+  const offsets = new Set<number>();
+  offsets.add(0);
 
-  const width = canvas.width;
-  const targetY = Math.min(Math.floor(idealY), canvas.height - 1);
-  const minY = Math.max(1, Math.floor(idealY - maxSearchPx));
+  const selector = "p, li, tr, h1, h2, h3, h4, h5, h6, table, hr";
+  root.querySelectorAll(selector).forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    const top = rect.top - rootTop;
+    if (top > 0) offsets.add(top);
+  });
 
-  for (let y = targetY; y > minY; y--) {
-    let row: Uint8ClampedArray;
-    try {
-      row = ctx.getImageData(0, y, width, 1).data;
-    } catch {
-      // getImageData pode falhar por tainted canvas (imagem de outra origem
-      // sem CORS); nesse caso desiste da busca e usa o corte original.
-      return targetY;
-    }
-    let isBlank = true;
-    // Amostra a cada ~6 pixels (24 bytes) para não escanear cada pixel — é
-    // rápido o bastante mesmo em canvases grandes e ainda pega o essencial.
-    for (let x = 0; x < row.length; x += 4 * 6) {
-      if (row[x] < 248 || row[x + 1] < 248 || row[x + 2] < 248) {
-        isBlank = false;
-        break;
-      }
-    }
-    if (isBlank) return y;
-  }
-
-  return targetY;
+  return Array.from(offsets).sort((a, b) => a - b);
 }
 
 /**
  * Fatia um canvas (resultado do html2canvas) em páginas A4 dentro de um
- * jsPDF já criado, ajustando cada corte para a linha em branco mais
- * próxima do ideal — evitando cortar texto/tabelas ao meio.
+ * jsPDF já criado. Se `safeBreakOffsetsPx` for informado (offsets em
+ * px do CANVAS, já multiplicados pela escala do html2canvas), cada corte é
+ * ajustado pro offset seguro mais próximo do ideal — nunca cortando o meio
+ * de um parágrafo, item de lista ou linha de tabela. Sem offsets, cai de
+ * volta no corte de altura fixa (comportamento antigo).
  */
 export function sliceCanvasToPdfPages(
   pdf: any,
   canvas: HTMLCanvasElement,
   pdfWidthMm: number,
   pdfHeightMm: number,
+  safeBreakOffsetsPx: number[] = [],
   quality = 0.98
 ): void {
   const canvasWidthMm = pdfWidthMm;
@@ -72,9 +71,31 @@ export function sliceCanvasToPdfPages(
   }
 
   const idealPageHeightPx = (pdfHeightMm * canvas.width) / canvasWidthMm;
-  // Não procura mais que ~20% da altura da página (ou 320px) por uma quebra
-  // segura, senão o texto ficaria empurrado demais para a página seguinte.
-  const maxSearchPx = Math.min(idealPageHeightPx * 0.2, 320);
+  // IMPORTANTE: só procura um offset seguro pra TRÁS do corte ideal
+  // (offset <= idealY), nunca pra frente. Uma página do PDF tem altura
+  // fixa (uma folha A4); se o offset escolhido passasse do ideal, a fatia
+  // recortada ficaria mais alta que a própria página, e `pdf.addImage`
+  // simplesmente não desenha a parte que ultrapassa o limite — o
+  // conteúdo que "sobra" desaparece, sem aparecer nem nesta página nem na
+  // próxima (foi exatamente isso que causava trechos sumindo entre
+  // páginas). Buscando só pra trás, a fatia nunca passa de
+  // idealPageHeightPx, então nunca estoura a página.
+  const maxSearchPx = idealPageHeightPx * 0.4;
+
+  const offsets = safeBreakOffsetsPx
+    .filter((o) => o > 0 && o < canvas.height)
+    .sort((a, b) => a - b);
+
+  function findNearestSafeOffset(idealY: number): number {
+    if (offsets.length === 0) return Math.floor(idealY);
+    let best: number | null = null;
+    for (const o of offsets) {
+      if (o > idealY) break;
+      if (o < idealY - maxSearchPx) continue;
+      best = o; // offsets estão ordenados crescentes; o último que passar é o mais próximo (por baixo) do ideal
+    }
+    return best !== null ? Math.floor(best) : Math.floor(idealY);
+  }
 
   let currentPage = 1;
   let currentY = 0;
@@ -86,8 +107,8 @@ export function sliceCanvasToPdfPages(
     if (idealEndY >= canvas.height) {
       endY = canvas.height;
     } else {
-      endY = findSafeBreakRow(canvas, idealEndY, maxSearchPx);
-      // Garante progresso mesmo se a busca não encontrar nada útil.
+      endY = findNearestSafeOffset(idealEndY);
+      // Garante progresso mesmo se a busca devolver algo <= currentY.
       if (endY <= currentY) {
         endY = Math.min(canvas.height, Math.ceil(idealEndY));
       }

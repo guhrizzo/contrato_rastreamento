@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import SignatureCanvas from '../components/SignatureCanvas';
-import { sliceCanvasToPdfPages } from '@/lib/pdfUtils';
+import { sliceCanvasToPdfPages, collectSafeBreakOffsets } from '@/lib/pdfUtils';
 import {
   User,
   FileText,
@@ -316,6 +316,11 @@ export default function CadastroInstalador() {
     document.body.appendChild(clone);
 
     try {
+      // Mede, ainda com o clone no DOM (layout já calculado), o topo de
+      // cada parágrafo/item/linha de tabela — pontos seguros pra quebrar
+      // página sem cortar um bloco de texto ao meio.
+      const safeBreakOffsetsCss = collectSafeBreakOffsets(clone);
+
       const html2canvas = (await import("html2canvas-pro")).default;
       const { jsPDF } = await import("jspdf");
 
@@ -343,10 +348,11 @@ export default function CadastroInstalador() {
 
       // O documento tem várias seções e pode ser bem mais alto que uma
       // única folha A4. sliceCanvasToPdfPages fatia em páginas A4,
-      // ajustando cada corte para a linha em branco mais próxima do ideal
-      // (em vez de um corte cego de altura fixa), pra não cortar texto ou
-      // linha de tabela ao meio entre uma página e a seguinte.
-      sliceCanvasToPdfPages(pdf, canvas, 210, 297);
+      // ajustando cada corte pro topo de bloco (parágrafo/item/linha de
+      // tabela) mais próximo do ideal — nunca cortando texto ao meio.
+      const scaleFactor = canvas.width / 794;
+      const safeBreakOffsetsPx = safeBreakOffsetsCss.map((y) => y * scaleFactor);
+      sliceCanvasToPdfPages(pdf, canvas, 210, 297, safeBreakOffsetsPx);
 
       return pdf;
     } finally {
