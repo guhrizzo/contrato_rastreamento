@@ -1524,9 +1524,9 @@ export default function Home() {
               <div className="border-l-4 border-brand-yellow pl-3 mb-3">
                 <h3 className="text-sm font-bold uppercase text-brand-black tracking-wide flex items-center gap-2">
                   <PenTool className="w-4 h-4" />
-                  Assinatura Digital
+                  Assinaturas Digitais
                 </h3>
-                <p className="text-xs text-zinc-500">Desenhe a assinatura do cliente abaixo para incluí-la no contrato</p>
+                <p className="text-xs text-zinc-500">Colete a assinatura do cliente e da Protect abaixo para incluí-las no contrato</p>
               </div>
 
               {!isFormComplete() && (
@@ -1543,8 +1543,10 @@ export default function Home() {
                 </div>
               )}
 
+              <p className="text-xs font-bold text-zinc-700 uppercase tracking-wide">Assinatura do Cliente (Contratante)</p>
               <div className="bg-white border border-zinc-100 p-1.5 sm:p-4 rounded-xl shadow-sm">
                 <SignatureCanvas
+                  label="Assinatura do Contratante"
                   onSave={handleSignatureSave}
                   onClear={handleSignatureClear}
                 />
@@ -1560,6 +1562,37 @@ export default function Home() {
                     <img
                       src={signatureImage}
                       alt="Assinatura pré-visualização"
+                      className="max-h-20 max-w-full object-contain mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 pt-2">
+                <div className="flex-1 h-px bg-zinc-200"></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-2">Protect</span>
+                <div className="flex-1 h-px bg-zinc-200"></div>
+              </div>
+
+              <p className="text-xs font-bold text-zinc-700 uppercase tracking-wide">Assinatura da Contratada (Protect)</p>
+              <div className="bg-white border border-zinc-100 p-1.5 sm:p-4 rounded-xl shadow-sm">
+                <SignatureCanvas
+                  label="Assinatura da Contratada"
+                  onSave={handleContratadaSignatureSave}
+                  onClear={handleContratadaSignatureClear}
+                />
+              </div>
+
+              {contratadaSignatureImage && (
+                <div className="bg-zinc-50 border border-dashed border-zinc-200 p-4 rounded-xl text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Assinatura Capturada!</span>
+                  </div>
+                  <div className="inline-block bg-white p-2 rounded border border-zinc-100">
+                    <img
+                      src={contratadaSignatureImage}
+                      alt="Assinatura da Contratada pré-visualização"
                       className="max-h-20 max-w-full object-contain mx-auto"
                     />
                   </div>
@@ -1841,6 +1874,15 @@ export default function Home() {
 
                   <div className="flex flex-col items-center">
                     <div className="h-14 flex items-center justify-center w-full border-b-2 border-zinc-700 mb-1.5">
+                      {contratadaSignatureImage ? (
+                        <img
+                          src={contratadaSignatureImage}
+                          alt="Assinatura da Contratada"
+                          className="max-h-12 object-contain"
+                        />
+                      ) : (
+                        <span className="text-[7pt] text-zinc-400 italic">Assinatura da Contratada</span>
+                      )}
                     </div>
                     <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
                     <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 42.818.864/0001-65</p>

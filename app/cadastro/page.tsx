@@ -104,6 +104,7 @@ export default function CadastroInstalador() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [fichaNumero, setFichaNumero] = useState<number | null>(null);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [contratanteSignatureImage, setContratanteSignatureImage] = useState<string | null>(null);
 
   // States para responsividade mobile
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
@@ -275,7 +276,8 @@ export default function CadastroInstalador() {
       (!formData.cursoTecnico || formData.nomeCursoTecnico.trim() !== '') &&
       formData.formaPagamento !== '' &&
       formData.autorizacao === true &&
-      signatureImage !== null
+      signatureImage !== null &&
+      contratanteSignatureImage !== null
     );
   };
 
@@ -285,6 +287,14 @@ export default function CadastroInstalador() {
 
   const handleSignatureClear = () => {
     setSignatureImage(null);
+  };
+
+  const handleContratanteSignatureSave = (signatureBase64: string) => {
+    setContratanteSignatureImage(signatureBase64);
+  };
+
+  const handleContratanteSignatureClear = () => {
+    setContratanteSignatureImage(null);
   };
 
   const generateDocumentPdf = async () => {
@@ -457,6 +467,7 @@ export default function CadastroInstalador() {
         ...formData,
         documentos,
         assinaturaBase64: signatureImage || null,
+        assinaturaContratanteBase64: contratanteSignatureImage || null,
       };
 
       const response = await fetch('/api/send-installer', {
@@ -1059,6 +1070,23 @@ export default function CadastroInstalador() {
                 )}
               </div>
 
+              <div className="flex items-center gap-2 pt-1">
+                <div className="flex-1 h-px bg-zinc-200"></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-2">Protect</span>
+                <div className="flex-1 h-px bg-zinc-200"></div>
+              </div>
+
+              <div>
+                <SignatureCanvas
+                  label="Assinatura da Contratante (Protect)"
+                  onSave={handleContratanteSignatureSave}
+                  onClear={handleContratanteSignatureClear}
+                />
+                {!contratanteSignatureImage && (
+                  <p className="text-[11px] text-rose-500 font-semibold mt-1.5">Assine no campo acima para poder enviar o cadastro.</p>
+                )}
+              </div>
+
               <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-md space-y-3">
                 <p className="text-[11px] text-zinc-600 leading-normal">
                   Declaro que as informações fornecidas neste formulário são verdadeiras e completas, autorizo a verificação dos dados aqui informados e concordo com o tratamento dos meus dados pessoais pela GRUPO PROTECT LTDA nos termos da Lei Geral de Proteção de Dados (LGPD – Lei nº 13.709/2018), conforme descrito no contrato.
@@ -1540,7 +1568,14 @@ export default function CadastroInstalador() {
 
                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'center', fontSize: '9pt', marginTop: '20px' }}>
                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                   <div style={{ height: '48px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '2px solid #3f3f46', marginBottom: '6px' }} />
+                   <div style={{ height: '48px', width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', borderBottom: '2px solid #3f3f46', marginBottom: '6px' }}>
+                     {contratanteSignatureImage ? (
+                       // eslint-disable-next-line @next/next/no-img-element
+                       <img src={contratanteSignatureImage} alt="Assinatura da Contratante" style={{ maxHeight: '46px', maxWidth: '100%', objectFit: 'contain' }} />
+                     ) : (
+                       <span style={{ fontSize: '7pt', color: '#a1a1aa', fontStyle: 'italic' }}>Assinatura da Contratante</span>
+                     )}
+                   </div>
                    <p style={{ fontWeight: 700, color: '#18181b', fontSize: '8.5pt', margin: 0 }}>GRUPO PROTECT LTDA</p>
                    <p style={{ fontSize: '7pt', color: '#71717a', fontFamily: 'monospace', marginTop: '2px' }}>CNPJ: 42.818.864/0001-65</p>
                    <span style={{ marginTop: '4px', fontSize: '6.5pt', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a1a1aa', backgroundColor: '#f4f4f5', padding: '2px 8px', borderRadius: '4px' }}>Contratante</span>
