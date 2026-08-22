@@ -1042,7 +1042,8 @@ export default function ProductSelector() {
         .psel-tag {
           position: absolute;
           top: 12px;
-          left: 12px;
+          left: 50%;
+          transform: translateX(-50%);
           background: var(--gold);
           color: var(--ink);
           font-size: 10px;
