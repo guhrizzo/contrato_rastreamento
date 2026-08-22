@@ -786,7 +786,7 @@ export default function Home() {
               <img src="/protectrastreamento.png" alt="Protect Rastreamento" className="h-7 w-auto shrink-0" />
               <div className="min-w-0">
                 <h1 className="font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wider leading-tight text-white">
-                  Protect<span className="text-brand-yellow"> Rastreamento</span>
+                  Protect<span className="text-brand-yellow">Rastreamento</span>.com
                 </h1>
                 <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider sm:tracking-widest uppercase truncate">
                   Painel Corporativo de Contratos
