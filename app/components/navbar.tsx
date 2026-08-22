@@ -323,6 +323,7 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://contrato.protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
+                <li><a href="https://contrato.protectrastreamento.com.br/cadastro" target="_blank" rel="noopener noreferrer"><i className="ti ti-user-plus"></i>Cadastro de Instalador</a></li>
               </ul>
             </div>
             <div className="nd-item">
@@ -410,6 +411,7 @@ export default function Navbar() {
                 <li><a href="https://protectrastreamento.com.br/fornecedores/"><i className="ti ti-box"></i>Fornecedores</a></li>
                 <li><a href="https://protectrastreamento.com.br/instaladores/"><i className="ti ti-tool"></i>Instaladores</a></li>
                 <li><a href="https://contrato.protectrastreamento.com.br/produtos/"><i className="ti ti-device-mobile"></i>Produtos</a></li>
+                <li><a href="https://contrato.protectrastreamento.com.br/cadastro" target="_blank" rel="noopener noreferrer"><i className="ti ti-user-plus"></i>Cadastro de Instalador</a></li>
               </ul>
             </li>
             <li>
