@@ -152,8 +152,25 @@ img {
     break-inside: avoid !important;
   }
 
-  /* Garantir que as tabelas ou textos fiquem nítidos na impressão */
-  p, h1, h2, h3, h4, h5, h6, td, th, span, div {
+  /* Garantir que as tabelas ou textos fiquem nítidos na impressão.
+     Excluímos #contract-pdf (o documento em si, com id compartilhado nas
+     duas páginas) porque ele usa cores inline de propósito — barras de
+     seção pretas com texto branco, selos, caixas de destaque — e esta
+     regra zerava tudo para preto-no-transparente, quebrando o layout
+     visual inteiro ao imprimir. `revert`/`unset` não resolvem isso: eles
+     não restauram o valor de um `style` inline, então a exclusão via
+     :not() é o jeito correto de preservar o documento como está na tela. */
+  p:not(#contract-pdf, #contract-pdf *),
+  h1:not(#contract-pdf, #contract-pdf *),
+  h2:not(#contract-pdf, #contract-pdf *),
+  h3:not(#contract-pdf, #contract-pdf *),
+  h4:not(#contract-pdf, #contract-pdf *),
+  h5:not(#contract-pdf, #contract-pdf *),
+  h6:not(#contract-pdf, #contract-pdf *),
+  td:not(#contract-pdf, #contract-pdf *),
+  th:not(#contract-pdf, #contract-pdf *),
+  span:not(#contract-pdf, #contract-pdf *),
+  div:not(#contract-pdf, #contract-pdf *) {
     color: #000000 !important;
     background-color: transparent !important;
   }
