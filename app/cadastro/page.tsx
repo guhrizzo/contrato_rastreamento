@@ -108,11 +108,13 @@ export default function CadastroInstalador() {
   const MAX_DOCUMENTOS = 3;
   // A requisição inteira (documentos + PDF do contrato + assinaturas) tem
   // que caber no limite de payload da função serverless da hospedagem
-  // (Vercel: ~4,5MB por requisição). Além do limite por arquivo, soma-se
-  // o total de todos os documentos anexados — os 3 arquivos no limite
-  // individual ao mesmo tempo não podem, sozinhos, deixar pouco espaço
-  // pro PDF gerado (~1-1,5MB) e as assinaturas (~0,3MB).
-  const MAX_DOCUMENTO_MB = 1;
+  // (Vercel: ~4,5MB por requisição). O limite por arquivo é só uma trava
+  // solta — quem realmente protege é o total combinado (2,5MB somando
+  // todos os anexos), que já reserva espaço de sobra pro PDF gerado
+  // (~1-1,5MB) e as assinaturas (~0,3MB). Assim um único documento maior
+  // cabe inteiro; só limita quando vários arquivos juntos ficariam
+  // grandes demais.
+  const MAX_DOCUMENTO_MB = 2.5;
   const MAX_DOCUMENTOS_TOTAL_MB = 2.5;
   const [documentos, setDocumentos] = useState<{
     base64: string;
@@ -1058,7 +1060,7 @@ export default function CadastroInstalador() {
                       Selecione certificados ou currículo
                     </span>
                     <span className="text-[10px] text-zinc-500 mt-1 mb-3 block">
-                      PDF ou Imagem (Máx: {MAX_DOCUMENTO_MB}MB cada) &middot; até {MAX_DOCUMENTOS} documentos
+                      PDF ou Imagem &middot; até {MAX_DOCUMENTOS} documentos, {MAX_DOCUMENTOS_TOTAL_MB}MB no total
                     </span>
                     <span className="bg-white border border-zinc-300 hover:bg-zinc-200 text-zinc-800 px-4 py-2.5 min-h-[44px] rounded-md text-xs font-semibold shadow-sm transition flex items-center">
                       Upload de Documento
