@@ -604,7 +604,11 @@ export default function Home() {
       const { jsPDF } = await import("jspdf");
 
       const canvas = await html2canvas(clone, {
-        scale: 1.7,
+        // scale 1.7 deixava o PDF (e o e-mail com ele anexado) muito
+        // grande — acima do limite de tamanho de requisição da hospedagem
+        // (Cloudflare), retornando "Request Entity Too Large" em vez de
+        // JSON e quebrando o envio. 1.4 ainda fica nítido para leitura.
+        scale: 1.4,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",

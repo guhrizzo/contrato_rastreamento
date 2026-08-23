@@ -59,7 +59,11 @@ export function sliceCanvasToPdfPages(
   pdfWidthMm: number,
   pdfHeightMm: number,
   safeBreakOffsetsPx: number[] = [],
-  quality = 0.98
+  // 0.98 gerava PDFs grandes o bastante pra estourar o limite de tamanho
+  // de requisição da hospedagem quando anexados ao e-mail ("Request
+  // Entity Too Large"). Pra um documento de texto (não fotos), 0.82 ainda
+  // fica nítido e reduz bastante o tamanho do arquivo.
+  quality = 0.82
 ): void {
   const canvasWidthMm = pdfWidthMm;
   const canvasHeightMm = (canvas.height * canvasWidthMm) / canvas.width;

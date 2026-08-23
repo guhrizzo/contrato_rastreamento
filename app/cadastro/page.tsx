@@ -325,7 +325,11 @@ export default function CadastroInstalador() {
       const { jsPDF } = await import("jspdf");
 
       const canvas = await html2canvas(clone, {
-        scale: 2,
+        // scale 2 deixava o PDF (e o e-mail com ele anexado) muito grande —
+        // acima do limite de tamanho de requisição da hospedagem
+        // (Cloudflare), retornando "Request Entity Too Large" em vez de
+        // JSON e quebrando o envio. 1.4 ainda fica nítido para leitura.
+        scale: 1.4,
         useCORS: true,
         logging: false,
         allowTaint: true,
@@ -487,7 +491,19 @@ export default function CadastroInstalador() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      // Verifica o content-type antes de tentar JSON.parse: se a
+      // requisição for grande demais, a hospedagem pode responder com um
+      // erro em texto puro (ex.: "Request Entity Too Large"), não JSON —
+      // sem essa checagem isso quebrava com "Unexpected token" em vez de
+      // mostrar uma mensagem de erro legível.
+      const contentType = response.headers.get('content-type');
+      let data: any = {};
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const textError = await response.text();
+        throw new Error(textError || `Erro no servidor (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Ocorreu um erro ao enviar o formulário.');
