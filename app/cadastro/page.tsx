@@ -55,6 +55,21 @@ interface FormState {
   autorizacao: boolean;
 }
 
+// Converte uma data URI em base64 (ex.: "data:application/pdf;base64,....")
+// num Blob binário de verdade, pra anexar via multipart/form-data em vez de
+// mandar a string base64 dentro do JSON (que infla o tamanho em ~33%).
+function base64ToBlob(dataUrl: string, fallbackType: string): Blob {
+  const commaIndex = dataUrl.indexOf(',');
+  const meta = dataUrl.slice(0, commaIndex);
+  const data = dataUrl.slice(commaIndex + 1);
+  const mimeMatch = meta.match(/data:(.*?);base64/);
+  const mime = mimeMatch ? mimeMatch[1] : fallbackType;
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
 // Estilos reutilizados pelas cláusulas do contrato (documento A4 à direita)
 const clauseSectionStyle: React.CSSProperties = { marginBottom: '18px' };
 const clauseHeaderStyle: React.CSSProperties = {
@@ -91,10 +106,19 @@ export default function CadastroInstalador() {
   });
 
   const MAX_DOCUMENTOS = 3;
+  // A requisição inteira (documentos + PDF do contrato + assinaturas) tem
+  // que caber no limite de payload da função serverless da hospedagem
+  // (Vercel: ~4,5MB por requisição). Além do limite por arquivo, soma-se
+  // o total de todos os documentos anexados — os 3 arquivos no limite
+  // individual ao mesmo tempo não podem, sozinhos, deixar pouco espaço
+  // pro PDF gerado (~1-1,5MB) e as assinaturas (~0,3MB).
+  const MAX_DOCUMENTO_MB = 1;
+  const MAX_DOCUMENTOS_TOTAL_MB = 2.5;
   const [documentos, setDocumentos] = useState<{
     base64: string;
     nome: string;
     tipo: string;
+    tamanho: number;
   }[]>([]);
 
   const [showPrintBlockDialog, setShowPrintBlockDialog] = useState(false);
@@ -243,17 +267,25 @@ export default function CadastroInstalador() {
       alert(`Só é possível anexar até ${MAX_DOCUMENTOS} documentos. Apenas os ${vagas} primeiros arquivos selecionados foram adicionados.`);
     }
 
+    const totalJaAnexadoBytes = documentos.reduce((soma, d) => soma + d.tamanho, 0);
+    let totalAcumuladoBytes = totalJaAnexadoBytes;
+
     aceitos.forEach((file) => {
-      if (file.size > 8 * 1024 * 1024) {
-        alert(`O arquivo "${file.name}" excede o tamanho máximo permitido de 8MB.`);
+      if (file.size > MAX_DOCUMENTO_MB * 1024 * 1024) {
+        alert(`O arquivo "${file.name}" excede o tamanho máximo permitido de ${MAX_DOCUMENTO_MB}MB.`);
         return;
       }
+      if (totalAcumuladoBytes + file.size > MAX_DOCUMENTOS_TOTAL_MB * 1024 * 1024) {
+        alert(`O arquivo "${file.name}" faria os documentos anexados ultrapassarem o total de ${MAX_DOCUMENTOS_TOTAL_MB}MB permitido. Remova algum anexo ou escolha um arquivo menor.`);
+        return;
+      }
+      totalAcumuladoBytes += file.size;
 
       const reader = new FileReader();
       reader.onloadend = () => {
         setDocumentos((prev) => {
           if (prev.length >= MAX_DOCUMENTOS) return prev;
-          return [...prev, { base64: reader.result as string, nome: file.name, tipo: file.type }];
+          return [...prev, { base64: reader.result as string, nome: file.name, tipo: file.type, tamanho: file.size }];
         });
       };
       reader.readAsDataURL(file);
@@ -464,31 +496,47 @@ export default function CadastroInstalador() {
       // Gera o PDF do contrato completo (com todas as cláusulas) para
       // anexar ao e-mail — antes só os dados do formulário eram enviados,
       // sem o instrumento assinado.
-      let contratoPdfBase64: string | null = null;
+      let contratoPdfBlob: Blob | null = null;
       const contratoPdfNome = `Contrato_Instalador_${formData.nomeCompleto.trim().replace(/\s+/g, "_") || "Instalador"}.pdf`;
       try {
         const pdf = await generateDocumentPdf();
-        contratoPdfBase64 = pdf.output('datauristring');
+        // pdf.output('blob') dá um Blob binário direto — evita converter
+        // pra base64 (que infla o tamanho em ~33%) só pra depois desfazer
+        // no servidor.
+        contratoPdfBlob = pdf.output('blob');
       } catch (pdfErr) {
         console.error('Erro ao gerar PDF do contrato para o e-mail:', pdfErr);
       }
 
-      const payload = {
+      // Envia como multipart/form-data (não JSON com base64): documentos e
+      // o PDF gerado vão como binário puro, sem a inflação de ~33% do
+      // base64 — essencial pra caber no limite de payload da função
+      // serverless da hospedagem (Vercel: ~4,5MB por requisição), que
+      // antes estourava com "Request Entity Too Large" / FUNCTION_PAYLOAD_TOO_LARGE.
+      const formPayload = new FormData();
+      formPayload.append('payload', JSON.stringify({
         ...formData,
-        documentos,
         assinaturaBase64: signatureImage || null,
         assinaturaContratanteBase64: contratanteSignatureImage || null,
-        contratoPdfBase64,
         contratoPdfNome,
         fichaNumero: reservedFichaNumero,
-      };
+        documentosNomes: documentos.map((d) => d.nome),
+      }));
+
+      documentos.forEach((doc, index) => {
+        const blob = base64ToBlob(doc.base64, doc.tipo);
+        formPayload.append(`documento_${index}`, blob, doc.nome);
+      });
+
+      if (contratoPdfBlob) {
+        formPayload.append('contratoPdf', contratoPdfBlob, contratoPdfNome);
+      }
 
       const response = await fetch('/api/send-installer', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        // Sem header Content-Type manual: o navegador define o boundary
+        // do multipart automaticamente ao enviar um FormData.
+        body: formPayload,
       });
 
       // Verifica o content-type antes de tentar JSON.parse: se a
@@ -1010,7 +1058,7 @@ export default function CadastroInstalador() {
                       Selecione certificados ou currículo
                     </span>
                     <span className="text-[10px] text-zinc-500 mt-1 mb-3 block">
-                      PDF ou Imagem (Máx: 8MB cada) &middot; até {MAX_DOCUMENTOS} documentos
+                      PDF ou Imagem (Máx: {MAX_DOCUMENTO_MB}MB cada) &middot; até {MAX_DOCUMENTOS} documentos
                     </span>
                     <span className="bg-white border border-zinc-300 hover:bg-zinc-200 text-zinc-800 px-4 py-2.5 min-h-[44px] rounded-md text-xs font-semibold shadow-sm transition flex items-center">
                       Upload de Documento

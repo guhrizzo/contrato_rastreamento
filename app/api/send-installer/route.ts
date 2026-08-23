@@ -6,7 +6,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    // multipart/form-data em vez de JSON com base64: documentos e o PDF do
+    // contrato vêm como binário puro, sem a inflação de ~33% do base64 —
+    // necessário pra caber no limite de payload da função serverless da
+    // hospedagem (Vercel: ~4,5MB por requisição).
+    const form = await request.formData();
+    const payloadRaw = form.get('payload');
+    if (typeof payloadRaw !== 'string') {
+      return NextResponse.json({ error: 'Dados do formulário ausentes.' }, { status: 400 });
+    }
+
     const {
       nomeCompleto,
       cpf,
@@ -25,46 +34,33 @@ export async function POST(request: Request) {
       comentarios,
       formaPagamento,
       autorizacao,
-      documentos,
-      contratoPdfBase64,
-      contratoPdfNome,
       fichaNumero: reservedFichaNumero,
-    } = body;
+    } = JSON.parse(payloadRaw);
 
     // Validações de campos obrigatórios
     if (!nomeCompleto || !cpf || !rg || !email || !phone || !tiposInstalacao || tiposInstalacao.length === 0 || !autorizacao) {
       return NextResponse.json({ error: 'Campos obrigatórios ausentes.' }, { status: 400 });
     }
 
-    // Preparar os anexos (até 3 documentos)
+    // Preparar os anexos (até 3 documentos, campos documento_0..documento_2)
     const MAX_DOCUMENTOS = 3;
-    const attachments = [];
-    if (Array.isArray(documentos)) {
-      for (const doc of documentos.slice(0, MAX_DOCUMENTOS)) {
-        if (!doc?.base64 || !doc?.nome) continue;
-        // Remove o prefixo data:image/...;base64, se houver
-        const cleanBase64 = doc.base64.includes(';base64,')
-          ? doc.base64.split(';base64,')[1]
-          : doc.base64;
-
-        attachments.push({
-          filename: doc.nome,
-          content: Buffer.from(cleanBase64, 'base64'),
-        });
+    const attachments: { filename: string; content: Buffer }[] = [];
+    for (let i = 0; i < MAX_DOCUMENTOS; i++) {
+      const file = form.get(`documento_${i}`);
+      if (file && typeof file !== 'string') {
+        const buf = Buffer.from(await file.arrayBuffer());
+        attachments.push({ filename: file.name || `documento_${i + 1}`, content: buf });
       }
     }
 
     // Anexa o contrato completo (com todas as cláusulas) gerado no navegador —
     // sem isso o e-mail só levava a tabela de dados, sem o instrumento assinado.
-    if (contratoPdfBase64 && contratoPdfNome) {
-      const cleanPdfBase64 = contratoPdfBase64.includes(';base64,')
-        ? contratoPdfBase64.split(';base64,')[1]
-        : contratoPdfBase64;
-
-      attachments.push({
-        filename: contratoPdfNome,
-        content: Buffer.from(cleanPdfBase64, 'base64'),
-      });
+    const contratoPdfFile = form.get('contratoPdf');
+    const hasContratoPdf = !!contratoPdfFile && typeof contratoPdfFile !== 'string';
+    if (hasContratoPdf) {
+      const pdfFile = contratoPdfFile as File;
+      const buf = Buffer.from(await pdfFile.arrayBuffer());
+      attachments.push({ filename: pdfFile.name || 'contrato.pdf', content: buf });
     }
 
     // O número da ficha normalmente já foi reservado pelo frontend (via
@@ -187,7 +183,7 @@ export async function POST(request: Request) {
             </p>
           </div>
 
-          ${contratoPdfBase64 ? `
+          ${hasContratoPdf ? `
             <div style="background-color: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 15px; margin-top: 10px;">
               <p style="margin: 0; font-size: 13px; color: #09090b; font-weight: 500;">
                 📎 O contrato completo, com todas as cláusulas e as assinaturas coletadas, está anexado a este e-mail em PDF.
