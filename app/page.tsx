@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SignatureCanvas from "./components/SignatureCanvas";
 import { sliceCanvasToPdfPages, collectSafeBreakOffsets } from "@/lib/pdfUtils";
+import { formatCpfCnpj, formatRgCnh, formatPhone, formatCep } from "@/lib/masks";
 import { User, Car, Settings, PenTool, Heart, Printer, FileDown, CheckCircle, AlertCircle, MapPin, Phone, Mail, Building2, IdCard, Zap, DollarSign, Calendar, Hash, X, ChevronDown, ChevronLeft, ChevronRight, AlertTriangle, Info, Home as HomeIcon, Repeat, ShoppingCart } from "lucide-react";
 
 interface ContractData {
@@ -367,8 +368,14 @@ export default function Home() {
     let filteredValue = value;
 
     // BUG FIX: clientNumber aceita letras (ex: "S/N", "12A") — removido do filtro numérico
-    if (name === "clientDoc" || name === "clientPhone" || name === "clientCep" || name === "clientRg") {
-      filteredValue = value.replace(/[^\d()\-.\s]/g, "");
+    if (name === "clientDoc") {
+      filteredValue = formatCpfCnpj(value);
+    } else if (name === "clientRg") {
+      filteredValue = formatRgCnh(value);
+    } else if (name === "clientPhone") {
+      filteredValue = formatPhone(value);
+    } else if (name === "clientCep") {
+      filteredValue = formatCep(value);
     } else if (name === "customPlanPrice" || name === "equipmentValue") {
       filteredValue = value.replace(/[^\d,]/g, "");
     }
@@ -1942,7 +1949,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-6 text-center text-[9pt]">
 
                   <div className="flex flex-col items-center">
-                    <img src="/assinatura2.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
+                    <img src="/assinatura.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Antonio C. Costa Junior</p>
                   </div>
 

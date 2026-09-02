@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'reac
 import { motion, AnimatePresence } from 'motion/react';
 import SignatureCanvas from '../components/SignatureCanvas';
 import { sliceCanvasToPdfPages, collectSafeBreakOffsets } from '@/lib/pdfUtils';
+import { formatCpf, formatCnpj, formatRg, formatPhone } from '@/lib/masks';
 import {
   User,
   FileText,
@@ -214,7 +215,15 @@ export default function CadastroInstalador() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const masks: Record<string, (v: string) => string> = {
+      cpf: formatCpf,
+      cnpj: formatCnpj,
+      rg: formatRg,
+      phone: formatPhone,
+      telefoneEmpresa: formatPhone,
+    };
+    const nextValue = masks[name] ? masks[name](value) : value;
+    setFormData(prev => ({ ...prev, [name]: nextValue }));
   };
 
   const handleCheckboxChange = (name: keyof FormState) => {
@@ -811,8 +820,9 @@ export default function CadastroInstalador() {
                     name="rg"
                     value={formData.rg}
                     onChange={handleInputChange}
+                    inputMode="numeric"
                     className="p-3 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-zinc-50 focus:bg-white transition-all duration-150"
-                    placeholder="Apenas números"
+                    placeholder="00.000.000-0"
                   />
                 </div>
               </div>
@@ -1685,7 +1695,7 @@ export default function CadastroInstalador() {
                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', textAlign: 'center', fontSize: '9pt' }}>
                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                   <img src="/assinatura2.png" alt="Assinatura" style={{ height: '56px', width: 'auto', objectFit: 'contain', marginBottom: '4px' }} />
+                   <img src="/assinatura.png" alt="Assinatura" style={{ height: '56px', width: 'auto', objectFit: 'contain', marginBottom: '4px' }} />
                    <p style={{ fontWeight: 600, color: '#27272a', fontSize: '8pt', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Antonio C. Costa Junior</p>
                  </div>
                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
