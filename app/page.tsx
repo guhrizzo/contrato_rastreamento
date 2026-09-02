@@ -29,6 +29,21 @@ interface ContractData {
   // Preenchidos apenas quando serviceType === "venda"
   equipmentValue: string;
   equipmentPaymentMethod: string;
+  // Preenchidos apenas quando serviceType === "comodato" (contrato de comodato
+  // revisado juridicamente). Todos opcionais: se em branco, o PDF sai com uma
+  // linha "____" para preenchimento manual.
+  equipmentBrandModel: string;   // Marca/Modelo do rastreador
+  equipmentImeiSerial: string;   // IMEI / Serial do equipamento
+  equipmentChipLine: string;     // Chip / Linha (número da linha do SIM)
+  monitoredObject: string;       // Objeto/Pessoa/Bem/Carga/Veículo monitorado
+  monitoredObjectId: string;     // Identificação/Placa/Documento do objeto
+  replacementValue: string;      // Valor de reposição do equipamento (R$)
+  returnDeadlineDays: string;    // Prazo (dias) para devolução após o encerramento
+  // Bloco de assinaturas do contrato de comodato (opcionais).
+  contratadaRepName: string;     // Representante que assina pela CONTRATADA
+  contratadaRepCpf: string;      // CPF do representante da CONTRATADA
+  witness1Cpf: string;           // CPF da Testemunha 1
+  witness2Cpf: string;           // CPF da Testemunha 2
   dueDate: string;
   // Armazena no formato YYYY-MM-DD (compatível com input type="date")
   contractDate: string;
@@ -174,6 +189,17 @@ export default function Home() {
     customPlanPrice: "",
     equipmentValue: "",
     equipmentPaymentMethod: "",
+    equipmentBrandModel: "",
+    equipmentImeiSerial: "",
+    equipmentChipLine: "",
+    monitoredObject: "",
+    monitoredObjectId: "",
+    replacementValue: "",
+    returnDeadlineDays: "",
+    contratadaRepName: "",
+    contratadaRepCpf: "",
+    witness1Cpf: "",
+    witness2Cpf: "",
     dueDate: "05",
     // Inicia vazio; o useEffect preenche com hoje em YYYY-MM-DD
     contractDate: "",
@@ -368,7 +394,7 @@ export default function Home() {
     let filteredValue = value;
 
     // BUG FIX: clientNumber aceita letras (ex: "S/N", "12A") — removido do filtro numérico
-    if (name === "clientDoc") {
+    if (name === "clientDoc" || name === "contratadaRepCpf" || name === "witness1Cpf" || name === "witness2Cpf") {
       filteredValue = formatCpfCnpj(value);
     } else if (name === "clientRg") {
       filteredValue = formatRgCnh(value);
@@ -376,8 +402,10 @@ export default function Home() {
       filteredValue = formatPhone(value);
     } else if (name === "clientCep") {
       filteredValue = formatCep(value);
-    } else if (name === "customPlanPrice" || name === "equipmentValue") {
+    } else if (name === "customPlanPrice" || name === "equipmentValue" || name === "replacementValue") {
       filteredValue = value.replace(/[^\d,]/g, "");
+    } else if (name === "returnDeadlineDays") {
+      filteredValue = value.replace(/\D/g, "").slice(0, 3);
     }
 
     setData((prev) => ({
@@ -697,13 +725,6 @@ export default function Home() {
     return numeroParaExtenso(price);
   };
 
-  const getEquipamentoValorRetirada = (): string => {
-    const monthlyPrice = getPlanPriceValue();
-    if (!monthlyPrice) return "R$ 0,00";
-    const withdrawalValue = monthlyPrice * 9;
-    return `R$ ${formatPlanPrice(withdrawalValue)}`;
-  };
-
   // Valor do equipamento na Cláusula 4 (Venda) — formatado a partir do
   // que foi digitado no campo "Valor do Equipamento" da aba Plano.
   const getEquipmentValueText = (): string => {
@@ -711,6 +732,28 @@ export default function Home() {
     if (value === null) return "______________";
     return `${formatPlanPrice(value)} (${numeroParaExtenso(value)})`;
   };
+
+  // ---- Auxiliares do contrato de COMODATO (texto jurídico revisado) ----
+
+  // Valor total correspondente ao período inicial de 12 meses (Cláusula 4ª):
+  // 12 x mensalidade do plano. Fica em branco se o plano não tiver valor.
+  const getPlanTotal12Text = (): string => {
+    const total = getPlanPriceValue() * 12;
+    if (!total) return "R$ ______________";
+    return `R$ ${formatPlanPrice(total)} (${numeroParaExtenso(total)})`;
+  };
+
+  // Valor de reposição do equipamento (Cláusula 6ª). Usa o valor digitado no
+  // formulário; se em branco, mantém a regra histórica do app (mensalidade x 9).
+  const getReplacementValueText = (): string => {
+    const explicit = parsePlanPrice(data.replacementValue);
+    if (explicit !== null) return `R$ ${formatPlanPrice(explicit)}`;
+    const derived = getPlanPriceValue() * 9;
+    return derived ? `R$ ${formatPlanPrice(derived)}` : "R$ ______________";
+  };
+
+  const getReturnDeadlineText = (): string =>
+    data.returnDeadlineDays.trim() !== "" ? data.returnDeadlineDays.trim() : "_____";
 
   const handlePlanSelect = (planId: string) => {
     const isConsulta = planId === FROTA_PLAN_ID || SOB_CONSULTA_SEM_MINIMO.includes(planId);
@@ -723,6 +766,277 @@ export default function Home() {
     }));
     setIsPlanDropdownOpen(false);
   };
+
+  // ============================================================
+  // CLÁUSULAS DO CONTRATO
+  // ------------------------------------------------------------
+  // A numeração ("CLÁUSULA N") é calculada automaticamente pela posição no
+  // array (index + 1), então incluir/remover cláusulas nunca deixa buracos
+  // na contagem.
+  //
+  // `vendaClauses` é o texto histórico do app (mantido sem alteração).
+  // `comodatoClauses` é o texto do CONTRATO DE COMODATO revisado
+  // juridicamente (20 cláusulas). A terminologia foi adaptada ao padrão do
+  // app: CONTRATADA = GRUPO PROTECT LTDA; CONTRATANTE = cliente.
+  // ============================================================
+
+  const listStyle = "list-disc list-inside ml-2 space-y-0.5 text-[8.5pt]";
+  const subItemStyle = "mt-1 text-[8.5pt]";
+
+  const comodatoClauses = [
+    {
+      title: "DO OBJETO",
+      body: (
+        <>
+          <p><strong>1.1.</strong> O presente contrato tem por objeto a cessão gratuita, em regime de comodato, de equipamento de rastreamento ao CONTRATANTE, bem como a prestação dos serviços de rastreamento e monitoramento por meio da plataforma tecnológica disponibilizada pela CONTRATADA.</p>
+          <p className={subItemStyle}><strong>1.2.</strong> O equipamento será utilizado no veículo, pessoa, objeto, carga, bem ou outro ativo previamente cadastrado, conforme a natureza do serviço contratado e as condições comerciais estabelecidas entre as partes.</p>
+          <p className={subItemStyle}><strong>1.3.</strong> O equipamento permanecerá de propriedade exclusiva da GRUPO PROTECT LTDA, não ocorrendo transferência de propriedade ao CONTRATANTE em razão do presente contrato.</p>
+          <p className={subItemStyle}><strong>1.4.</strong> Identificação do equipamento e do objeto monitorado:</p>
+          <ul className={listStyle}>
+            <li>Plano / Equipamento: {activePlan.name} ({activePlan.tracker})</li>
+            <li>Marca/Modelo: {data.equipmentBrandModel || "__________________________"}</li>
+            <li>IMEI/Serial: {data.equipmentImeiSerial || "__________________________"}</li>
+            <li>Chip/Linha: {data.equipmentChipLine || "__________________________"}</li>
+            <li>Objeto/Pessoa/Bem/Carga/Veículo: {data.monitoredObject || "__________________________"}</li>
+            <li>Identificação/Placa/Documento: {data.monitoredObjectId || "__________________________"}</li>
+          </ul>
+        </>
+      ),
+    },
+    {
+      title: "DA PRESTAÇÃO DOS SERVIÇOS",
+      body: (
+        <>
+          <p><strong>2.1.</strong> A CONTRATADA disponibilizará ao CONTRATANTE os serviços de rastreamento e monitoramento previstos no plano comercial contratado.</p>
+          <p className={subItemStyle}><strong>2.2.</strong> Conforme o plano contratado e a natureza do objeto monitorado, poderão ser disponibilizadas funcionalidades como localização, histórico de posições, cercas eletrônicas, alertas, relatórios, comandos e demais recursos disponibilizados pela plataforma.</p>
+          <p className={subItemStyle}><strong>2.3.</strong> A disponibilidade das funcionalidades dependerá do equipamento utilizado, tecnologia empregada, cobertura de comunicação, disponibilidade de energia e demais condições técnicas aplicáveis ao serviço.</p>
+          <p className={subItemStyle}><strong>2.4.</strong> A CONTRATADA poderá realizar atualizações, melhorias, correções e adequações técnicas na plataforma, visando à manutenção e evolução dos serviços.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA INSTALAÇÃO, ATIVAÇÃO OU VINCULAÇÃO DO EQUIPAMENTO",
+      body: (
+        <>
+          <p><strong>3.1.</strong> A instalação, ativação ou vinculação do equipamento ao objeto monitorado será realizada conforme as condições comerciais previamente estabelecidas entre as partes e de acordo com a natureza do serviço contratado.</p>
+          <p className={subItemStyle}><strong>3.2.</strong> Quando houver cobrança de instalação, ativação, configuração ou outro serviço técnico, o respectivo valor será previamente informado ao CONTRATANTE.</p>
+          <p className={subItemStyle}><strong>3.3.</strong> Quando aplicável, a instalação deverá ser realizada por profissional autorizado ou conforme orientação técnica da CONTRATADA.</p>
+          <p className={subItemStyle}><strong>3.4.</strong> O CONTRATANTE deverá disponibilizar o objeto a ser monitorado em condições adequadas para a instalação, ativação ou vinculação do equipamento.</p>
+          <p className={subItemStyle}><strong>3.5.</strong> Qualquer alteração, remoção, transferência ou reinstalação do equipamento deverá ser previamente autorizada pela CONTRATADA.</p>
+          <p className={subItemStyle}><strong>3.6.</strong> A reinstalação, transferência ou alteração de configuração poderá gerar cobrança adicional, conforme condições comerciais vigentes.</p>
+        </>
+      ),
+    },
+    {
+      title: "DOS VALORES, DO PRAZO INICIAL, DA FORMA DE PAGAMENTO E DO REAJUSTE",
+      body: (
+        <>
+          <p><strong>4.1.</strong> Pela prestação dos serviços contratados, o CONTRATANTE pagará à CONTRATADA os valores estabelecidos na proposta comercial, ficha de cadastro, pedido, termo de adesão ou documento equivalente vinculado a este contrato.</p>
+          <p className={subItemStyle}><strong>4.2.</strong> A mensalidade do plano contratado será de <strong>{getDisplayPriceText()}</strong> ({getPriceExtenso() || "____________"}), com vencimento todo dia <strong>{data.dueDate || "____"}</strong> de cada mês.</p>
+          <p className={subItemStyle}><strong>4.3.</strong> Considerando o prazo inicial de contratação de 12 (doze) meses, o valor total correspondente ao período inicial será de <strong>{getPlanTotal12Text()}</strong>, equivalente a 12 (doze) mensalidades de {getDisplayPriceText()} cada.</p>
+          <p className={subItemStyle}><strong>4.4.</strong> O valor total indicado no item 4.3 representa o valor econômico correspondente ao período inicial de 12 (doze) meses e servirá como referência para fins contratuais e para eventual cálculo de cancelamento antecipado, não significando obrigação de pagamento antecipado, salvo se expressamente estabelecido na proposta comercial.</p>
+          <p className={subItemStyle}><strong>4.5.</strong> Os valores dos serviços poderão ser reajustados a cada período de 12 (doze) meses pela variação acumulada do Índice Geral de Preços – Mercado (IGP-M), divulgado pela Fundação Getulio Vargas – FGV, ou por outro índice oficial que venha a substituí-lo.</p>
+          <p className={subItemStyle}><strong>4.6.</strong> O reajuste será aplicado sobre o valor da mensalidade vigente imediatamente anterior à sua aplicação, a partir do início de cada novo período de 12 (doze) meses, mediante comunicação ao CONTRATANTE, observada a legislação aplicável.</p>
+          <p className={subItemStyle}><strong>4.7.</strong> Caso o IGP-M deixe de ser divulgado ou seja extinto, será utilizado o índice oficial que legalmente o substituir. Na ausência de índice substituto, poderá ser adotado outro índice oficial que melhor reflita a variação dos custos da prestação dos serviços.</p>
+          <p className={subItemStyle}><strong>4.8.</strong> Poderão ser cobrados, quando contratados, valores referentes à instalação, ativação, configuração, acessórios, serviços adicionais, reinstalação, transferência, manutenção decorrente de mau uso e outros serviços solicitados pelo CONTRATANTE.</p>
+          <p className={subItemStyle}><strong>4.9.</strong> Os pagamentos referentes à prestação dos serviços serão realizados pelos meios disponibilizados pela CONTRATADA e nas condições estabelecidas na proposta comercial.</p>
+        </>
+      ),
+    },
+    {
+      title: "DO CANCELAMENTO ANTECIPADO E DA MULTA RESCISÓRIA",
+      body: (
+        <>
+          <p><strong>5.1.</strong> Durante cada período contratual de 12 (doze) meses, o CONTRATANTE poderá solicitar o cancelamento antecipado do contrato, observadas as condições estabelecidas nesta cláusula.</p>
+          <p className={subItemStyle}><strong>5.2.</strong> Em caso de cancelamento antecipado imotivado antes do término do período contratual de 12 (doze) meses vigente, será aplicada multa correspondente a 30% (trinta por cento) do valor das mensalidades vincendas até o término do respectivo período contratual, observada a legislação aplicável.</p>
+          <p className={subItemStyle}><strong>5.3.</strong> Para fins de cálculo da multa, será considerado o saldo das mensalidades ainda não vencidas entre a data efetiva do cancelamento e a data prevista para o término do respectivo período de 12 (doze) meses.</p>
+          <p className={subItemStyle}><strong>5.4.</strong> Quando a contratação tiver condições comerciais especiais, tais como descontos, instalação gratuita, equipamento ou outros benefícios condicionados à permanência mínima, essas condições poderão ser especificadas na proposta comercial ou termo de adesão.</p>
+          <p className={subItemStyle}><strong>5.5.</strong> A multa não será aplicada nas hipóteses em que a legislação determine sua inexigibilidade ou quando o cancelamento decorrer de descumprimento contratual imputável à CONTRATADA.</p>
+          <p className={subItemStyle}><strong>5.6.</strong> A multa não afasta o pagamento de valores já vencidos, serviços efetivamente prestados, danos comprovados, equipamento não devolvido e demais obrigações constituídas até a data do encerramento.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA DEVOLUÇÃO DO EQUIPAMENTO",
+      body: (
+        <>
+          <p><strong>6.1.</strong> Por se tratar de equipamento cedido em regime de comodato, o CONTRATANTE deverá devolvê-lo à CONTRATADA após o encerramento da contratação.</p>
+          <p className={subItemStyle}><strong>6.2.</strong> A devolução deverá ocorrer no prazo máximo de {getReturnDeadlineText()} dias após o encerramento dos serviços, salvo prazo diverso acordado por escrito entre as partes.</p>
+          <p className={subItemStyle}><strong>6.3.</strong> O equipamento deverá ser devolvido em condições compatíveis com o uso normal, ressalvado o desgaste natural decorrente de sua utilização adequada.</p>
+          <p className={subItemStyle}><strong>6.4.</strong> Em caso de não devolução, perda, extravio, destruição ou dano decorrente de mau uso, negligência, imprudência, instalação ou intervenção não autorizada, o CONTRATANTE poderá ser responsabilizado pelo valor de reposição do equipamento e demais custos comprovadamente decorrentes.</p>
+          <p className={subItemStyle}><strong>6.5.</strong> Valor de reposição do equipamento: <strong>{getReplacementValueText()}</strong>.</p>
+        </>
+      ),
+    },
+    {
+      title: "DAS OBRIGAÇÕES DA CONTRATADA",
+      body: (
+        <>
+          <p><strong>7.1.</strong> São obrigações da CONTRATADA:</p>
+          <ul className={listStyle}>
+            <li>a) disponibilizar o equipamento contratado;</li>
+            <li>b) disponibilizar os serviços previstos no plano contratado;</li>
+            <li>c) prestar suporte técnico dentro das condições estabelecidas;</li>
+            <li>d) manter a plataforma disponível, ressalvadas indisponibilidades decorrentes de fatores externos;</li>
+            <li>e) emitir os documentos fiscais correspondentes aos serviços prestados;</li>
+            <li>f) manter a confidencialidade das informações do CONTRATANTE;</li>
+            <li>g) observar a legislação aplicável à proteção de dados pessoais.</li>
+          </ul>
+        </>
+      ),
+    },
+    {
+      title: "DO PRAZO E DA RENOVAÇÃO CONTRATUAL",
+      body: (
+        <>
+          <p><strong>8.1.</strong> O presente contrato terá prazo inicial de 12 (doze) meses, contado a partir da data de sua assinatura ou da ativação dos serviços, conforme o que ocorrer primeiro.</p>
+          <p className={subItemStyle}><strong>8.2.</strong> Ao término do prazo inicial de 12 (doze) meses, não havendo manifestação formal de qualquer das partes quanto ao encerramento da contratação, o presente contrato será automaticamente renovado por novos períodos sucessivos de 12 (doze) meses, permanecendo vigentes as demais condições contratuais e comerciais aplicáveis.</p>
+          <p className={subItemStyle}><strong>8.3.</strong> A renovação automática por novos períodos de 12 (doze) meses não dependerá da assinatura de novo instrumento contratual, permanecendo este contrato plenamente válido durante cada período de renovação.</p>
+          <p className={subItemStyle}><strong>8.4.</strong> O CONTRATANTE que desejar não renovar ou encerrar a contratação deverá comunicar formalmente sua intenção com antecedência mínima de 30 (trinta) dias antes do término do período contratual vigente, mediante envio obrigatório da solicitação por escrito para o e-mail info@protectrastreamento.com.</p>
+          <p className={subItemStyle}><strong>8.5.</strong> Caso o CONTRATANTE solicite o cancelamento antes do término do período de 12 (doze) meses vigente, será aplicada a multa prevista na Cláusula 5ª, calculada proporcionalmente sobre o valor das mensalidades vincendas até o término do respectivo período contratual.</p>
+          <p className={subItemStyle}><strong>8.6.</strong> A renovação contratual não implicará alteração automática do valor da mensalidade, ressalvados os reajustes previstos na Cláusula 4ª e demais alterações de valores previamente comunicadas e legalmente aplicáveis.</p>
+        </>
+      ),
+    },
+    {
+      title: "DAS OBRIGAÇÕES DO CONTRATANTE",
+      body: (
+        <>
+          <p><strong>9.1.</strong> São obrigações do CONTRATANTE:</p>
+          <ul className={listStyle}>
+            <li>a) pagar pontualmente os valores contratados;</li>
+            <li>b) fornecer informações verdadeiras e atualizadas;</li>
+            <li>c) utilizar adequadamente o equipamento;</li>
+            <li>d) não abrir, desmontar, adulterar ou modificar o equipamento;</li>
+            <li>e) não permitir intervenção de terceiros não autorizados;</li>
+            <li>f) comunicar imediatamente qualquer falha, dano, perda ou irregularidade;</li>
+            <li>g) permitir manutenção autorizada quando necessária;</li>
+            <li>h) devolver o equipamento ao término da contratação;</li>
+            <li>i) manter seus dados cadastrais atualizados.</li>
+          </ul>
+        </>
+      ),
+    },
+    {
+      title: "DA MANUTENÇÃO E DOS DANOS",
+      body: (
+        <>
+          <p><strong>10.1.</strong> Defeitos decorrentes de falha técnica natural do equipamento serão analisados pela CONTRATADA.</p>
+          <p className={subItemStyle}><strong>10.2.</strong> Danos decorrentes de instalação inadequada, acidente, colisão, incêndio, inundação, vandalismo, violação, adulteração, desmontagem ou mau uso poderão ser cobrados do CONTRATANTE.</p>
+          <p className={subItemStyle}><strong>10.3.</strong> O CONTRATANTE deverá comunicar imediatamente qualquer problema identificado no equipamento.</p>
+          <p className={subItemStyle}><strong>10.4.</strong> Quando necessária a substituição do equipamento em razão de defeito não decorrente de mau uso, a CONTRATADA avaliará o equipamento e adotará as medidas técnicas cabíveis.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA INADIMPLÊNCIA",
+      body: (
+        <>
+          <p><strong>11.1.</strong> O não pagamento da mensalidade ou de qualquer outro valor devido na data de vencimento caracterizará inadimplência do CONTRATANTE.</p>
+          <p className={subItemStyle}><strong>11.2.</strong> Em caso de atraso no pagamento, incidirá sobre o valor devido multa moratória de 10% (dez por cento), além de juros de mora de 1% (um por cento) ao mês, calculados proporcionalmente aos dias de atraso, sem prejuízo da atualização monetária quando legalmente aplicável.</p>
+          <p className={subItemStyle}><strong>11.3.</strong> Os encargos previstos nesta cláusula serão aplicados sobre o valor principal em atraso a partir do primeiro dia seguinte ao vencimento.</p>
+          <p className={subItemStyle}><strong>11.4.</strong> Persistindo a inadimplência, a CONTRATADA poderá suspender os serviços de rastreamento e monitoramento, observadas as condições contratuais e a legislação aplicável.</p>
+          <p className={subItemStyle}><strong>11.5.</strong> A suspensão dos serviços não implicará cancelamento automático do contrato nem afastará a obrigação do CONTRATANTE de quitar os valores vencidos e os respectivos encargos.</p>
+          <p className={subItemStyle}><strong>11.6.</strong> O restabelecimento dos serviços poderá depender da regularização integral dos valores pendentes e respectivos encargos.</p>
+          <p className={subItemStyle}><strong>11.7.</strong> A CONTRATADA poderá adotar as medidas administrativas e judiciais cabíveis para cobrança dos valores em aberto, observada a legislação aplicável.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA LIMITAÇÃO TÉCNICA DO SERVIÇO",
+      body: (
+        <>
+          <p><strong>12.1.</strong> Os serviços de rastreamento e monitoramento dependem de tecnologias de comunicação e posicionamento, incluindo GPS/GNSS, rede móvel de comunicação, energia elétrica, quando aplicável, e demais recursos necessários ao funcionamento do sistema.</p>
+          <p className={subItemStyle}><strong>12.2.</strong> A CONTRATADA não será responsável por interrupções decorrentes de ausência de cobertura, falhas de operadoras de telefonia, interferências de sinal, bloqueadores, problemas de energia, condições atmosféricas, caso fortuito, força maior ou outros fatores externos que estejam fora de seu controle.</p>
+          <p className={subItemStyle}><strong>12.3.</strong> O serviço de rastreamento e monitoramento não constitui seguro, garantia contra furto, roubo, perda, acidente ou qualquer outro evento, nem garantia de recuperação do bem, objeto, carga ou pessoa monitorada.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA PROTEÇÃO DE DADOS E DA LGPD",
+      body: (
+        <>
+          <p><strong>13.1.</strong> As partes comprometem-se a observar a legislação aplicável à proteção de dados pessoais, especialmente a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais – LGPD.</p>
+          <p className={subItemStyle}><strong>13.2.</strong> Os dados serão tratados na medida necessária à execução deste contrato, prestação dos serviços, suporte, faturamento, segurança e cumprimento de obrigações legais.</p>
+          <p className={subItemStyle}><strong>13.3.</strong> O CONTRATANTE declara estar ciente de que a prestação dos serviços poderá envolver tratamento de dados de localização e informações relacionadas ao veículo, pessoa, objeto, carga, bem ou outro ativo monitorado, conforme o serviço contratado.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA CONFIDENCIALIDADE",
+      body: (
+        <>
+          <p><strong>14.1.</strong> As partes comprometem-se a manter sigilo sobre informações comerciais, técnicas, cadastrais e estratégicas obtidas em razão da relação contratual.</p>
+          <p className={subItemStyle}><strong>14.2.</strong> A obrigação de confidencialidade não se aplica às informações cuja divulgação seja exigida por lei ou autoridade competente.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA RESCISÃO",
+      body: (
+        <>
+          <p><strong>15.1.</strong> O presente contrato poderá ser rescindido:</p>
+          <ul className={listStyle}>
+            <li>a) pelo término do período contratual vigente, mediante manifestação de qualquer das partes nos termos da Cláusula 8ª;</li>
+            <li>b) por acordo entre as partes;</li>
+            <li>c) por inadimplemento contratual;</li>
+            <li>d) por descumprimento de obrigação contratual;</li>
+            <li>e) nas demais hipóteses previstas em lei.</li>
+          </ul>
+          <p className={subItemStyle}><strong>15.2.</strong> A rescisão não prejudicará os direitos e obrigações constituídos anteriormente à data de seu encerramento.</p>
+          <p className={subItemStyle}><strong>15.3.</strong> O encerramento da contratação não exime o CONTRATANTE da obrigação de devolver o equipamento cedido em comodato.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA TRANSFERÊNCIA DO EQUIPAMENTO",
+      body: (
+        <>
+          <p><strong>16.1.</strong> O CONTRATANTE não poderá transferir o equipamento para outro veículo, pessoa, objeto, carga, bem ou ativo sem autorização da CONTRATADA.</p>
+          <p className={subItemStyle}><strong>16.2.</strong> A transferência poderá exigir nova instalação, configuração ou alteração cadastral e poderá gerar cobrança adicional.</p>
+          <p className={subItemStyle}><strong>16.3.</strong> O CONTRATANTE deverá informar previamente à CONTRATADA qualquer alteração do objeto monitorado ou da finalidade de utilização do equipamento.</p>
+        </>
+      ),
+    },
+    {
+      title: "DAS COMUNICAÇÕES",
+      body: (
+        <>
+          <p><strong>17.1.</strong> As comunicações relacionadas à execução do contrato poderão ocorrer por e-mail, aplicativo de mensagens, sistema eletrônico ou outros canais disponibilizados pela CONTRATADA.</p>
+          <p className={subItemStyle}><strong>17.2.</strong> Para fins de cancelamento, não renovação ou encerramento dos serviços, deverá ser obrigatoriamente observado o procedimento previsto na Cláusula 8ª, inclusive o envio da solicitação para o e-mail info@protectrastreamento.com.</p>
+          <p className={subItemStyle}><strong>17.3.</strong> O CONTRATANTE deverá manter seus dados de contato atualizados.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA INEXISTÊNCIA DE VÍNCULO",
+      body: (
+        <>
+          <p><strong>18.1.</strong> O presente contrato não estabelece qualquer vínculo societário, trabalhista, representação comercial, associação ou relação de subordinação entre as partes.</p>
+          <p className={subItemStyle}><strong>18.2.</strong> Cada parte será responsável por suas próprias obrigações legais, fiscais, trabalhistas e comerciais.</p>
+        </>
+      ),
+    },
+    {
+      title: "DA ACEITAÇÃO",
+      body: (
+        <>
+          <p><strong>19.1.</strong> O CONTRATANTE declara ter lido e compreendido todas as cláusulas deste contrato, concordando com suas condições.</p>
+          <p className={subItemStyle}><strong>19.2.</strong> O CONTRATANTE declara que recebeu ou teve acesso às informações relativas ao plano contratado, valores, prazo inicial, condições de cancelamento, renovação, reajuste e demais condições comerciais.</p>
+          <p className={subItemStyle}><strong>19.3.</strong> A assinatura física ou eletrônica deste instrumento representará a manifestação de vontade das partes.</p>
+        </>
+      ),
+    },
+    {
+      title: "DO FORO",
+      body: (
+        <>
+          <p><strong>20.1.</strong> Fica eleito o foro da Comarca de <strong>Belo Horizonte, Estado de Minas Gerais</strong>, para dirimir quaisquer dúvidas, controvérsias ou questões decorrentes deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja, ressalvadas as hipóteses em que a legislação aplicável estabelecer foro diverso ou competência territorial de natureza obrigatória.</p>
+          <p className={subItemStyle}><strong>20.2.</strong> As partes comprometem-se, sempre que possível, a buscar previamente uma solução amigável para eventuais divergências decorrentes da execução ou interpretação deste contrato.</p>
+        </>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 lg:flex-row print-container select-none" onContextMenu={(e) => { e.preventDefault(); }}>
@@ -1422,6 +1736,110 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* DADOS DO EQUIPAMENTO E DEVOLUÇÃO — só no Comodato.
+                  Todos os campos são opcionais: se ficarem em branco, o
+                  contrato sai com uma linha "____" para preenchimento manual. */}
+              {data.serviceType === "comodato" && (
+                <div className="space-y-4 p-3.5 bg-amber-50/50 border border-brand-yellow-dark/40 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="w-3.5 h-3.5 text-brand-black shrink-0" />
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-brand-black">
+                      Equipamento em Comodato e Devolução
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 -mt-2">Opcional — usado nas Cláusulas 1ª, 6ª e 9ª do contrato de comodato.</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Marca / Modelo do rastreador</label>
+                      <input
+                        type="text"
+                        name="equipmentBrandModel"
+                        value={data.equipmentBrandModel}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: GT06N / Coban"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">IMEI / Serial</label>
+                      <input
+                        type="text"
+                        name="equipmentImeiSerial"
+                        value={data.equipmentImeiSerial}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: 356938035643809"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Chip / Linha</label>
+                      <input
+                        type="text"
+                        name="equipmentChipLine"
+                        value={data.equipmentChipLine}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: (31) 90000-0000 / Arqia"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Objeto / Veículo / Bem monitorado</label>
+                      <input
+                        type="text"
+                        name="monitoredObject"
+                        value={data.monitoredObject}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: Honda CG 160 / carga / notebook"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Identificação / Placa / Documento</label>
+                      <input
+                        type="text"
+                        name="monitoredObjectId"
+                        value={data.monitoredObjectId}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: ABC1D23"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Prazo de devolução (dias)</label>
+                      <input
+                        type="text"
+                        name="returnDeadlineDays"
+                        value={data.returnDeadlineDays}
+                        onChange={handleChange}
+                        inputMode="numeric"
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Ex: 15"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:col-span-2">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5 flex items-center gap-1">
+                        <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                        Valor de reposição do equipamento
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500">R$</span>
+                        <input
+                          type="text"
+                          name="replacementValue"
+                          value={data.replacementValue}
+                          onChange={handleChange}
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          className="w-full pl-10 pr-3 py-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        />
+                      </div>
+                      <p className="text-[11px] text-zinc-500 mt-1">Se ficar em branco, o contrato usa a regra atual (mensalidade &times; 9).</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* RESUMO DO PLANO SELECIONADO */}
               <div className="mt-6 bg-linear-to-br from-zinc-900 to-zinc-800 text-white rounded-lg p-4 sm:p-5 border border-zinc-700 shadow-md">
                 <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-zinc-700">
@@ -1514,11 +1932,19 @@ export default function Home() {
                 <ul className="space-y-2.5 text-[11px] text-blue-900 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
-                    <span>O contrato possui <strong>prazo mínimo de 12 meses</strong>. Após esse período, passa a vigorar por prazo indeterminado.</span>
+                    <span>
+                      {data.serviceType === "comodato"
+                        ? <>O contrato tem <strong>prazo inicial de 12 meses</strong> e é <strong>renovado automaticamente</strong> por novos períodos de 12 meses, salvo aviso por escrito com 30 dias de antecedência para info@protectrastreamento.com.</>
+                        : <>O contrato possui <strong>prazo mínimo de 12 meses</strong>. Após esse período, passa a vigorar por prazo indeterminado.</>}
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
-                    <span>Em caso de cancelamento antecipado, será cobrada <strong>multa de 30%</strong> sobre o valor restante do contrato.</span>
+                    <span>
+                      {data.serviceType === "comodato"
+                        ? <>Em caso de cancelamento antecipado imotivado, será cobrada <strong>multa de 30%</strong> das mensalidades vincendas até o fim do período de 12 meses vigente.</>
+                        : <>Em caso de cancelamento antecipado, será cobrada <strong>multa de 30%</strong> sobre o valor restante do contrato.</>}
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
@@ -1530,7 +1956,11 @@ export default function Home() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold shrink-0">•</span>
-                    <span>O não pagamento após <strong>15 dias de atraso</strong> acarretará na suspensão do serviço.</span>
+                    <span>
+                      {data.serviceType === "comodato"
+                        ? <>O atraso gera <strong>multa de 10% + juros de 1% ao mês</strong>; persistindo a inadimplência, os serviços poderão ser suspensos.</>
+                        : <>O não pagamento após <strong>15 dias de atraso</strong> acarretará na suspensão do serviço.</>}
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -1625,6 +2055,64 @@ export default function Home() {
                 </div>
               )}
 
+              {data.serviceType === "comodato" && (
+                <div className="space-y-4 p-3.5 bg-zinc-50 border border-zinc-200 rounded-lg">
+                  <div>
+                    <p className="text-xs font-bold text-zinc-700 uppercase tracking-wide">Dados para assinatura</p>
+                    <p className="text-[11px] text-zinc-500">Opcional — representante da Protect e CPF das testemunhas no contrato de comodato. Em branco, sai como linha para preencher à mão.</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">Representante da Contratada</label>
+                      <input
+                        type="text"
+                        name="contratadaRepName"
+                        value={data.contratadaRepName}
+                        onChange={handleChange}
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="Nome de quem assina pela Protect"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF do Representante</label>
+                      <input
+                        type="text"
+                        name="contratadaRepCpf"
+                        value={data.contratadaRepCpf}
+                        onChange={handleChange}
+                        inputMode="numeric"
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="000.000.000-00"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF Testemunha 1 <span className="normal-case font-normal text-zinc-400">(Antonio C. Costa Junior)</span></label>
+                      <input
+                        type="text"
+                        name="witness1Cpf"
+                        value={data.witness1Cpf}
+                        onChange={handleChange}
+                        inputMode="numeric"
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="000.000.000-00"
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF Testemunha 2 <span className="normal-case font-normal text-zinc-400">(Emerson N. do Carmo)</span></label>
+                      <input
+                        type="text"
+                        name="witness2Cpf"
+                        value={data.witness2Cpf}
+                        onChange={handleChange}
+                        inputMode="numeric"
+                        className="p-2.5 border border-zinc-200 rounded-md text-sm focus:outline-none focus:border-brand-black focus:ring-1 focus:ring-brand-black bg-white transition-all duration-150"
+                        placeholder="000.000.000-00"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {renderTermsSection()}
             </motion.div>
           )}
@@ -1688,7 +2176,7 @@ export default function Home() {
               {/* TÍTULO */}
               <h2 className="text-center font-extrabold text-xs uppercase tracking-wide mb-6 border-b border-zinc-200 pb-2">
                 {data.serviceType === "comodato"
-                  ? "CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RASTREAMENTO VEICULAR COMODATO"
+                  ? "CONTRATO DE COMODATO DE EQUIPAMENTO E PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO"
                   : "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE RASTREAMENTO VEICULAR COM VENDA DE DISPOSITIVO"} Nº {data.contractNumber}
               </h2>
 
@@ -1710,7 +2198,9 @@ export default function Home() {
                 </p>
 
                 <p>
-                  As partes resolvem firmar o presente Contrato de Prestação de Serviços de Rastreamento Veicular, mediante as seguintes cláusulas:
+                  {data.serviceType === "comodato"
+                    ? "As partes têm entre si justo e contratado o presente Contrato de Comodato de Equipamento e Prestação de Serviços de Rastreamento e Monitoramento, mediante as cláusulas e condições seguintes:"
+                    : "As partes resolvem firmar o presente Contrato de Prestação de Serviços de Rastreamento Veicular, mediante as seguintes cláusulas:"}
                 </p>
 
                 {/* Cláusulas geradas dinamicamente: a Cláusula 4 (propriedade do
@@ -1718,8 +2208,12 @@ export default function Home() {
                     Cláusula de retirada do equipamento só existe no Comodato
                     (na Venda o equipamento não é devolvido). A numeração é
                     calculada automaticamente pela posição no array, então
-                    incluir/remover cláusulas nunca deixa buracos na contagem. */}
-                {[
+                    incluir/remover cláusulas nunca deixa buracos na contagem.
+
+                    O array abaixo é o texto histórico usado na VENDA. O
+                    Comodato usa `comodatoClauses` (contrato revisado
+                    juridicamente, definido no topo do componente). */}
+                {(data.serviceType === "comodato" ? comodatoClauses : [
                   {
                     title: "OBJETO",
                     body: (
@@ -1760,21 +2254,7 @@ export default function Home() {
                       </p>
                     ),
                   },
-                  data.serviceType === "comodato"
-                    ? {
-                      title: "EQUIPAMENTO EM COMODATO",
-                      body: (
-                        <>
-                          <p>
-                            O equipamento rastreador instalado no veículo permanece como propriedade exclusiva da CONTRATADA, sendo cedido ao CONTRATANTE em regime de comodato. O CONTRATANTE compromete-se a não violar ou remover o equipamento, não permitir que terceiros manipulem o dispositivo, e comunicar imediatamente qualquer problema. Em caso de dano, perda ou retirada indevida, o CONTRATANTE deverá pagar o valor do equipamento.
-                          </p>
-                          <p className="mt-1 text-[8.5pt]">
-                            <strong>Tipo de Serviço / Plano selecionado:</strong> {activePlan.name} (Equipamento: {activePlan.tracker})
-                          </p>
-                        </>
-                      ),
-                    }
-                    : {
+                  {
                       title: "COMPRA E VENDA DO EQUIPAMENTO",
                       body: (
                         <>
@@ -1828,26 +2308,13 @@ export default function Home() {
                     body: (
                       <p>
                         Em caso de cancelamento antes do prazo mínimo, será cobrada multa correspondente a 30% do valor restante do contrato.{" "}
-                        {data.serviceType === "comodato"
-                          ? "Também deverá ocorrer a devolução do equipamento rastreador."
-                          : "Por se tratar de equipamento adquirido em definitivo pelo CONTRATANTE, não haverá devolução do equipamento."}
+                        Por se tratar de equipamento adquirido em definitivo pelo CONTRATANTE, não haverá devolução do equipamento.
                       </p>
                     ),
                   },
-                  // A cláusula de retirada só existe no Comodato — na Venda o
-                  // equipamento é do cliente e não precisa ser devolvido.
-                  ...(data.serviceType === "comodato"
-                    ? [
-                      {
-                        title: "RETIRADA DO EQUIPAMENTO",
-                        body: (
-                          <p>
-                            Em caso de cancelamento, o CONTRATANTE deverá agendar a retirada do equipamento. Caso o equipamento não seja devolvido nas condições recebidas, será cobrado o valor de <strong>{getEquipamentoValorRetirada()}</strong> (valor do plano vezes 9).
-                          </p>
-                        ),
-                      },
-                    ]
-                    : []),
+                  // A cláusula de retirada do equipamento só existe no Comodato
+                  // (ver `comodatoClauses`) — na Venda o equipamento é do
+                  // cliente e não precisa ser devolvido.
                   {
                     title: "PRIVACIDADE E LGPD",
                     body: (
@@ -1864,10 +2331,10 @@ export default function Home() {
                       </p>
                     ),
                   },
-                ].map((clause, index) => (
+                ]).map((clause, index) => (
                   <div key={clause.title}>
                     <h4 className="font-bold text-zinc-900 border-l-2 border-brand-yellow pl-1.5 mb-1.5 uppercase text-[8pt] tracking-wider print:border-black">
-                      CLÁUSULA {index + 1} – {clause.title}
+                      CLÁUSULA {index + 1}{data.serviceType === "comodato" ? "ª" : ""} – {clause.title}
                     </h4>
                     {clause.body}
                   </div>
@@ -1913,6 +2380,12 @@ export default function Home() {
                     </div>
                     <p className="font-bold text-zinc-900 text-[8.5pt]">GRUPO PROTECT LTDA</p>
                     <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CNPJ: 42.818.864/0001-65</p>
+                    {data.serviceType === "comodato" && (
+                      <p className="text-[7pt] text-zinc-500 mt-0.5">
+                        Representante: {data.contratadaRepName || "____________________"}<br />
+                        CPF: {data.contratadaRepCpf || "____________________"}
+                      </p>
+                    )}
                     <span className="mt-1 text-[6.5pt] font-bold uppercase tracking-wider text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded">CONTRATADA</span>
                   </div>
 
@@ -1951,11 +2424,17 @@ export default function Home() {
                   <div className="flex flex-col items-center">
                     <img src="/assinatura.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Antonio C. Costa Junior</p>
+                    {data.serviceType === "comodato" && (
+                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: {data.witness1Cpf || "____________________"}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col items-center">
                     <img src="/assinatura1.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Emerson N. do Carmo</p>
+                    {data.serviceType === "comodato" && (
+                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: {data.witness2Cpf || "____________________"}</p>
+                    )}
                   </div>
 
                 </div>
