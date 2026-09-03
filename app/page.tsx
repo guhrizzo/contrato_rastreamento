@@ -2086,7 +2086,7 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF Testemunha 1 <span className="normal-case font-normal text-zinc-400">(Antonio C. Costa Junior)</span></label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF/CNPJ Testemunha 1 <span className="normal-case font-normal text-zinc-400">(Antonio C. Costa Junior)</span></label>
                       <input
                         type="text"
                         name="witness1Cpf"
@@ -2098,7 +2098,7 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex flex-col">
-                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF Testemunha 2 <span className="normal-case font-normal text-zinc-400">(Emerson N. do Carmo)</span></label>
+                      <label className="text-xs font-bold text-zinc-700 uppercase mb-1.5">CPF/CNPJ Testemunha 2 <span className="normal-case font-normal text-zinc-400">(Emerson N. do Carmo)</span></label>
                       <input
                         type="text"
                         name="witness2Cpf"
@@ -2425,7 +2425,7 @@ export default function Home() {
                     <img src="/assinatura.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Antonio C. Costa Junior</p>
                     {data.serviceType === "comodato" && (
-                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: {data.witness1Cpf || "____________________"}</p>
+                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF/CNPJ: {data.witness1Cpf || "____________________"}</p>
                     )}
                   </div>
 
@@ -2433,7 +2433,7 @@ export default function Home() {
                     <img src="/assinatura1.png" alt="Assinatura" className="h-14 w-auto object-contain mb-1" />
                     <p className="font-semibold text-zinc-800 text-[8pt] uppercase tracking-wider">Emerson N. do Carmo</p>
                     {data.serviceType === "comodato" && (
-                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF: {data.witness2Cpf || "____________________"}</p>
+                      <p className="text-[7pt] text-zinc-500 font-mono mt-0.5">CPF/CNPJ: {data.witness2Cpf || "____________________"}</p>
                     )}
                   </div>
 
